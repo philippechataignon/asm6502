@@ -1141,4 +1141,4 @@ SUBTBL      byte    <BASCONT-1
             word    NMI
             word    RESET
 ;            word    IRQ
-            word    OLDRST        ;exact binary apple2plus.rom, IRQ in source
+            word    BREAK
