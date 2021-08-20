@@ -1,0 +1,3 @@
+vasm6502_oldstyle -Fbin -o applesoft.bin applesoft.s
+vasm6502_oldstyle -Fbin -o mon.bin mon2.s
+cat applesoft.bin mon.bin > apple2plus.bin
