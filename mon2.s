@@ -1140,5 +1140,4 @@ SUBTBL      byte    <BASCONT-1
             byte    <BLANK-1
             word    NMI
             word    RESET
-;            word    IRQ
-            word    BREAK
+            word    IRQ

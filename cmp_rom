@@ -1,1 +1,1 @@
-cmp -l apple2plus.bin apple2plus.rom | nawk '{printf("%04x %02x %02x\n", $1 + 13*4096 - 1, strtonum(0$2), strtonum(0$3))}' L
+cmp -l mon.bin ROMF8.bin | nawk '{printf("%04x %02x %02x\n", $1 + 0xF800 - 1, strtonum(0$2), strtonum(0$3))}'
