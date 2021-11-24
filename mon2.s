@@ -328,14 +328,23 @@ MNEMR       byte   $d8,$62,$5a,$48,$26,$62,$94,$88,$54,$44,$c8,$54,$68,$44,$e8,$
             byte   $00,$aa,$a2,$a2,$74,$74,$74,$72,$44,$68,$b2,$32,$b2,$00,$22,$00
             byte   $1a,$1a,$26,$26,$72,$72,$88,$c8,$c4,$ca,$26,$48,$44,$44,$a2,$c8
 
-IRQ         sta     ACC
-            pla
-            pha
+; 6502 interrupt-service routine ISR garanties stack as:
+; S = status register (NV0BDIZC), RA = return address
+; ---------
+; |  S    |
+; ---------
+; |  RAL  |
+; ---------
+; |  RAH  |
+; ---------
+IRQ         sta     ACC             ; saves A
+            pla                     ; get S
+            pha                     ; repush S
+            asl                     ; test bit4 = BRK CMD
+            asl                     ; with 3 ASL -> bit 7
             asl
-            asl
-            asl
-            bmi     BREAK
-            jmp     (IRQLOC)
+            bmi     BREAK           ; test bit7 = sign bit == 1
+            jmp     (IRQLOC)        ; normal IRQ (only by hardware on Apple II)
 
 BREAK       plp
             jsr     SAV1
