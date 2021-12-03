@@ -1,3 +1,14 @@
+; RAM tester
+; test a range of pages
+; print PASS if OK, else ERR
+; example:
+;
+; * FA:4 C0
+; * 2A0G
+;
+; will test $0400-$BFFF
+; note : program location page can't be tested
+
 START       equ $FA
 END         equ $FB
 CURL        equ $FC
@@ -5,7 +16,7 @@ CURH        equ $FD
 COUT1       equ $FDF0
 CR          equ $FC62
 
-            org $804
+            org $2A0
 INIT
             ldy #0
             sty CURL
