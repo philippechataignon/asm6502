@@ -2,15 +2,15 @@
 ; MACROS
 ;
 ; Initialize address with START
-    .macro INI_ADDRS
+    macro INI_ADDRS
     LDA START
     STA ADDRS
     LDA START+1
     STA ADDRS+1
-    .endm
+    endm
 
 ; Increment address
-    .macro INC_ADDRSC
+    macro INC_ADDRSC
     INC ADDRS
     BNE .SKIP_HI
     INC ADDRS+1
@@ -21,7 +21,7 @@
     LDA END+1
     CMP ADDRS+1
 .EXIT2:
-    .endm
+    endm
 
 ; Set test pattern
 ; only for tests 4 and 5 (address in address tests), make addres High or Low 
@@ -29,7 +29,7 @@
 ; test 4 is LSB of address
 ; test 5 is MSB of address
 ; 
-  .macro SET_PATRN
+  macro SET_PATRN
     CPY    #4
     BNE    .TEST5
     LDA    ADDRS
@@ -40,18 +40,18 @@
     LDA    ADDRS+1
     STA    TEST_PATRN 
 .EXIT1:
-  .endm
+  endm
 
 ;
 ; Zero page locations
 ;
-    .org    $EB
-START:       .word  $0900    ; USER ENTERS START OF MEMORY RANGE min is 38
-END:         .word  $BFFF    ; USER ENTERS END OF MEMORY RANGE
-    .org    $FA
-ADDRS:       .word  0        ; 2 BYTES - ADDRESS OF MEMORY
-TEST_PATRN:  .byte  0        ; 1 BYTE - CURRENT TEST PATTERN
-PASSES:      .byte  0        ;NUMBER of PASSES
+    org    $EB
+START:       word  $0900    ; USER ENTERS START OF MEMORY RANGE min is 38
+END:         word  $BFFF    ; USER ENTERS END OF MEMORY RANGE
+    org    $FA
+ADDRS:       word  0        ; 2 BYTES - ADDRESS OF MEMORY
+TEST_PATRN:  byte  0        ; 1 BYTE - CURRENT TEST PATTERN
+PASSES:      byte  0        ;NUMBER of PASSES
 
 ;START:       .byte $0,$0a    ; USER ENTERS START OF MEMORY RANGE min is 38
 ;END:         .byte $0,$40    ; USER ENTERS END OF MEMORY RANGE
