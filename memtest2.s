@@ -58,6 +58,20 @@ OK
             jsr     COUT1
             lda     #'S'+$80
             jsr     COUT1
+            lda     #' '+$80
+            jsr     COUT1
+            lda     #'@'+$80
+            jsr     COUT1
+            lda     START
+            jsr     COUTBYTE
+            lda     #$00
+            jsr     COUTBYTE
+            lda     #'-'+$80
+            jsr     COUT1
+            lda     CURH
+            jsr     COUTBYTE
+            lda     CURL
+            jsr     COUTBYTE
             jsr     CR
             rts
 ERROR            
@@ -68,5 +82,34 @@ ERROR
             jsr     COUT1
             lda     #'R'+$80
             jsr     COUT1
+            lda     #' '+$80
+            jsr     COUT1
+            lda     #'@'+$80
+            jsr     COUT1
+            lda     CURH
+            jsr     COUTBYTE
+            lda     CURL
+            jsr     COUTBYTE
             jsr     CR
+            rts
+
+COUT4
+            and     #$0F
+            ora     #$B0        ; convert to ASCII for number
+            cmp     #$BA        ; > BA (3A|80) -> not number but [A-F], need to add 6
+            bcc     COUTN
+            adc     #$06
+COUTN
+            jsr     COUT1
+            rts
+
+COUTBYTE
+            pha
+            lsr
+            lsr
+            lsr
+            lsr
+            jsr     COUT4
+            pla
+            jsr     COUT4
             rts
