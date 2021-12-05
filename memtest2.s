@@ -35,7 +35,7 @@ LOOP1
             tya
             sta     (CURL),y    ; and store
             iny                 ; next byte
-            bne     LOOP1      
+            bne     LOOP1
             inc     CURH        ; next page
             lda     CURH
             cmp     END         ; last page ?
@@ -54,13 +54,13 @@ LOOP2
             cmp     (CURL),y    ; cmp y and addr
             bne     ERROR
             iny                 ; next byte
-            bne     LOOP2     
+            bne     LOOP2
             inc     CURH        ; next page
             lda     CURH
             cmp     END         ; last page ?
             bcc     LOOP2      ; no, continue
 
-OK            
+OK
             ldx     #LEN_PASS
 .MSG
             lda     MSG_PASS-1,X
@@ -68,7 +68,7 @@ OK
             dex
             bne     .MSG
             rts
-ERROR            
+ERROR
             ldx     #LEN_ERR
 .MSG
             lda     MSG_ERR-1,X
@@ -79,19 +79,20 @@ ERROR
 
 BYTEOUT
             pha                 ; push A for processing high nibble
-            lsr                 ; 
+            lsr                 ; >> 4
             lsr
             lsr
             lsr
-            ora     #$F0        
-            cmp     #$FA
+            ora     #$F0        ; normal
+            cmp     #$FA        ; if > 9
             bcc     .WRT1
-            sbc     #$39
+            sbc     #$39        ; substract $40 in character table
+                                ; = $39 + 1 (C is set)
 
 .WRT1
-            sta     SCREEN + 38
-            pla
-            and     #$0F
+            sta     SCREEN + 38 ; col 39,  line 0
+            pla                 ; get stacked A
+            and     #$0F        ; low nibble
             ora     #$F0
             cmp     #$FA
             bcc     .WRT2
@@ -100,7 +101,9 @@ BYTEOUT
             sta     SCREEN + 39
             rts
 
+                    ; inverse
 MSG_PASS    abyte   (0b00111111 & ._),"PASS"  ; set bit 7 = 1
 LEN_PASS    equ     * - MSG_PASS
+                    ; inverse & blink
 MSG_ERR     abyte   (0b01111111 & ._),"ERR"
 LEN_ERR     equ     * - MSG_ERR
