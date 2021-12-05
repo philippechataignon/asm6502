@@ -9,6 +9,15 @@
 ; will test $0500-$BFFF
 ; note : program location page can't be tested
 
+CHR2SCR     macro
+            ora #$F0        ; normal
+            cmp #$FA        ; if > 9
+            bcc .L1
+            sbc #$39        ; substract $40 in character table
+.L1                         ; = $39 + 1 (C is set)
+            sta SCREEN + \1 ; pos = param
+            endm
+
 START       equ $FA
 END         equ $FB
 CURL        equ $FC
@@ -83,22 +92,10 @@ BYTEOUT
             lsr
             lsr
             lsr
-            ora #$F0        ; normal
-            cmp #$FA        ; if > 9
-            bcc .WRT1
-            sbc #$39        ; substract $40 in character table
-                            ; = $39 + 1 (C is set)
-
-.WRT1
-            sta SCREEN + 38 ; col 39,  line 0
+CHAR1       CHR2SCR 38      ; output pos 38
             pla             ; get stacked A
             and #$0F        ; low nibble
-            ora #$F0
-            cmp #$FA
-            bcc .WRT2
-            sbc #$39
-.WRT2
-            sta SCREEN + 39
+CHAR2       CHR2SCR 39      ; output pos 39
             rts
 
                     ; inverse
