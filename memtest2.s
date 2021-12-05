@@ -20,85 +20,85 @@ HOME        equ $FC58
 
             org $280
 INIT
-            jsr     HOME
+            jsr HOME
             ldy #0
             sty CURL
             lda START
             sta CURH
 
 LOOP1
-            cpy     #0
-            bne     .NOBYTEOUT
-            lda     CURH
-            jsr     BYTEOUT
+            cpy #0
+            bne .NOBYTEOUT
+            lda CURH
+            jsr BYTEOUT
 .NOBYTEOUT
             tya
-            sta     (CURL),y    ; and store
-            iny                 ; next byte
-            bne     LOOP1
-            inc     CURH        ; next page
-            lda     CURH
-            cmp     END         ; last page ?
-            bcc     LOOP1      ; no, continue
+            sta (CURL),y    ; and store
+            iny             ; next byte
+            bne LOOP1
+            inc CURH        ; next page
+            lda CURH
+            cmp END         ; last page ?
+            bcc LOOP1      ; no, continue
 
             lda START
             sta CURH
 
 LOOP2
-            cpy     #0
-            bne     .NOBYTEOUT
-            lda     CURH
-            jsr     BYTEOUT
+            cpy #0
+            bne .NOBYTEOUT
+            lda CURH
+            jsr BYTEOUT
 .NOBYTEOUT
             tya
-            cmp     (CURL),y    ; cmp y and addr
-            bne     ERROR
-            iny                 ; next byte
-            bne     LOOP2
-            inc     CURH        ; next page
-            lda     CURH
-            cmp     END         ; last page ?
-            bcc     LOOP2      ; no, continue
+            cmp (CURL),y    ; cmp y and addr
+            bne ERROR
+            iny             ; next byte
+            bne LOOP2
+            inc CURH        ; next page
+            lda CURH
+            cmp END         ; last page ?
+            bcc LOOP2      ; no, continue
 
 OK
-            ldx     #LEN_PASS
+            ldx #LEN_PASS
 .MSG
-            lda     MSG_PASS-1,X
-            sta     SCREEN,X
+            lda MSG_PASS-1,X
+            sta SCREEN,X
             dex
-            bne     .MSG
+            bne .MSG
             rts
 ERROR
-            ldx     #LEN_ERR
+            ldx #LEN_ERR
 .MSG
-            lda     MSG_ERR-1,X
-            sta     SCREEN,X
+            lda MSG_ERR-1,X
+            sta SCREEN,X
             dex
-            bne     .MSG
+            bne .MSG
             rts
 
 BYTEOUT
-            pha                 ; push A for processing high nibble
-            lsr                 ; >> 4
+            pha             ; push A for processing high nibble
+            lsr             ; >> 4
             lsr
             lsr
             lsr
-            ora     #$F0        ; normal
-            cmp     #$FA        ; if > 9
-            bcc     .WRT1
-            sbc     #$39        ; substract $40 in character table
-                                ; = $39 + 1 (C is set)
+            ora #$F0        ; normal
+            cmp #$FA        ; if > 9
+            bcc .WRT1
+            sbc #$39        ; substract $40 in character table
+                            ; = $39 + 1 (C is set)
 
 .WRT1
-            sta     SCREEN + 38 ; col 39,  line 0
-            pla                 ; get stacked A
-            and     #$0F        ; low nibble
-            ora     #$F0
-            cmp     #$FA
-            bcc     .WRT2
-            sbc     #$39
+            sta SCREEN + 38 ; col 39,  line 0
+            pla             ; get stacked A
+            and #$0F        ; low nibble
+            ora #$F0
+            cmp #$FA
+            bcc .WRT2
+            sbc #$39
 .WRT2
-            sta     SCREEN + 39
+            sta SCREEN + 39
             rts
 
                     ; inverse
