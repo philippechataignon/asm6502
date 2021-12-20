@@ -10,8 +10,8 @@
 ; note : program location page can't be tested
 
 CHR2SCR     macro
-            ora #$F0        ; normal
-            cmp #$FA        ; if > 9
+            ora #$B0        ; normal
+            cmp #$BA        ; if > 9
             bcc .L1
             sbc #$39        ; substract $40 in character table
 .L1                         ; = $39 + 1 (C is set)
