@@ -6,10 +6,10 @@ ENDH        equ     $FD
 CURL        equ     $FE
 CURH        equ     $FF
 COUT1       equ     $FDF0
-CRCT0       equ     $2000       ; Four 256-byte tables
-CRCT1       equ     $2100       ; (should be page-aligned for speed)
-CRCT2       equ     $2200
-CRCT3       equ     $2300
+CRCT0       equ     $BC00      ; Four 256-byte tables
+CRCT1       equ     $BD00      ; (should be page-aligned for speed)
+CRCT2       equ     $BE00
+CRCT3       equ     $BF00
 
             org     $280
 INIT
