@@ -5,10 +5,6 @@ cout	=	$FDED		; character out sub
 crout	=	$FD8E		; CR out sub
 prbyte	=	$FDDA 		; print byte in hex
 tapein	=	$C060		; read tape interface
-; warm	=	$FF69		; back to monitor
-clear	=	$FC58		; clear screen
-endbas	=	$80C
-target	=	$1000
 
 ; zero page parameters
 
@@ -17,7 +13,7 @@ endload	=	$FC		; end load location LSB/MSB
 chksum	=	$FE		; checksum location
 pointer	=	$EB		; LSB/MSB pointer
 
-	org	org		; $9000
+	org	org		
 readtape:
 	lda	begload		; load begin LSB location
 	sta	store+1		; store it
@@ -71,19 +67,18 @@ endcode:
 	bcc	endcheck	; LSB didn't roll over to zero
 	inc	store+2		; did roll over to zero, inc MSB
 endcheck:			; check for match of expected length
-	lda	endload
-	cmp	store+1
-	bne	error
-	lda	endload+1
-	cmp	store+2
-	bne	error
+	;lda	endload
+	;cmp	store+1
+	;bne	error
+	;lda	endload+1
+	;cmp	store+2
+	;bne	error
 	jsr	ok
 sumcheck:
 	jsr	crout
 	lda	#<chkm
 	ldy	#>chkm
 	jsr	print
-
 	lda	#0
 	sta	pointer
 	lda	begload+1
@@ -92,27 +87,25 @@ sumcheck:
 	ldy	begload
 sumloop:
 	eor	(pointer),y
-
-	;last page?
-
-	ldx	pointer+1
-	cpx	endload+1
-	beq	last
+	ldx	pointer+1 
+	cpx	endload+1   ;last page?
+	bcs	last
 	iny
 	bne	sumloop
 	inc	pointer+1
-	bne	sumloop
+	jmp	sumloop
 last:
 	iny
+    beq exit
 	cpy	endload
 	bcc	sumloop
-
-	ldy	#0
+    beq sumloop     ; <=
+exit:
+    sta chksum
+	ldy	#1
 	eor	(endload),y
-;	sta	chksum
-;	lda	chksum
 	bne	error
-	jmp	ok		; return to caller
+	jmp	ok
 error:
 	lda	#<errm
 	ldy	#>errm
@@ -137,5 +130,3 @@ print1:
 chkm:	asciiz	"CHKSUM "
 okm:	asciiz	"OK"
 errm:	asciiz	"ERROR"
-end:
-
