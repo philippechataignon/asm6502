@@ -28,7 +28,7 @@ LOOP1
             lda     (CURL),y
             jsr     UPDCRC
             ldx     CURH        ; is last page ?
-            cpx     ENDH
+            cpx     ENDH        ; >= ?
             bcs     LASTPAGE    ; yes -> LASTPAGE
             iny
             bne     LOOP1
@@ -51,7 +51,7 @@ COMPL       lda     CRC,Y
             rts
 COUT4
             ora     #$B0        ; convert to ASCII for number
-            cmp     #$BA        ; > BA (3A|80) -> not number but [A-F], need to add 6
+            cmp     #$BA        ; >= BA (3A|80) -> not number but [A-F], need to add 6
             bcc     .L1
             adc     #$06
 .L1

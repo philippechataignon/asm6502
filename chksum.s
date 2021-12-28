@@ -2,7 +2,6 @@
 ; Usage: to do between 2A0 and 2E5
 ; FA: A0 02 E5 02
 ;
-
 STARTL      equ     $FA
 STARTH      equ     $FB
 ENDL        equ     $FC
@@ -41,9 +40,9 @@ EXIT
 COUT4
             ora     #$B0        ; convert to ASCII for number
             cmp     #$BA        ; > BA (3A|80) -> not number but [A-F], need to add 6
-            bcc     .L1
+            bcc     L1
             adc     #$06
-.L1
+L1
             jsr     COUT1
             rts
 COUTBYTE
