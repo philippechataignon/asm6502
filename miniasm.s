@@ -87,12 +87,13 @@ FAKEMON2
         BMI RESETZ       ;ERR IF UNRECOGNIZED DELIM
         CMP CHRTBL,Y     ;COMPARE WITH DELIM TABLE
         BNE FAKEMON2     ;NO MATCH
-        CMP #$15         ;MATCH, IS IT CR?
+        CPY #$15         ;MATCH, IS IT CR?
         BNE FAKEMON3     ;NO, HANDLE IT IN MONITOR
         LDA MODE
         LDY #0
         DEC YSAV
         JSR BL1          ;HANDLE CR OUTSIDE MONITOR
+        JMP NXTLINE
 TRYNEXT LDA A1H          ;GET TRIAL OPCODE
         JSR INSDS2       ;GET FMT+LENGTH FOR OPCODE
         TAX
@@ -127,6 +128,7 @@ NXTLINE LDA #$A1         ;'!'
         LDA IN           ;GET CHAR
         CMP #$A0         ;ASCII BLANK?
         BEQ SPACE        ;YES
+        INY
         CMP #$A4         ;ASCII '$' IN COL 1?
         BEQ FAKEMON      ;YES, SIMULATE MONITOR
         DEY              ;NO, BACKUP A CHAR
@@ -156,6 +158,7 @@ NXTM2   ASL A            ;DO 5 TRIPLE WORD SHIFTSF5CC:
         BPL NXTMN        ;NO
 FORM1   LDX #5           ;5 CHARS IN ADDR MODE
 FORM2   JSR GETNSP       ;GET FIRST CHAR OF ADDR
+        STY YSAV
         CMP CHAR1,X      ;FIRST CHAR MATCH PATTERN?
         BNE FORM3        ;NO
         JSR GETNSP       ;YES, GET SECOND CHAR
