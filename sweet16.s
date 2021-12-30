@@ -36,7 +36,7 @@ SW16B   JSR  SW16C          ;INTERPRET AND EXECUTE
 SW16C   INC  R15L
         BNE  SW16D          ;INCR SWEET16 PC FOR FETCH
         INC  R15H
-SW16D   LDA  >SET           ;COMMON HIGH BYTE FOR ALL ROUTINES
+SW16D   LDA  #>SET          ;COMMON HIGH BYTE FOR ALL ROUTINES
         PHA                 ;PUSH ON STACK FOR RTS
         LDY  $0
         LDA  (R15L),Y       ;FETCH INSTR
@@ -78,38 +78,38 @@ SETZ    LDA  (R15L),Y       ;HIGH ORDER BYTE OF CONSTANT
         BCC  SET2
         INC  R15H
 SET2    RTS
-OPTBL   WORD  SET-1          ;1X
-BRTBL   WORD  RTN-1          ;0
-        WORD  LD-1           ;2X
-        WORD  BR-1           ;1
-        WORD  ST-1           ;3X
-        WORD  BNC-1          ;2
-        WORD  LDAT-1         ;4X
-        WORD  BC-1           ;3
-        WORD  STAT-1         ;5X
-        WORD  BP-1           ;4
-        WORD  LDDAT-1        ;6X
-        WORD  BM-1           ;5
-        WORD  STDAT-1        ;7X
-        WORD  BZ-1           ;6
-        WORD  POP-1          ;8X
-        WORD  BNZ-1          ;7
-        WORD  STPAT-1        ;9X
-        WORD  BM1-1          ;8
-        WORD  ADD-1          ;AX
-        WORD  BNM1-1         ;9
-        WORD  SUB-1          ;BX
-        WORD  BK-1           ;A
-        WORD  POPD-1         ;CX
-        WORD  RS-1           ;B
-        WORD  CPR-1          ;DX
-        WORD  BS-1           ;C
-        WORD  INR-1          ;EX
-        WORD  NUL-1          ;D
-        WORD  DCR-1          ;FX
-        WORD  NUL-1          ;E
-        WORD  NUL-1          ;UNUSED
-        WORD  NUL-1          ;F
+OPTBL   BYTE  <SET-1        ;1X
+BRTBL   BYTE  <RTN-1        ;0
+        BYTE  <LD-1         ;2X
+        BYTE  <BR-1         ;1
+        BYTE  <ST-1         ;3X
+        BYTE  <BNC-1        ;2
+        BYTE  <LDAT-1       ;4X
+        BYTE  <BC-1         ;3
+        BYTE  <STAT-1       ;5X
+        BYTE  <BP-1         ;4
+        BYTE  <LDDAT-1      ;6X
+        BYTE  <BM-1         ;5
+        BYTE  <STDAT-1      ;7X
+        BYTE  <BZ-1         ;6
+        BYTE  <POP-1        ;8X
+        BYTE  <BNZ-1        ;7
+        BYTE  <STPAT-1      ;9X
+        BYTE  <BM1-1        ;8
+        BYTE  <ADD-1        ;AX
+        BYTE  <BNM1-1       ;9
+        BYTE  <SUB-1        ;BX
+        BYTE  <BK-1         ;A
+        BYTE  <POPD-1       ;CX
+        BYTE  <RS-1         ;B
+        BYTE  <CPR-1        ;DX
+        BYTE  <BS-1         ;C
+        BYTE  <INR-1        ;EX
+        BYTE  <NUL-1        ;D
+        BYTE  <DCR-1        ;FX
+        BYTE  <NUL-1        ;E
+        BYTE  <NUL-1        ;UNUSED
+        BYTE  <NUL-1        ;F
 
 ; FOLLOWING CODE MUST BE
 ; CONTAINED ON A SINGLE PAGE!
@@ -249,3 +249,6 @@ RS      LDX  $18            ;12*2 FOR R12 AS STACK POINTER
         STA  R15L
         RTS
 RTN     JMP  RTNZ
+FILL    NOP
+        NOP
+        NOP
