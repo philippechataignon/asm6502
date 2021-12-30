@@ -1,7 +1,7 @@
 OPT=
 
 %.bin: %.s
-	vasm6502_oldstyle $(OPT) -quiet -L $(<:.s=.lst) -Fbin -o "$@" "$<"
+	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fbin -o "$@" "$<"
 
 %.hex: %.s
 	vasm6502_oldstyle $(OPT) -L $(<:.s=.lst) -Fihex -o "$@" "$<"
