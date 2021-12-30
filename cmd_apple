@@ -3,4 +3,4 @@
 # vasm6502_oldstyle -L mon.lst -dotdir -Fbin -o mon.bin mon.S
 # vasm6502_oldstyle -L mon2.lst -Fbin -o mon2.bin mon2.s
 cat applesoft.bin mon2.bin > apple2plus.rom
-cat intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin sweet16.bin > apple2.rom
+cat intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin> apple2.rom

@@ -38,9 +38,9 @@ SW16C   INC  R15L
         INC  R15H
 SW16D   LDA  #>SET          ;COMMON HIGH BYTE FOR ALL ROUTINES
         PHA                 ;PUSH ON STACK FOR RTS
-        LDY  $0
+        LDY  #$0
         LDA  (R15L),Y       ;FETCH INSTR
-        AND  $F             ;MASK REG SPECIFICATION
+        AND  #$F             ;MASK REG SPECIFICATION
         ASL                 ;DOUBLE FOR TWO BYTE REGISTERS
         TAX                 ;TO X REG FOR INDEXING
         LSR
@@ -128,7 +128,7 @@ ST      LDA  R0L
         RTS
 STAT    LDA  R0L
 STAT2   STA  (R0L,X)        ;STORE BYTE INDIRECT
-        LDY  $0
+        LDY  #$0
 STAT3   STY  R14H           ;INDICATE R0 IS RESULT NEG
 INR     INC  R0L,X
         BNE  INR2           ;INCR RX
@@ -136,10 +136,10 @@ INR     INC  R0L,X
 INR2    RTS
 LDAT    LDA  (R0L,X)        ;LOAD INDIRECT (RX)
         STA  R0L            ;TO R0
-        LDY  $0
+        LDY  #$0
         STY  R0H            ;ZERO HIGH ORDER R0 BYTE
         BEQ  STAT3          ;ALWAYS TAKEN
-POP     LDY  $0             ;HIGH ORDER BYTE = 0
+POP     LDY  #$0             ;HIGH ORDER BYTE = 0
         BEQ  POP2           ;ALWAYS TAKEN
 POPD    JSR  DCR            ;DECR RX
         LDA  (R0L,X)        ;POP HIGH ORDER BYTE @RX
@@ -148,7 +148,7 @@ POP2    JSR  DCR            ;DECR RX
         LDA  (R0L,X)        ;LOW ORDER BYTE
         STA  R0L            ;TO R0
         STY  R0H
-POP3    LDY  $0             ;INDICATE R0 AS LAST RESULT REG
+POP3    LDY  #$0             ;INDICATE R0 AS LAST RESULT REG
         STY  R14H
         RTS
 LDDAT   JSR  LDAT           ;LOW ORDER BYTE TO R0, INCR RX
@@ -168,7 +168,7 @@ DCR     LDA  R0L,X
         DEC  R0H,X
 DCR2    DEC  R0L,X
         RTS
-SUB     LDY  $0             ;RESULT TO R0
+SUB     LDY  #$0             ;RESULT TO R0
 CPR     SEC            ;NOTE Y REG = 13*2 FOR CPR
         LDA  R0L
         SBC  R0L,X
@@ -177,7 +177,7 @@ CPR     SEC            ;NOTE Y REG = 13*2 FOR CPR
         SBC  R0H,X
 SUB2    STA  R0H,Y
         TYA                 ;LAST RESULT REG*2
-        ADC  $0             ;CARRY TO LSB
+        ADC  #$0             ;CARRY TO LSB
         STA  R14H
         RTS
 ADD     LDA  R0L
@@ -185,7 +185,7 @@ ADD     LDA  R0L
         STA  R0L            ;R0+RX TO R0
         LDA  R0H
         ADC  R0H,X
-        LDY  $0             ;R0 FOR RESULT
+        LDY  #$0             ;R0 FOR RESULT
         BEQ  SUB2           ;FINISH ADD
 BS      LDA  R15L           ;NOTE X REG IS 12*2!
         JSR  STAT2          ;PUSH LOW PC BYTE VIA R12
@@ -230,17 +230,17 @@ BM1     ASL                 ;DOUBLE RESULT-REG INDEX
         TAX
         LDA  R0L,X          ;CHECK BOTH BYTES
         AND  R0H,X          ;FOR $FF (MINUS 1)
-        EOR  $FF
+        EOR  #$FF
         BEQ  BR1            ;BRANCH IF SO
         RTS
 BNM1    ASL                 ;DOUBLE RESULT-REG INDEX
         TAX
         LDA  R0L,X
         AND  R0H,X          ;CHECK BOTH BYTES FOR NO $FF
-        EOR  $FF
+        EOR  #$FF
         BNE  BR1            ;BRANCH IF NOT MINUS 1
 NUL     RTS
-RS      LDX  $18            ;12*2 FOR R12 AS STACK POINTER
+RS      LDX  #$18            ;12*2 FOR R12 AS STACK POINTER
         JSR  DCR            ;DECR STACK POINTER
         LDA  (R0L,X)        ;POP HIGH RETURN ADDRESS TO PC
         STA  R15H
@@ -249,6 +249,4 @@ RS      LDX  $18            ;12*2 FOR R12 AS STACK POINTER
         STA  R15L
         RTS
 RTN     JMP  RTNZ
-FILL    NOP
-        NOP
-        NOP
+FILL    BYTE    $F6,$FF,$FF

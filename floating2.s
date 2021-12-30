@@ -18,7 +18,7 @@ M1      EQU $F9
 E       EQU $FC
 OVLOC   EQU $3F5
 
-RTAR    EQU $F47A
+RTAR    EQU $F47D
 
         ORG $F63D
 FIX1    JSR RTAR
@@ -38,3 +38,5 @@ UNDFL   LDA #$0
         STA M1
         STA M1+1
         RTS
+
+        BLK 8,$FF   ; FILL WITH 8 FF

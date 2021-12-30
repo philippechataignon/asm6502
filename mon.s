@@ -18,86 +18,86 @@
 ;* Project created by Andy McFadden, using 6502bench SourceGen v1.4.            *
 ;* Last updated 2019/10/29                                                      *
 ;********************************************************************************
-LOC0        .equ     $00
-LOC1        .equ     $01
-WNDLFT      .equ     $20
-WNDWDTH     .equ     $21
-WNDTOP      .equ     $22
-WNDBTM      .equ     $23
-CH          .equ     $24
-CV          .equ     $25
-GBASL       .equ     $26
-GBASH       .equ     $27
-BASL        .equ     $28
-BASH        .equ     $29
-BAS2L       .equ     $2a
-BAS2H       .equ     $2b
-H2          .equ     $2c
-LMNEM       .equ     $2c
-RTNL        .equ     $2c
-RMNEM       .equ     $2d
-RTNH        .equ     $2d
-V2          .equ     $2d
-CHKSUM      .equ     $2e
-FORMAT      .equ     $2e
-MASK        .equ     $2e
-LASTIN      .equ     $2f
-LENGTH      .equ     $2f
-SIGN        .equ     $2f
-COLOR       .equ     $30
-MODE        .equ     $31
-INVFLG      .equ     $32
-PROMPT      .equ     $33
-YSAV        .equ     $34
-YSAV1       .equ     $35
-CSWL        .equ     $36
-KSWL        .equ     $38
-PCL         .equ     $3a
-PCH         .equ     $3b
-A1L         .equ     $3c
-XQT         .equ     $3c
-A1H         .equ     $3d
-A2L         .equ     $3e
-A2H         .equ     $3f
-A3L         .equ     $40
-A3H         .equ     $41
-A4L         .equ     $42
-A4H         .equ     $43
-A5L         .equ     $44
-ACC         .equ     $45
-XREG        .equ     $46
-YREG        .equ     $47
-STATUS      .equ     $48
-SPNT        .equ     $49
-RNDL        .equ     $4e
-RNDH        .equ     $4f
-ACL         .equ     $50
-ACH         .equ     $51
-XTNDL       .equ     $52
-XTNDH       .equ     $53
-AUXL        .equ     $54
-AUXH        .equ     $55
-PICK        .equ     $95
-IN          .equ     $0200  
-USRADR      .equ     $03f8 
-NMI         .equ     $03fb
-IRQLOC      .equ     $03fe 
-IOADR       .equ     $c000
-KBDSTRB     .equ     $c010           ;RW keyboard strobe
-TAPEOUT     .equ     $c020           ;RW toggle caseette tape output
-SPKR        .equ     $c030           ;RW toggle speaker
-TXTCLR      .equ     $c050           ;RW display graphics
-TXTSET      .equ     $c051           ;RW display text
-MIXSET      .equ     $c053           ;RW display split screen
-TXTPAGE1    .equ     $c054           ;RW display page 1
-LORES       .equ     $c056           ;RW display lo-res graphics
-TAPEIN      .equ     $c060           ;R read cassette input
-PADDL0      .equ     $c064           ;R analog input 0
-PTRIG       .equ     $c070           ;RW analog input reset
-BASIC       .equ     $e000
-BASIC2      .equ     $e003
+LOC0        equ     $00
+LOC1        equ     $01
+WNDLFT      equ     $20
+WNDWDTH     equ     $21
+WNDTOP      equ     $22
+WNDBTM      equ     $23
+CH          equ     $24
+CV          equ     $25
+GBASL       equ     $26
+GBASH       equ     $27
+BASL        equ     $28
+BASH        equ     $29
+BAS2L       equ     $2a
+BAS2H       equ     $2b
+H2          equ     $2c
+LMNEM       equ     $2c
+RTNL        equ     $2c
+RMNEM       equ     $2d
+RTNH        equ     $2d
+V2          equ     $2d
+CHKSUM      equ     $2e
+FORMAT      equ     $2e
+MASK        equ     $2e
+LASTIN      equ     $2f
+LENGTH      equ     $2f
+SIGN        equ     $2f
+COLOR       equ     $30
+MODE        equ     $31
+INVFLG      equ     $32
+PROMPT      equ     $33
+YSAV        equ     $34
+YSAV1       equ     $35
+CSWL        equ     $36
+KSWL        equ     $38
+PCL         equ     $3a
+PCH         equ     $3b
+A1L         equ     $3c
+XQT         equ     $3c
+A1H         equ     $3d
+A2L         equ     $3e
+A2H         equ     $3f
+A3L         equ     $40
+A3H         equ     $41
+A4L         equ     $42
+A4H         equ     $43
+A5L         equ     $44
+ACC         equ     $45
+XREG        equ     $46
+YREG        equ     $47
+STATUS      equ     $48
+SPNT        equ     $49
+RNDL        equ     $4e
+RNDH        equ     $4f
+ACL         equ     $50
+ACH         equ     $51
+XTNDL       equ     $52
+XTNDH       equ     $53
+AUXL        equ     $54
+AUXH        equ     $55
+PICK        equ     $95
+IN          equ     $0200
+USRADR      equ     $03f8
+NMI         equ     $03fb
+IRQLOC      equ     $03fe
+IOADR       equ     $c000
+KBDSTRB     equ     $c010           ;RW keyboard strobe
+TAPEOUT     equ     $c020           ;RW toggle caseette tape output
+SPKR        equ     $c030           ;RW toggle speaker
+TXTCLR      equ     $c050           ;RW display graphics
+TXTSET      equ     $c051           ;RW display text
+MIXSET      equ     $c053           ;RW display split screen
+TXTPAGE1    equ     $c054           ;RW display page 1
+LORES       equ     $c056           ;RW display lo-res graphics
+TAPEIN      equ     $c060           ;R read cassette input
+PADDL0      equ     $c064           ;R analog input 0
+PTRIG       equ     $c070           ;RW analog input reset
+BASIC       equ     $e000
+BASIC2      equ     $e003
 
-            .org    $f800
+            org    $f800
 PLOT        lsr     A               ;Y-coord/2
             php                     ;save LSB in carry
             jsr     GBASCALC        ;calc base adr in GBASL,H
@@ -226,7 +226,7 @@ MNNDX3      dey
             bne     MNNDX1
             rts
 
-            .byte   $ff,$ff,$ff
+            byte   $ff,$ff,$ff
 
 INSTDSP     jsr     INSDS1          ;gen fmt, len bytes
             pha                     ;save mnemonic table index
@@ -312,33 +312,31 @@ RTS2        rts
 ; if Y=0       then left half byte
 ; if Y=1       then right half byte
 ;                   (x=index)
-FMT1        .byte   $04,$20,$54,$30,$0d,$80,$04,$90,$03,$22,$54,$33,$0d,$80,$04,$90
-            .byte        $04,$20,$54,$33,$0d,$80,$04,$90,$04,$20,$54,$3b,$0d,$80,$04,$90
-            .byte        $00,$22,$44,$33,$0d,$c8,$44,$00,$11,$22,$44,$33,$0d,$c8,$44,$a9
-            .byte        $01,$22,$44,$33,$0d,$80,$04,$90,$01,$22,$44,$33,$0d,$80,$04,$90
-            .byte        $26,$31,$87,$9a
+FMT1        byte   $04,$20,$54,$30,$0d,$80,$04,$90,$03,$22,$54,$33,$0d,$80,$04,$90
+            byte        $04,$20,$54,$33,$0d,$80,$04,$90,$04,$20,$54,$3b,$0d,$80,$04,$90
+            byte        $00,$22,$44,$33,$0d,$c8,$44,$00,$11,$22,$44,$33,$0d,$c8,$44,$a9
+            byte        $01,$22,$44,$33,$0d,$80,$04,$90,$01,$22,$44,$33,$0d,$80,$04,$90
+            byte        $26,$31,$87,$9a
 ; ZZXXXY01 instr's
-FMT2        .byte    $00             ;err
-            .byte    $21             ;imm
-            .byte    $81             ;z-page
-            .byte    $82             ;abs
-            .byte    $00             ;implied
-            .byte    $00             ;accumulator
-            .byte    $59             ;(zpag,x)
-            .byte    $4d             ;(zpag),y
-            .byte    $91             ;zpag,x
-            .byte    $92             ;abs,x
-            .byte    $86             ;abs,y
-            .byte    $4a             ;(abs)
-            .byte    $85             ;zpag,y
-            .byte    $9d             ;relative
-CHAR1       .text   ',),#($'
-CHAR2       .byte    "Y"
-            .byte    $00
-            .byte    "X"
-            .byte    "$"
-            .byte    "$"
-            .byte    $00
+FMT2        byte    $00             ;err
+            byte    $21             ;imm
+            byte    $81             ;z-page
+            byte    $82             ;abs
+            byte    $00             ;implied
+            byte    $00             ;accumulator
+            byte    $59             ;(zpag,x)
+            byte    $4d             ;(zpag),y
+            byte    $91             ;zpag,x
+            byte    $92             ;abs,x
+            byte    $86             ;abs,y
+            byte    $4a             ;(abs)
+            byte    $85             ;zpag,y
+            byte    $9d             ;relative
+CHAR1       abyte   +$80,",),#($"
+CHAR2       abyte   +$80,"Y"
+            byte    $00
+            abyte   +$80,"X","$","$"
+            byte    $00
 ; MNEML is of form:
 ; (A) XXXXX000
 ; (B) XXXYY100
@@ -346,15 +344,15 @@ CHAR2       .byte    "Y"
 ; (D) XXXYYY10
 ; (E) XXXYYY01
 ;     (X=index)
-MNEML       .byte   $1c,$8a,$1c,$23,$5d,$8b,$1b,$a1,$9d,$8a,$1d,$23,$9d,$8b,$1d,$a1
-            .byte      $00,$29,$19,$ae,$69,$a8,$19,$23,$24,$53,$1b,$23,$24,$53,$19,$a1
-            .byte      $00,$1a,$5b,$5b,$a5,$69,$24,$24,$ae,$ae,$a8,$ad,$29,$00,$7c,$00
-            .byte      $15,$9c,$6d,$9c,$a5,$69,$29,$53,$84,$13,$34,$11,$a5,$69,$23,$a0
-MNEMR       .byte   $d8,$62,$5a,$48,$26,$62,$94,$88,$54,$44,$c8,$54,$68,$44,$e8,$94
-            .byte      $00,$b4,$08,$84,$74,$b4,$28,$6e,$74,$f4,$cc,$4a,$72,$f2,$a4,$8a
-            .byte      $00,$aa,$a2,$a2,$74,$74,$74,$72,$44,$68,$b2,$32,$b2,$00,$22,$00
-            .byte      $1a,$1a,$26,$26,$72,$72,$88,$c8,$c4,$ca,$26,$48,$44,$44,$a2,$c8
-            .byte      $ff,$ff,$ff
+MNEML       byte   $1c,$8a,$1c,$23,$5d,$8b,$1b,$a1,$9d,$8a,$1d,$23,$9d,$8b,$1d,$a1
+            byte      $00,$29,$19,$ae,$69,$a8,$19,$23,$24,$53,$1b,$23,$24,$53,$19,$a1
+            byte      $00,$1a,$5b,$5b,$a5,$69,$24,$24,$ae,$ae,$a8,$ad,$29,$00,$7c,$00
+            byte      $15,$9c,$6d,$9c,$a5,$69,$29,$53,$84,$13,$34,$11,$a5,$69,$23,$a0
+MNEMR       byte   $d8,$62,$5a,$48,$26,$62,$94,$88,$54,$44,$c8,$54,$68,$44,$e8,$94
+            byte      $00,$b4,$08,$84,$74,$b4,$28,$6e,$74,$f4,$cc,$4a,$72,$f2,$a4,$8a
+            byte      $00,$aa,$a2,$a2,$74,$74,$74,$72,$44,$68,$b2,$32,$b2,$00,$22,$00
+            byte      $1a,$1a,$26,$26,$72,$72,$88,$c8,$c4,$ca,$26,$48,$44,$44,$a2,$c8
+            byte      $ff,$ff,$ff
 
 STEP        jsr     INSTDSP         ;disassemble one inst
             pla                     ;  at (PCL,H)
@@ -479,7 +477,7 @@ INITBL      nop
 
             jmp     BRANCH
 
-            .text    "AXYPS"
+            abyte   +$80,"AXYPS"
 
 PREAD       lda     PTRIG           ;trigger paddles
             ldy     #$00            ;init count
@@ -1144,52 +1142,52 @@ ZMODE       ldy     #$00            ;clr mode, old mode
             sty     MODE            ;  to A-reg
             rts                     ;go to subr via RTS
 
-CHRTBL      .byte    $bc             ;F("Ctrl+C")
-            .byte    $b2             ;F("Ctrl+Y")
-            .byte    $be             ;F("Ctrl+E")
-            .byte    $ed             ;F("T")
-            .byte    $ef             ;F("V")
-            .byte    $c4             ;F("Ctrl+K")
-            .byte    $ec             ;F("S")
-            .byte    $a9             ;F("Ctrl+P")
-            .byte    $bb             ;F("Ctrl+B")
-            .byte    $a6             ;F("-")
-            .byte    $a4             ;F("+")
-            .byte    $06             ;F("M")  (F=EX-OR $B0+$89)
-            .byte    $95             ;F("<")
-            .byte    $07             ;F("N")
-            .byte    $02             ;F("I")
-            .byte    $05             ;F("L")
-            .byte    $f0             ;F("W")
-            .byte    $00             ;F("G")
-            .byte    $eb             ;G("R")
-            .byte    $93             ;F(":")
-            .byte    $a7             ;F(".")
-            .byte    $c6             ;F("CR")
-            .byte    $99             ;F(BLANK)
-SUBTBL      .byte    <BASCONT-1
-            .byte    <USR-1
-            .byte    <REGZ-1
-            .byte    <TRACE-1
-            .byte    <VFY-1
-            .byte    <INPRT-1
-            .byte    <STEPZ-1
-            .byte    <OUTPRT-1
-            .byte    <XBASIC-1
-            .byte    <SETMODE-1
-            .byte    <SETMODE-1
-            .byte    <MOVE-1
-            .byte    <LT-1
-            .byte    <SETNORM-1
-            .byte    <SETINV-1
-            .byte    <LIST-1
-            .byte    <WRITE-1
-            .byte    <GO-1
-            .byte    <READ-1
-            .byte    <SETMODE-1
-            .byte    <SETMODE-1
-            .byte    <CRMON-1
-            .byte    <BLANK-1
-            .word    NMI             ;NMI vector
-            .word    RESET           ;reset vector
-            .word    IRQ             ;IRQ vector
+CHRTBL      byte    $bc             ;F("Ctrl+C")
+            byte    $b2             ;F("Ctrl+Y")
+            byte    $be             ;F("Ctrl+E")
+            byte    $ed             ;F("T")
+            byte    $ef             ;F("V")
+            byte    $c4             ;F("Ctrl+K")
+            byte    $ec             ;F("S")
+            byte    $a9             ;F("Ctrl+P")
+            byte    $bb             ;F("Ctrl+B")
+            byte    $a6             ;F("-")
+            byte    $a4             ;F("+")
+            byte    $06             ;F("M")  (F=EX-OR $B0+$89)
+            byte    $95             ;F("<")
+            byte    $07             ;F("N")
+            byte    $02             ;F("I")
+            byte    $05             ;F("L")
+            byte    $f0             ;F("W")
+            byte    $00             ;F("G")
+            byte    $eb             ;G("R")
+            byte    $93             ;F(":")
+            byte    $a7             ;F(".")
+            byte    $c6             ;F("CR")
+            byte    $99             ;F(BLANK)
+SUBTBL      byte    <BASCONT-1
+            byte    <USR-1
+            byte    <REGZ-1
+            byte    <TRACE-1
+            byte    <VFY-1
+            byte    <INPRT-1
+            byte    <STEPZ-1
+            byte    <OUTPRT-1
+            byte    <XBASIC-1
+            byte    <SETMODE-1
+            byte    <SETMODE-1
+            byte    <MOVE-1
+            byte    <LT-1
+            byte    <SETNORM-1
+            byte    <SETINV-1
+            byte    <LIST-1
+            byte    <WRITE-1
+            byte    <GO-1
+            byte    <READ-1
+            byte    <SETMODE-1
+            byte    <SETMODE-1
+            byte    <CRMON-1
+            byte    <BLANK-1
+            word    NMI             ;NMI vector
+            word    RESET           ;reset vector
+            word    IRQ             ;IRQ vector
