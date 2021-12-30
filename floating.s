@@ -1,21 +1,21 @@
-***********************
-*
-* APPLE-II FLOATING
-*  POINT ROUTINES
-*
-* COPYRIGHT 1977 BY
-* APPLE COMPUTER INC.
-*
-* ALL RIGHTS RESERVED
-*     S. WOZNIAK
-*
-***********************
-SIGN EPZ $F3
-X2 EPZ $F4
-M2 EPZ $F5
-X1 EPZ $F8
-M1 EPZ $F9
-E EPZ $FC
+;**********************
+;
+; APPLE-II FLOATING
+;  POINT ROUTINES
+;
+; COPYRIGHT 1977 BY
+; APPLE COMPUTER INC.
+;
+; ALL RIGHTS RESERVED
+;     S. WOZNIAK
+;
+;**********************
+SIGN EQU $F3
+X2 EQU $F4
+M2 EQU $F5
+X1 EQU $F8
+M1 EQU $F9
+E EQU $FC
 OVLOC EQU $3F5
 
         ORG $F425
