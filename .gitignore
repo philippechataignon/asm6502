@@ -4,6 +4,7 @@
 *.lst
 *.hex
 *.rom
+*.asm
 add_test
 calc1
 calc2
