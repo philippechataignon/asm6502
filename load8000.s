@@ -2,7 +2,6 @@
 
 org	=	$280		; should be $9000
 cout	=	$FDED		; character out sub
-crout	=	$FD8E		; CR out sub
 prbyte	=	$FDDA 		; print byte in hex
 tapein	=	$C060		; read tape interface
 
@@ -67,18 +66,7 @@ endcode:
 	bcc	endcheck	; LSB didn't roll over to zero
 	inc	store+2		; did roll over to zero, inc MSB
 endcheck:			; check for match of expected length
-	;lda	endload
-	;cmp	store+1
-	;bne	error
-	;lda	endload+1
-	;cmp	store+2
-	;bne	error
-	jsr	ok
 sumcheck:
-	jsr	crout
-	lda	#<chkm
-	ldy	#>chkm
-	jsr	print
 	lda	#0
 	sta	pointer
 	lda	begload+1
@@ -127,6 +115,5 @@ print1:
 	bne	print1
 	rts
 
-chkm:	asciiz	"CHKSUM "
 okm:	asciiz	"OK"
-errm:	asciiz	"ERROR"
+errm:	asciiz	"ERR"
