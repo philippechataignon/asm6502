@@ -1,2 +1,3 @@
+#!/bin/sh
 cmp -l apple2.rom rom/intbasic.rom | nawk '{printf("%04x %02x %02x\n", $1 + 0xE000 - 1, strtonum(0$2), strtonum(0$3))}'
-cmp -l apple2plus.rom rom/apple2plus.rom | nawk '{printf("%04x %02x %02x\n", $1 + 0xE000 - 1, strtonum(0$2), strtonum(0$3))}'
+cmp -l apple2plus.rom rom/apple2plus.rom | nawk '{printf("%04x %02x %02x\n", $1 + 0xD000 - 1, strtonum(0$2), strtonum(0$3))}'
