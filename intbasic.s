@@ -19,10 +19,11 @@
 ; As noted in Paul R. Santa-Maria's article, there is no original assembly     *
 ; file for Integer BASIC.  The entire program was written out by hand.         *
 ;*******************************************************************************
-ETX             equ     $03        ;Ctrl+C
-CR              equ     $0d        ;carriage return
-BLANK           equ     $20        ;space
-DQT             equ     $22        ;double quote
+
+ETX             equ     $03               ;Ctrl+C
+CR              equ     $0d               ;carriage return
+BLANK           equ     $20               ;space
+DQT             equ     $22               ;double quote
 MON_WNDWDTH     equ     $21               ;width of scroll window
 MON_CH          equ     $24               ;cursor horizontal displacement
 MON_CV          equ     $25               ;cursor vertical displacement
@@ -34,47 +35,47 @@ MON_A1L         equ     $3c               ;general purpose
 MON_A1H         equ     $3d               ;general purpose
 MON_A2L         equ     $3e               ;general purpose
 MON_A2H         equ     $3f               ;general purpose
-LOMEM           equ     $4a       ;pointer to start of variables
-HIMEM           equ     $4c       ;pointer to end of program
+LOMEM           equ     $4a               ;pointer to start of variables
+HIMEM           equ     $4c               ;pointer to end of program
 MON_RNDL        equ     $4e               ;low byte of KEYIN "random" value
 MON_RNDH        equ     $4f               ;high byte of KEYIN "random" value
-NOUNSTKL        equ     $50       ;noun stack low bytes
+NOUNSTKL        equ     $50               ;noun stack low bytes
 SYNSTKH         equ     $58               ;syntax stack high byte
-NOUNSTKH        equ     $78      ;noun stack high bytes
-SYNSTKL         equ     $80      ;syntax stack low bytes
-NOUNSTKC        equ     $a0      ;noun stack counter
-TXTNDXSTK       equ     $a8      ;text index stack
+NOUNSTKH        equ     $78               ;noun stack high bytes
+SYNSTKL         equ     $80               ;syntax stack low bytes
+NOUNSTKC        equ     $a0               ;noun stack counter
+TXTNDXSTK       equ     $a8               ;text index stack
 TXTNDX          equ     $c8               ;text index val (OUTVAL)
 LEADBL          equ     $c9               ;leading blanks index (YTEMP)
-PP              equ     $ca       ;pointer to start of program
-PV              equ     $cc       ;pointer to end of vars
-ACC             equ     $ce       ;main accumulator
-SRCH            equ     $d0       ;pointer to search var table
-TOKNDXSTK       equ     $d1      ;token index stack
-SRCH2           equ     $d2       ;second var search pointer
+PP              equ     $ca               ;pointer to start of program
+PV              equ     $cc               ;pointer to end of vars
+ACC             equ     $ce               ;main accumulator
+SRCH            equ     $d0               ;pointer to search var table
+TOKNDXSTK       equ     $d1               ;token index stack
+SRCH2           equ     $d2               ;second var search pointer
 IFFLAG          equ     $d4               ;IF/THEN fail flag
 CRFLAG          equ     $d5               ;carriage return flag
 VERBNOW         equ     $d6               ;verb currently in use
 PRFLAG          equ     $d7               ;print it now flag
 XSAVE           equ     $d8               ;temp X-reg save
 RUNFLAG         equ     $d9               ;run mode flag
-AUX             equ     $da       ;aux counter
-PR              equ     $dc       ;current line value
-PX              equ     $e0       ;pointer to current verb
-P1              equ     $e2       ;aux pointer 1 (delete line ptr)
-P2              equ     $e4       ;aux pointer 2 (line num , next num, ...)
-P3              equ     $e6       ;aux pointer 3 (next ptr)
+AUX             equ     $da               ;aux counter
+PR              equ     $dc               ;current line value
+PX              equ     $e0               ;pointer to current verb
+P1              equ     $e2               ;aux pointer 1 (delete line ptr)
+P2              equ     $e4               ;aux pointer 2 (line num , next num, ...)
+P3              equ     $e6               ;aux pointer 3 (next ptr)
 TOKNDX          equ     $f1               ;token index val
-PCON            equ     $f2       ;continue pointer (PRDEC low/hi)
-AUTOINC         equ     $f4       ;auto line increment
-AUTOLN          equ     $f6       ;current auto line
+PCON            equ     $f2               ;continue pointer (PRDEC low/hi)
+AUTOINC         equ     $f4               ;auto line increment
+AUTOLN          equ     $f6               ;current auto line
 AUTOFLAG        equ     $f8               ;auto line mode flag ($ff=on)
 CHAR            equ     $f9               ;current char
 LEADZR          equ     $fa               ;leading zeroes index ($00,$a0,$b0)
 FORNDX          equ     $fb               ;FOR-NEXT loop index
 GOSUBNDX        equ     $fc               ;GOSUB index
 SYNSTKDX        equ     $fd               ;syntax stack index val
-SYNPAG          equ     $fe       ;pointer to syntax page
+SYNPAG          equ     $fe               ;pointer to syntax page
 STK_00          equ     $0100
 STK_10          equ     $0110
 STK_20          equ     $0120
@@ -89,7 +90,7 @@ STK_A0          equ     $01a0
 STK_B0          equ     $01b0
 STK_C0          equ     $01c0
 STK_D0          equ     $01d0
-IN              equ     $0200   ;input buffer
+IN              equ     $0200             ;input buffer
 KBD             equ     $c000             ;R last key pressed + 128
 KBDSTRB         equ     $c010             ;RW keyboard strobe
 MON_PLOT        equ     $f800             ;lo-res plot at X=Y-reg, Y=Acc
@@ -112,13 +113,14 @@ MON_READ        equ     $fefd             ;read data from cassette
 MON_BELL        equ     $ff3a             ;sound bell
 
                 org     $e000
+
 BASIC           jsr     COLD
 BASIC2          jmp     WARM
 
 SetPrompt       sta     MON_PROMPT
                 jmp     MON_COUT
 
-                byte    $60
+                rts
 
 LE00C           txa                       ;print a trailing blank?
                 and     #$20

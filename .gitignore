@@ -3,6 +3,7 @@
 *.bin
 *.lst
 *.hex
+*.rom
 add_test
 calc1
 calc2
