@@ -839,7 +839,7 @@ LE470           beq     RTS6
                 bcs     LE498
                 dex
                 bpl     LE47D
-                ldy     #<ErrMsg01        ;"TOO LONG"
+                ldy     #<ErrMsg04        ;"TOO MANY PARENS"
 ; BUG: above line should be ErrMsg04, "TOO MANY PARENS".  See Call-A.P.P.L.E.
 ; Mar 1983 p.114.
                 bpl     LE4A6             ;(always)
@@ -2737,7 +2737,7 @@ LF0AF           lda     ACC
 ;
 VLOMEM          jsr     GET16BIT
                 ldy     ACC
-                cpy     #PP
+                cpy     PP
 ; BUG: above line should be CPY PP
                 lda     ACC+1
                 sbc     PP+1
@@ -3043,8 +3043,8 @@ LF288           sta     STK_50,y
                 sta     STK_90,y
                 lda     STK_A0+1,y
                 sta     STK_A0,y
-                lda     STK_A0+1,y
-                sta     STK_A0,y
+                lda     STK_B0+1,y
+                sta     STK_B0,y
 ; BUG: above two lines should be:
 ;   LDA STK_B0+1,Y
 ;   STA STK_B0,Y
