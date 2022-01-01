@@ -1,5 +1,13 @@
             org     $280
 
+            ; Most reference books give the CRC-32 poly
+            ; as $04C11DB7. This is actually the same if
+            ; you write it in binary and read it right-
+            ; to-left instead of left-to-right. Doing it
+            ; this way means we won't have to explicitly
+            ; reverse things afterwards
+POLY        equ     $EDB88320
+
 CRC         equ     $EB
 START       equ     $FA         ; 2 bytes
 END         equ     $FC         ; 2 bytes
@@ -34,11 +42,11 @@ INIT
             jmp     .LOOP1
 .LASTPAGE
             iny
-            beq     .EXIT       ; last iter when CUR ends with $FF gives 0 -> EXIT
+            beq     EXIT       ; last iter when CUR ends with $FF gives 0 -> EXIT
             cpy     END         ; Y <= END ?
             bcc     .LOOP1      ; <
             beq     .LOOP1      ; =
-.EXIT
+EXIT
             ldy     #3          ; eor $FFFFFFFF for CRC at the end
 .COMPL      lda     CRC,Y
             eor     #$FF
@@ -79,16 +87,17 @@ MAKECRCTABLE:
             ror     CRC+1       ; hardware reasons). This is why we shift
             ror     CRC         ; right instead of left here.
             bcc     .NOADD      ; Do nothing if no overflow
-            eor     #$ED        ; else add CRC-32 polynomial $EDB88320
+                                ; else add CRC-32 reverse polynomial POLY
+            eor     #POLY >> 24
             pha                 ; Save high byte while we do others
             lda     CRC+2
-            eor     #$B8        ; Most reference books give the CRC-32 poly
-            sta     CRC+2       ; as $04C11DB7. This is actually the same if
-            lda     CRC+1       ; you write it in binary and read it right-
-            eor     #$83        ; to-left instead of left-to-right. Doing it
-            sta     CRC+1       ; this way means we won't have to explicitly
-            lda     CRC         ; reverse things afterwards.
-            eor     #$20
+            eor     #POLY >> 16 & $ff
+            sta     CRC+2
+            lda     CRC+1
+            eor     #POLY >> 8 & $ff
+            sta     CRC+1
+            lda     CRC
+            eor     #POLY & $ff
             sta     CRC
             pla                 ; Restore high byte
 .NOADD      dey
