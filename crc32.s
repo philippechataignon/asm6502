@@ -1,60 +1,58 @@
+            org     $280
+
 CRC         equ     $EB
-STARTL      equ     $FA
-STARTH      equ     $FB
-ENDL        equ     $FC
-ENDH        equ     $FD
-CURL        equ     $FE
-CURH        equ     $FF
+START       equ     $FA         ; 2 bytes
+END         equ     $FC         ; 2 bytes
+CUR         equ     $FE         ; 2 bytes
 COUT1       equ     $FDF0
-CRCT0       equ     $BC00      ; Four 256-byte tables
-CRCT1       equ     $BD00      ; (should be page-aligned for speed)
+CRCT0       equ     $BC00       ; Four 256-byte tables
+CRCT1       equ     $BD00       ; (should be page-aligned for speed)
 CRCT2       equ     $BE00
 CRCT3       equ     $BF00
 
-            org     $280
 INIT
             jsr     MAKECRCTABLE
-            ldy     STARTH      ; init CUR with START
-            sty     CURH
-            ldy     #$ff
+            ldy     START+1     ; init CUR high byte with START high byte
+            sty     CUR+1
+            ldy     #$ff        ; init CRC with $ffffffff
             sty     CRC
             sty     CRC+1
             sty     CRC+2
             sty     CRC+3
             iny                 ; Y = 0
-            sty     CURL
-            ldy     STARTL
-LOOP1
-            lda     (CURL),y
-            jsr     UPDCRC
-            ldx     CURH        ; is last page ?
-            cpx     ENDH        ; >= ?
-            bcs     LASTPAGE    ; yes -> LASTPAGE
+            sty     CUR         ; CUR = HH00
+            ldy     START
+.LOOP1
+            lda     (CUR),y     ; CUR = HH00 + Y
+            jsr     UPDCRC      ; update CRC
+            ldx     CUR+1       ; is last page ?
+            cpx     END+1       ; >= ?
+            bcs     .LASTPAGE   ; yes -> LASTPAGE
+            iny                 ; no, increment CURH,Y
+            bne     .LOOP1
+            inc     CUR+1
+            jmp     .LOOP1
+.LASTPAGE
             iny
-            bne     LOOP1
-            inc     CURH
-            jmp     LOOP1
-LASTPAGE
-            iny
-            beq     EXIT        ; last iter when CURL==$FF gives 0 -> EXIT
-            cpy     ENDL
-            bcc     LOOP1       ; <
-            beq     LOOP1       ; =
-EXIT
-            ldy     #3          ; eor $FFFFFFFF at the end
-COMPL       lda     CRC,Y
+            beq     .EXIT       ; last iter when CUR ends with $FF gives 0 -> EXIT
+            cpy     END         ; Y <= END ?
+            bcc     .LOOP1      ; <
+            beq     .LOOP1      ; =
+.EXIT
+            ldy     #3          ; eor $FFFFFFFF for CRC at the end
+.COMPL      lda     CRC,Y
             eor     #$FF
             sta     CRC,Y
-            jsr     COUTBYTE    ; and print
+            jsr     COUTBYTE    ; and display
             dey
-            bpl     COMPL
+            bpl     .COMPL
             rts
-COUT4
+COUTNIB                         ; output a nibble (0-F)
             ora     #$B0        ; convert to ASCII for number
             cmp     #$BA        ; >= BA (3A|80) -> not number but [A-F], need to add 6
-            bcc     .L1
+            bcc     .DIGIT
             adc     #$06
-.L1
+.DIGIT
             jsr     COUT1
             rts
 COUTBYTE
@@ -63,24 +61,24 @@ COUTBYTE
             lsr
             lsr
             lsr
-            jsr     COUT4       ; display high nibble
+            jsr     COUTNIB     ; display high nibble
             pla
             and     #$0F
-            jsr     COUT4       ; display low nibble
+            jsr     COUTNIB     ; display low nibble
             rts
 
 MAKECRCTABLE:
             ldx     #0          ; X counts from 0 to 255
-BYTELOOP    lda     #0          ; A contains the high byte of the CRC-32
+.BYTELOOP   lda     #0          ; A contains the high byte of the CRC-32
             sta     CRC+2       ; The other three bytes are in memory
             sta     CRC+1
             stx     CRC
             ldy     #8          ; Y counts bits in a byte
-BITLOOP     lsr                 ; The CRC-32 algorithm is similar to CRC-16
+.BITLOOP    lsr                 ; The CRC-32 algorithm is similar to CRC-16
             ror     CRC+2       ; except that it is reversed (originally for
             ror     CRC+1       ; hardware reasons). This is why we shift
             ror     CRC         ; right instead of left here.
-            bcc     NOADD       ; Do nothing if no overflow
+            bcc     .NOADD      ; Do nothing if no overflow
             eor     #$ED        ; else add CRC-32 polynomial $EDB88320
             pha                 ; Save high byte while we do others
             lda     CRC+2
@@ -93,8 +91,8 @@ BITLOOP     lsr                 ; The CRC-32 algorithm is similar to CRC-16
             eor     #$20
             sta     CRC
             pla                 ; Restore high byte
-NOADD       dey
-            bne     BITLOOP     ; Do next bit
+.NOADD      dey
+            bne     .BITLOOP    ; Do next bit
             sta     CRCT3,X     ; Save CRC into table, high to low bytes
             lda     CRC+2
             sta     CRCT2,X
@@ -103,7 +101,7 @@ NOADD       dey
             lda     CRC
             sta     CRCT0,X
             inx
-            bne     BYTELOOP    ; Do next byte
+            bne     .BYTELOOP    ; Do next byte
             rts
 
 UPDCRC:
