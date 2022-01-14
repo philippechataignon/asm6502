@@ -17,6 +17,7 @@ COUT1   equ $FDF0
 
         org $280
 
+print32
         lda num
         sta save
         lda num+1
@@ -26,7 +27,6 @@ COUT1   equ $FDF0
         lda num+3
         sta save+3
 
-print32
         ldy #36                 ; Offset to powers of ten
         sty flag                ; %00100100 bit7=0
 .Loop1

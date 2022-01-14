@@ -17,26 +17,32 @@ COUT1   equ $FDF0
 
         org $280
 
-print16s
-        lda num
-        sta save
-        lda num+1
-        sta save+1
+print32s
+        ldx #3
+.L0     lda num,x
+        sta save,x
+        dex
+        bpl .L0
+        lda num+3
         bpl .Positive
-        lda num                 ; eor #$ff 16 bits
+        ldx #3
+.L1     lda num,x
         eor #$ff
-        sta num
-        lda num+1
-        eor #$ff
-        sta num+1
+        sta num,x
+        dex
+        bpl .L1
         inc num
-        bne .L1
+        bne .L2
         inc num+1
-.L1     lda #'-'+$C0            ; '-' screen code
+        bne .L2
+        inc num+2
+        bne .L2
+        inc num+3
+.L2     lda #'-'+$C0            ; '-' screen code
         jsr COUT1
 .Positive
-        ldy #8                  ; Offset to powers of ten
-        sty flag                ; %00001000 bit7=0
+        ldy #36                 ; Offset to powers of ten
+        sty flag                ; %00100100 bit7=0
 .Loop1
         ldx #$FF
         sec                     ; Start with digit=-1
@@ -47,6 +53,12 @@ print16s
         lda num+1
         sbc .Tens+1,Y
         sta num+1
+        lda num+2
+        sbc .Tens+2,Y
+        sta num+2
+        lda num+3
+        sbc .Tens+3,Y
+        sta num+3
         inx
         bcs .Loop2              ; Loop until <0
         lda num+0
@@ -55,6 +67,12 @@ print16s
         lda num+1
         adc .Tens+1,Y
         sta num+1
+        lda num+2
+        adc .Tens+2,Y
+        sta num+2
+        lda num+3
+        adc .Tens+3,Y
+        sta num+3
         txa
         bne .Print              ; >0 -> print
         bit flag                ; bit 7 = N
@@ -66,17 +84,28 @@ print16s
 .Next
         dey
         dey
+        dey
+        dey
         bpl .Loop1              ; Loop for next digit
         lda save
         sta num
         lda save+1
         sta num+1
+        lda save+2
+        sta num+2
+        lda save+3
+        sta num+3
         rts
 
 
 .Tens
-        defw 1
-        defw 10
-        defw 100
-        defw 1000
-        defw 10000
+        defl 1
+        defl 10
+        defl 100
+        defl 1000
+        defl 10000
+        defl 100000
+        defl 1000000
+        defl 10000000
+        defl 100000000
+        defl 1000000000
