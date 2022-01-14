@@ -25,4 +25,4 @@ apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin 
 	cat intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin> apple2.rom
 
 clean:
-	-rm -f $(target_bin) $(target_hex)
+	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s))

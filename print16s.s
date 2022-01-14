@@ -17,12 +17,22 @@ COUT1   equ $FDF0
 
         org $280
 
-print16
+print16s
         lda num
         sta save
         lda num+1
         sta save+1
-
+        bpl .Positive
+        lda num+1
+        eor #$ff
+        sta num+1
+        lda num
+        eor #$ff
+        sta num
+        inc num
+        lda #'-'+$C0            ; '-' screen code
+        jsr COUT1
+.Positive
         ldy #8                  ; Offset to powers of ten
         sty flag                ; %00001000 bit7=0
 .Loop1
