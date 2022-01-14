@@ -1,55 +1,70 @@
 ; ---------------------------
-; Print 16-bit decimal number
+; Print 32-bit decimal number
 ; ---------------------------
 ; On entry, num=number to print
+;           pad=0 or pad character (eg '0' or ' ')
+; On entry at .Loop1,
+;           Y=(number of digits)*4-4, eg 36 for 10 digits
+; On exit,  A,X,Y,num,pad corrupted
+; Size      129 bytes
 ; -----------------------------------------------------------------
 
-num     EQU $FA
-save    EQU $EB
-COUT1   EQU $FDF0
 
-        ORG $280
+num     equ $FA
+flag    equ $FE
+save    equ $EB
+COUT1   equ $FDF0
 
-        LDA num
-        STA save
-        LDA num+1
-        STA save+1
-PrDec16
-        LDY #8                          ; Offset to powers of ten
-PrDec16Lp1
-        LDX #$FF
-        SEC                             ; Start with digit=-1
-PrDec16Lp2
-        LDA num
-        SBC PrDec16Tens,Y
-        STA num  ; Subtract current tens
-        LDA num+1
-        SBC PrDec16Tens+1,Y
-        STA num+1
-        INX
-        BCS PrDec16Lp2                       ; Loop until <0
-        LDA num
-        ADC PrDec16Tens,Y
-        STA num  ; Add current tens back in
-        LDA num+1
-        ADC PrDec16Tens+1,Y
-        STA num+1
-        TXA
-        ORA #$B0                              ; Print this digit
-        JSR COUT1
-        DEY
-        DEY
-        BPL PrDec16Lp1                   ; Loop for next digit
-        LDA save
-        STA num
-        LDA save+1
-        STA num+1
-        RTS
+        org $280
 
-PrDec16Tens
-        DEFW 1
-        DEFW 10
-        DEFW 100
-        DEFW 1000
-        DEFW 10000
-; -----------------------------------------------------------------
+        lda num
+        sta save
+        lda num+1
+        sta save+1
+
+print32
+        ldy #8                  ; Offset to powers of ten
+        sty flag                ; %00001000 bit7=0
+.Loop1
+        ldx #$FF
+        sec                     ; Start with digit=-1
+.Loop2
+        lda num+0
+        sbc .Tens+0,Y
+        sta num+0               ; Subtract current tens
+        lda num+1
+        sbc .Tens+1,Y
+        sta num+1
+        inx
+        bcs .Loop2              ; Loop until <0
+        lda num+0
+        adc .Tens+0,Y
+        sta num+0               ; Add current tens back in
+        lda num+1
+        adc .Tens+1,Y
+        sta num+1
+        txa
+        bne .Print              ; >0 -> print
+        bit flag                ; bit 7 = N
+        bpl .Next               ; if N==0 -> initial 0
+.Print
+        ora #$B0                ; Print this digit
+        sta flag                ; B0 = 10110000 -> bit7=1
+        jsr COUT1
+.Next
+        dey
+        dey
+        bpl .Loop1              ; Loop for next digit
+        lda save
+        sta num
+        lda save+1
+        sta num+1
+        rts
+
+
+.Tens
+        defw 1
+        defw 10
+        defw 100
+        defw 1000
+        defw 10000
