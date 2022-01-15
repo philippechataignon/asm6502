@@ -27,7 +27,7 @@ Save
         sta save,x
         dex
         bpl .L0
-        bit flag                ; test bit 6 = S
+        bit flag                ; test bit 7 = S
         bpl .Unsigned           ; bpl -> N = bit7 = S = 0
         ldx temp
         lda num,x               ; high order byte
@@ -66,12 +66,12 @@ print8
         sec                     ; Start with digit=-1
 .Loop2
         lda num
-        sbc TensB,Y
+        sbc Tens0,Y
         sta num                 ; Subtract current tens
         inx
         bcs .Loop2              ; Loop until <0
         lda num
-        adc TensB,Y
+        adc Tens0,Y
         sta num                 ; Add current tens back in
         txa
         bne .Print              ; >0 -> print
@@ -90,18 +90,18 @@ print16
         sec                     ; Start with digit=-1
 .Loop2
         lda num
-        sbc TensW,Y
+        sbc Tens0,Y
         sta num                 ; Subtract current tens
         lda num+1
-        sbc TensW+1,Y
+        sbc Tens1,Y
         sta num+1
         inx
         bcs .Loop2              ; Loop until <0
         lda num
-        adc TensW,Y
+        adc Tens0,Y
         sta num                 ; Add current tens back in
         lda num+1
-        adc TensW+1,Y
+        adc Tens1,Y
         sta num+1
         txa
         bne .Print              ; >0 -> print
@@ -110,7 +110,6 @@ print16
 .Print
         jsr PrXDigit            ; Print this digit
 .Next
-        dey
         dey
         bpl .Loop1              ; Loop for next digit
         jmp Restore
@@ -121,30 +120,30 @@ print32
         sec                     ; Start with digit=-1
 .Loop2
         lda num
-        sbc TensL,Y
+        sbc Tens0,Y
         sta num                 ; Subtract current tens
         lda num+1
-        sbc TensL+1,Y
+        sbc Tens1,Y
         sta num+1
         lda num+2
-        sbc TensL+2,Y
+        sbc Tens2,Y
         sta num+2
         lda num+3
-        sbc TensL+3,Y
+        sbc Tens3,Y
         sta num+3
         inx
         bcs .Loop2              ; Loop until <0
         lda num
-        adc TensL,Y
+        adc Tens0,Y
         sta num                 ; Add current tens back in
         lda num+1
-        adc TensL+1,Y
+        adc Tens1,Y
         sta num+1
         lda num+2
-        adc TensL+2,Y
+        adc Tens2,Y
         sta num+2
         lda num+3
-        adc TensL+3,Y
+        adc Tens3,Y
         sta num+3
         txa
         bne .Print              ; >0 -> print
@@ -153,9 +152,6 @@ print32
 .Print
         jsr PrXDigit            ; Print this digit
 .Next
-        dey
-        dey
-        dey
         dey
         bpl .Loop1              ; Loop for next digit
 Restore
@@ -175,28 +171,45 @@ PrXDigit                        ; output digit in X
         sta flag
         rts                     ; Restore A and return
 
-TensB
-        defb 1
-        defb 10
-        defb 100
+Tens0   defb 1 & $ff
+        defb 10 & $ff
+        defb 100 & $ff
+        defb 1000 & $ff
+        defb 10000 & $ff
+        defb 100000 & $ff
+        defb 1000000 & $ff
+        defb 10000000 & $ff
+        defb 100000000 & $ff
+        defb 1000000000 & $ff
+Tens1   defb 1 >> 8 & $ff
+        defb 10 >> 8 & $ff
+        defb 100 >> 8 & $ff
+        defb 1000 >> 8 & $ff
+        defb 10000 >> 8 & $ff
+        defb 100000 >> 8 & $ff
+        defb 1000000 >> 8 & $ff
+        defb 10000000 >> 8 & $ff
+        defb 100000000 >> 8 & $ff
+        defb 1000000000 >> 8 & $ff
+Tens2   defb 1 >> 16 & $ff
+        defb 10 >> 16 & $ff
+        defb 100 >> 16 & $ff
+        defb 1000 >> 16 & $ff
+        defb 10000 >> 16 & $ff
+        defb 100000 >> 16 & $ff
+        defb 1000000 >> 16 & $ff
+        defb 10000000 >> 16 & $ff
+        defb 100000000 >> 16 & $ff
+        defb 1000000000 >> 16 & $ff
+Tens3   defb 1 >> 24 & $ff
+        defb 10 >> 24 & $ff
+        defb 100 >> 24 & $ff
+        defb 1000 >> 24 & $ff
+        defb 10000 >> 24 & $ff
+        defb 100000 >> 24 & $ff
+        defb 1000000 >> 24 & $ff
+        defb 10000000 >> 24 & $ff
+        defb 100000000 >> 24 & $ff
+        defb 1000000000 >> 24 & $ff
 
-TensW
-        defw 1
-        defw 10
-        defw 100
-        defw 1000
-        defw 10000
-
-TensL
-        defl 1
-        defl 10
-        defl 100
-        defl 1000
-        defl 10000
-        defl 100000
-        defl 1000000
-        defl 10000000
-        defl 100000000
-        defl 1000000000
-
-NbLoop defb 2,8,0,36
+NbLoop defb 2,4,0,9
