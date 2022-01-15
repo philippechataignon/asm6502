@@ -2,7 +2,7 @@
 ; Print 8-16-32-bit decimal number
 ; ---------------------------
 ; On entry, num=number to print
-; flag = |0|S| | | |32|16|8|
+; flag = |S|P| | | |32|16|8|
 ; -----------------------------------------------------------------
 
 
@@ -15,7 +15,9 @@ COUT1   equ $FDF0
         org $BE00
 
 printnum
-        lda flag
+        lda flag                ; set P bit to 0
+        and #%10111111
+        sta flag
         and #%00000111          ; get 8/16/32 bits (1/2/4)
         tax
         dex
@@ -26,7 +28,7 @@ Save
         dex
         bpl .L0
         bit flag                ; test bit 6 = S
-        bvc .Unsigned           ; unsigned
+        bpl .Unsigned           ; bpl -> N = bit7 = S = 0
         ldx temp
         lda num,x               ; high order byte
         bpl .Unsigned           ; with bit7 = 0 -> unsigned
@@ -46,7 +48,7 @@ Save
         jsr COUT1
 .Unsigned
         ldx temp
-        ldy NbLoop,X           ; Offset to nb loop
+        ldy NbLoop,X            ; Offset to nb loop
         lda #%00000001
         bit flag
         bne print8
@@ -63,18 +65,18 @@ print8
         ldx #$FF
         sec                     ; Start with digit=-1
 .Loop2
-        lda num+0
-        sbc TensB+0,Y
-        sta num+0               ; Subtract current tens
+        lda num
+        sbc TensB,Y
+        sta num                 ; Subtract current tens
         inx
         bcs .Loop2              ; Loop until <0
-        lda num+0
-        adc TensB+0,Y
-        sta num+0               ; Add current tens back in
+        lda num
+        adc TensB,Y
+        sta num                 ; Add current tens back in
         txa
         bne .Print              ; >0 -> print
         bit flag                ; bit 7 = N
-        bpl .Next               ; if N==0 -> initial 0
+        bvc .Next               ; if V==0 -> initial 0
 .Print
         jsr PrXDigit            ; Print this digit
 .Next
@@ -87,24 +89,24 @@ print16
         ldx #$FF
         sec                     ; Start with digit=-1
 .Loop2
-        lda num+0
-        sbc TensW+0,Y
-        sta num+0               ; Subtract current tens
+        lda num
+        sbc TensW,Y
+        sta num                 ; Subtract current tens
         lda num+1
         sbc TensW+1,Y
         sta num+1
         inx
         bcs .Loop2              ; Loop until <0
-        lda num+0
-        adc TensW+0,Y
-        sta num+0               ; Add current tens back in
+        lda num
+        adc TensW,Y
+        sta num                 ; Add current tens back in
         lda num+1
         adc TensW+1,Y
         sta num+1
         txa
         bne .Print              ; >0 -> print
         bit flag                ; bit 7 = N
-        bpl .Next               ; if N==0 -> initial 0
+        bvc .Next               ; if V==0 -> initial 0
 .Print
         jsr PrXDigit            ; Print this digit
 .Next
@@ -118,9 +120,9 @@ print32
         ldx #$FF
         sec                     ; Start with digit=-1
 .Loop2
-        lda num+0
-        sbc TensL+0,Y
-        sta num+0               ; Subtract current tens
+        lda num
+        sbc TensL,Y
+        sta num                 ; Subtract current tens
         lda num+1
         sbc TensL+1,Y
         sta num+1
@@ -132,9 +134,9 @@ print32
         sta num+3
         inx
         bcs .Loop2              ; Loop until <0
-        lda num+0
-        adc TensL+0,Y
-        sta num+0               ; Add current tens back in
+        lda num
+        adc TensL,Y
+        sta num                 ; Add current tens back in
         lda num+1
         adc TensL+1,Y
         sta num+1
@@ -147,7 +149,7 @@ print32
         txa
         bne .Print              ; >0 -> print
         bit flag                ; bit 7 = N
-        bpl .Next               ; if N==0 -> initial 0
+        bvc .Next               ; if V==0 -> initial 0
 .Print
         jsr PrXDigit            ; Print this digit
 .Next
@@ -164,16 +166,14 @@ Restore
         bpl .L0
         rts
 
-PrXDigit                  ; output digit in X
-        TXA               ; Save A, pass digit to A
-        ORA #$B0          ; convert to ASCII for number
-        JSR COUT1         ; Print it
-        LDA flag          ; set P bit to 1
-        ORA #%10000000
-        STA flag
-        RTS               ; Restore A and return
-
-Fill    defb 0
+PrXDigit                        ; output digit in X
+        txa                     ; Save A, pass digit to A
+        ora #$B0                ; convert to ASCII for number
+        jsr COUT1               ; Print it
+        lda flag                ; set P bit to 1
+        ora #%01000000
+        sta flag
+        rts                     ; Restore A and return
 
 TensB
         defb 1
