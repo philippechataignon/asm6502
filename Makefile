@@ -15,8 +15,8 @@ OPT=
 target_hex = $(patsubst %.s,%.hex,$(wildcard *.s)) $(patsubst %.S,%.hex,$(wildcard *.S))
 target_bin = $(patsubst %.s,%.bin,$(wildcard *.s)) $(patsubst %.S,%.bin,$(wildcard *.S))
 
-all:	$(target_bin) apple2.rom apple2plus.rom
-hex:	$(target_hex)
+all:	$(target_hex) apple2.rom apple2plus.rom
+bin:	$(target_bin)
 
 apple2plus.rom: applesoft.bin mon2.bin
 	cat applesoft.bin mon2.bin > apple2plus.rom
