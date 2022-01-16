@@ -115,8 +115,7 @@ POWER3      defb 1 >> 24 & $ff
             defb 100000000 >> 24 & $ff
             defb 1000000000 >> 24 & $ff
 
-
-            align 8
+            org $BE00
 
 PRINTNUM
             lda FLAG                ; set P bit to 0

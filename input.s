@@ -7,7 +7,7 @@ IOADR       equ $C000
 KBDSTRB     equ $C010
 COUT1       equ $FDF0
 
-            org $900
+            org $BD00
 
             ldx #$0
 .L1         dex                 ; $FF at first iteration

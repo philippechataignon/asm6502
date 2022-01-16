@@ -1,7 +1,7 @@
 OPT=
 
 %.bin: %.s
-	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fbin -o "$@" "$<"
+	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fbin  -o "$@" "$<"
 
 %.hex: %.s
 	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fihex -o "$@" "$<"
@@ -16,8 +16,9 @@ OPT=
 target_hex = $(patsubst %.s,%.hex,$(wildcard *.s)) $(patsubst %.S,%.hex,$(wildcard *.S))
 target_bin = $(patsubst %.s,%.bin,$(wildcard *.s)) $(patsubst %.S,%.bin,$(wildcard *.S))
 
-all:	$(target_hex) apple2.rom apple2plus.rom
+all:	hex bin apple2.rom apple2plus.rom
 bin:	$(target_bin)
+hex:	$(target_hex)
 
 apple2plus.rom: applesoft.bin mon2.bin
 	cat applesoft.bin mon2.bin > apple2plus.rom
