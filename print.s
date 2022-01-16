@@ -1,177 +1,177 @@
 ; ---------------------------
-; Print 8-16-32-bit decimal number
+; Print 8-16-32-bit decimal NUMber
 ; ---------------------------
-; On entry, num=number to print
-; flag = |S|P| | | |32|16|8|
+; On entry, NUM=number to print
+; FLAG = |S|P| | | |32|16|8|
 ; -----------------------------------------------------------------
 
 
-num     equ $FA
-flag    equ $FE
-save    equ $EB
-temp    equ $EF
+NUM     equ $FA
+FLAG    equ $FE
+SAVE    equ $EB
+TEMP    equ $EF
 COUT1   equ $FDF0
 
         org $BE00
 
-printnum
-        lda flag                ; set P bit to 0
+PRINTNUM
+        lda FLAG                ; set P bit to 0
         and #%10111111
-        sta flag
+        sta FLAG
         and #%00000111          ; get 8/16/32 bits (1/2/4)
         tax
         dex
-        stx temp                ; 0,1,3 for 8/16/32 bits
-Save
-.L0     lda num,x
-        sta save,x
+        stx TEMP                ; 0,1,3 for 8/16/32 bits
+
+.L0     lda NUM,X               ; saves NUM in SAVE
+        sta SAVE,X
         dex
         bpl .L0
-        bit flag                ; test bit 7 = S
-        bpl .Unsigned           ; bpl -> N = bit7 = S = 0
-        ldx temp
-        lda num,x               ; high order byte
-        bpl .Unsigned           ; with bit7 = 0 -> unsigned
-.L1     lda num,x               ; negate x and output '-'
+        bit FLAG                ; test bit 7 = S
+        bpl .L3                 ; bpl -> N = bit7 = S = 0
+        ldx TEMP
+        lda NUM,X               ; high order byte
+        bpl .L3                 ; with bit7 = 0 -> unsigned
+.L1     lda NUM,X               ; negate x and output '-'
         eor #$ff
-        sta num,x
+        sta NUM,X
         dex
         bpl .L1
-        inc num
+        inc NUM
         bne .L2
-        inc num+1
+        inc NUM+1
         bne .L2
-        inc num+2
+        inc NUM+2
         bne .L2
-        inc num+3
+        inc NUM+3
 .L2     lda #'-'+$C0            ; '-' screen code
         jsr COUT1
-.Unsigned
-        ldx temp
+.L3
+        ldx TEMP
         ldy NbLoop,X            ; Offset to nb loop
         lda #%00000001
-        bit flag
-        bne print8
+        bit FLAG
+        bne PRINT8
         lda #%00000010
-        bit flag
-        bne print16
+        bit FLAG
+        bne PRINT16
         lda #%00000100
-        bit flag
-        bne print32
-        jmp Restore
+        bit FLAG
+        bne PRINT32
+        jmp RESTORE
 
-print8
-.Loop1
+PRINT8
+.L1
         ldx #$FF
         sec                     ; Start with digit=-1
-.Loop2
-        lda num
-        sbc Tens0,Y
-        sta num                 ; Subtract current tens
+.L2
+        lda NUM
+        sbc POWER0,Y
+        sta NUM                 ; Subtract current tens
         inx
-        bcs .Loop2              ; Loop until <0
-        lda num
-        adc Tens0,Y
-        sta num                 ; Add current tens back in
+        bcs .L2                 ; Loop until <0
+        lda NUM
+        adc POWER0,Y
+        sta NUM                 ; Add current tens back in
         txa
-        bne .Print              ; >0 -> print
-        bit flag                ; bit 7 = N
-        bvc .Next               ; if V==0 -> initial 0
-.Print
-        jsr PrXDigit            ; Print this digit
-.Next
+        bne .L3                 ; >0 -> print
+        bit FLAG                ; bit 7 = N
+        bvc .L4                 ; if V==0 -> initial 0
+.L3
+        jsr PRXDIGIT            ; Print this digit
+.L4
         dey
-        bpl .Loop1              ; Loop for next digit
-        jmp Restore
+        bpl .L1                 ; Loop for next digit
+        jmp RESTORE
 
-print16
-.Loop1
+PRINT16
+.L1
         ldx #$FF
         sec                     ; Start with digit=-1
-.Loop2
-        lda num
-        sbc Tens0,Y
-        sta num                 ; Subtract current tens
-        lda num+1
-        sbc Tens1,Y
-        sta num+1
+.L2
+        lda NUM
+        sbc POWER0,Y
+        sta NUM                 ; Subtract current tens
+        lda NUM+1
+        sbc POWER1,Y
+        sta NUM+1
         inx
-        bcs .Loop2              ; Loop until <0
-        lda num
-        adc Tens0,Y
-        sta num                 ; Add current tens back in
-        lda num+1
-        adc Tens1,Y
-        sta num+1
+        bcs .L2                 ; Loop until <0
+        lda NUM
+        adc POWER0,Y
+        sta NUM                 ; Add current tens back in
+        lda NUM+1
+        adc POWER1,Y
+        sta NUM+1
         txa
-        bne .Print              ; >0 -> print
-        bit flag                ; bit 7 = N
-        bvc .Next               ; if V==0 -> initial 0
-.Print
-        jsr PrXDigit            ; Print this digit
-.Next
+        bne .L3                 ; >0 -> print
+        bit FLAG                ; bit 7 = N
+        bvc .L4                 ; if V==0 -> initial 0
+.L3
+        jsr PRXDIGIT            ; Print this digit
+.L4
         dey
-        bpl .Loop1              ; Loop for next digit
-        jmp Restore
+        bpl .L1                 ; Loop for next digit
+        jmp RESTORE
 
-print32
-.Loop1
+PRINT32
+.L1
         ldx #$FF
         sec                     ; Start with digit=-1
-.Loop2
-        lda num
-        sbc Tens0,Y
-        sta num                 ; Subtract current tens
-        lda num+1
-        sbc Tens1,Y
-        sta num+1
-        lda num+2
-        sbc Tens2,Y
-        sta num+2
-        lda num+3
-        sbc Tens3,Y
-        sta num+3
+.L2
+        lda NUM
+        sbc POWER0,Y
+        sta NUM                 ; Subtract current tens
+        lda NUM+1
+        sbc POWER1,Y
+        sta NUM+1
+        lda NUM+2
+        sbc POWER2,Y
+        sta NUM+2
+        lda NUM+3
+        sbc POWER3,Y
+        sta NUM+3
         inx
-        bcs .Loop2              ; Loop until <0
-        lda num
-        adc Tens0,Y
-        sta num                 ; Add current tens back in
-        lda num+1
-        adc Tens1,Y
-        sta num+1
-        lda num+2
-        adc Tens2,Y
-        sta num+2
-        lda num+3
-        adc Tens3,Y
-        sta num+3
+        bcs .L2                 ; Loop until <0
+        lda NUM
+        adc POWER0,Y
+        sta NUM                 ; Add current tens back in
+        lda NUM+1
+        adc POWER1,Y
+        sta NUM+1
+        lda NUM+2
+        adc POWER2,Y
+        sta NUM+2
+        lda NUM+3
+        adc POWER3,Y
+        sta NUM+3
         txa
-        bne .Print              ; >0 -> print
-        bit flag                ; bit 7 = N
-        bvc .Next               ; if V==0 -> initial 0
-.Print
-        jsr PrXDigit            ; Print this digit
-.Next
+        bne .L3                 ; >0 -> print
+        bit FLAG                ; bit 7 = N
+        bvc .L4                 ; if V==0 -> initial 0
+.L3
+        jsr PRXDIGIT            ; Print this digit
+.L4
         dey
-        bpl .Loop1              ; Loop for next digit
-Restore
-        ldx temp
-.L0     lda save,x
-        sta num,x
+        bpl .L1                 ; Loop for next digit
+RESTORE
+        ldx TEMP
+.L0     lda SAVE,X
+        sta NUM,X
         dex
         bpl .L0
         rts
 
-PrXDigit                        ; output digit in X
+PRXDIGIT                        ; output digit in X
         txa                     ; Save A, pass digit to A
-        ora #$B0                ; convert to ASCII for number
+        ora #$B0                ; convert to ASCII for NUMber
         jsr COUT1               ; Print it
-        lda flag                ; set P bit to 1
+        lda FLAG                ; set P bit to 1
         ora #%01000000
-        sta flag
+        sta FLAG
         rts                     ; Restore A and return
 
-Tens0   defb 1 & $ff
+POWER0  defb 1 & $ff
         defb 10 & $ff
         defb 100 & $ff
         defb 1000 & $ff
@@ -181,7 +181,7 @@ Tens0   defb 1 & $ff
         defb 10000000 & $ff
         defb 100000000 & $ff
         defb 1000000000 & $ff
-Tens1   defb 1 >> 8 & $ff
+POWER1  defb 1 >> 8 & $ff
         defb 10 >> 8 & $ff
         defb 100 >> 8 & $ff
         defb 1000 >> 8 & $ff
@@ -191,7 +191,7 @@ Tens1   defb 1 >> 8 & $ff
         defb 10000000 >> 8 & $ff
         defb 100000000 >> 8 & $ff
         defb 1000000000 >> 8 & $ff
-Tens2   defb 1 >> 16 & $ff
+POWER2  defb 1 >> 16 & $ff
         defb 10 >> 16 & $ff
         defb 100 >> 16 & $ff
         defb 1000 >> 16 & $ff
@@ -201,7 +201,7 @@ Tens2   defb 1 >> 16 & $ff
         defb 10000000 >> 16 & $ff
         defb 100000000 >> 16 & $ff
         defb 1000000000 >> 16 & $ff
-Tens3   defb 1 >> 24 & $ff
+POWER3  defb 1 >> 24 & $ff
         defb 10 >> 24 & $ff
         defb 100 >> 24 & $ff
         defb 1000 >> 24 & $ff
