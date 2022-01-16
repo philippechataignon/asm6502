@@ -60,7 +60,8 @@ EXIT        inx                 ; X = unit digit ptr
             dex
             jmp .M1             ; next add iteration
 .M2         iny
-            bne .M0             ; next digit/char
+            cpy #10             ; max 9 loops
+            bcc .M0             ; next digit/char
             rts
 
 POWER0      defb 1 & $ff
