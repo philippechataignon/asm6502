@@ -4,13 +4,14 @@ OPT=
 	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fbin -o "$@" "$<"
 
 %.hex: %.s
-	vasm6502_oldstyle $(OPT) -L $(<:.s=.lst) -Fihex -o "$@" "$<"
+	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fihex -o "$@" "$<"
 
 %.bin: %.S
-	vasm6502_oldstyle $(OPT) -quiet -L $(<:.S=.lst) -dotdir -Fbin -o "$@" "$<"
+	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fbin  -dotdir -o "$@" "$<"
 
 %.hex: %.S
-	vasm6502_oldstyle $(OPT) -L $(<:.S=.lst) -dotdir -Fihex -o "$@" "$<"
+	vasm6502_oldstyle $(OPT) -maxerrors=50 -quiet -L $(<:.s=.lst) -Fihex -dotdir -o "$@" "$<"
+
 
 target_hex = $(patsubst %.s,%.hex,$(wildcard *.s)) $(patsubst %.S,%.hex,$(wildcard *.S))
 target_bin = $(patsubst %.s,%.bin,$(wildcard *.s)) $(patsubst %.S,%.bin,$(wildcard *.S))
