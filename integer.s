@@ -5,14 +5,14 @@
 ; -----------------------------------------------------------------
 
 
-NUM         equ $FA
-FLAG        equ $FE
-SAVE        equ $EB
-TEMP        equ $EF
+NUM         equ $FA             ; 4 bytes
+FLAG        equ $FE             ; 1 byte
+SAVE        equ $EB             ; 4 bytes
+PTR         equ $EB             ; 2 bytes
+TEMP        equ $EF             ; 1 byte
+
 CH          equ $24
 BASL        equ $28
-PTR         equ $EB             ; 2 bytes
-RES         equ $FA             ; 4 bytes
 BUFF        equ $200
 IOADR       equ $C000
 KBDSTRB     equ $C010
@@ -43,36 +43,39 @@ INPUTNUM
             sta BUFF,X          ; else store in BUFF
             jsr COUT1
             jmp .L1
-EXIT        inx                 ; X = unit digit ptr
+EXIT        txa                 ; copy X to A to compute nb digits in Y
+            eor #$FF            ; inverse all bits
+            sta TEMP
+            inx                 ; X = ptr to last digit (= unity)
             stx PTR             ; PTR -> last char
             lda #>BUFF          ; init high PTR with high BUFF
             sta PTR+1           ;
             ldy #0              ; Y = digit/char counter
-            sty RES             ; init sum
-            sty RES+1
-            sty RES+2
-            sty RES+3
+            sty NUM             ; init sum
+            sty NUM+1
+            sty NUM+2
+            sty NUM+3
 .M0         lda (PTR),Y         ; get char (PTR is fixed)
             and #$0F            ; keep low nibble
             tax                 ; X = index loop
             clc
-.M1         beq .M2             ; if X > 0, add POWER to RES (32 bits)
-            lda RES
+.M1         beq .M2             ; if X > 0, add POWER to NUM (32 bits)
+            lda NUM
             adc POWER0,Y
-            sta RES
-            lda RES+1
+            sta NUM
+            lda NUM+1
             adc POWER1,Y
-            sta RES+1
-            lda RES+2
+            sta NUM+1
+            lda NUM+2
             adc POWER2,Y
-            sta RES+2
-            lda RES+3
+            sta NUM+2
+            lda NUM+3
             adc POWER3,Y
-            sta RES+3
+            sta NUM+3
             dex
             jmp .M1             ; next add iteration
 .M2         iny
-            cpy #10             ; max 9 loops
+            cpy TEMP
             bcc .M0             ; next digit/char
             rts
 
