@@ -26,10 +26,10 @@ apple2plus.rom: applesoft.bin mon2.bin
 apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin
 	cat intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin> apple2.rom
 
-input.bin: input.s input_vars.inc input.inc
-input.hex: input.s input_vars.inc input.inc
-integer.bin: integer.s input_vars.inc input.inc
-integer.hex: integer.s input_vars.inc input.inc
+input.bin: input.s input_vars.asm input.asm
+input.hex: input.s input_vars.asm input.asm
+integer.bin: integer.s input_vars.asm input.asm
+integer.hex: integer.s input_vars.asm input.asm
 
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s))

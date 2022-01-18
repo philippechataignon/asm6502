@@ -1,3 +1,4 @@
+
 INPUTNUM
             ldx #$0
 .L1         dex                 ; $FF at first iteration

@@ -1,5 +1,5 @@
             org $900
-            include "input_vars.inc"
-            include "input.inc"
-            include "input_const.inc"
+            include "input_vars.asm"
+            include "input.asm"
+            include "input_const.asm"
 

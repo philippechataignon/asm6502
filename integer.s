@@ -1,6 +1,6 @@
-            include "input_vars.inc"
-            org $BD00
-            include "input.inc"
-            include "input_const.inc"
-            org $BE00
-            include "print.inc"
+            include "input_vars.asm"
+            inc $BD00
+            include "input.asm"
+            include "input_const.asm"
+            inc $BE00
+            include "print.asm"
