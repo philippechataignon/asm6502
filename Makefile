@@ -28,8 +28,10 @@ apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin 
 
 input.bin: input.s input_vars.asm input.asm
 input.hex: input.s input_vars.asm input.asm
-integer.bin: integer.s input_vars.asm input.asm
-integer.hex: integer.s input_vars.asm input.asm
+print.bin: print.s input_vars.asm print.asm
+print.hex: print.s input_vars.asm print.asm
+integer.bin: integer.s input_vars.asm input.asm print.asm
+integer.hex: integer.s input_vars.asm input.asm print.asm
 
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s))
