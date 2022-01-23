@@ -1,119 +1,120 @@
-;diskload8000.s
+            org $260
 
-org	=	$280		; should be $9000
-cout	=	$FDED		; character out sub
-prbyte	=	$FDDA 		; print byte in hex
-tapein	=	$C060		; read tape interface
+cout        equ $FDED           ; character out sub
+prbyte      equ $FDDA           ; print byte in hex
+tapein      equ $C060           ; read tape interface
 
 ; zero page parameters
 
-begload	=	$FA		; begin load location LSB/MSB
-endload	=	$FC		; end load location LSB/MSB
-chksum	=	$FE		; checksum location
-pointer	=	$EB		; LSB/MSB pointer
+begload     equ $FA             ; begin load location LSB/MSB
+endload     equ $FC             ; end load location LSB/MSB
+chksum      equ $FE             ; checksum location
+pointer     equ $EB             ; LSB/MSB pointer
 
-	org	org		
 readtape:
-	lda	begload		; load begin LSB location
-	sta	store+1		; store it
-	lda	begload+1	; load begin MSB location
-	sta	store+2		; store it
+            lda begload         ; load begin LSB location
+            sta store+1         ; store it for automodified location
+            lda begload+1       ; load begin MSB location
+            sta store+2         ; store it for automodified location
 
-	ldx	#0		; set X to 0
-	lda	#1		; set A to 0
+            ldx #0              ; X is used in ROL instr at store:
 
 nsync:
-    bit	tapein		; 4 cycles, sync bit ; first pulse
-	bpl	nsync		; 2 + 1 cycles
+            bit tapein          ; wait for high level
+            bpl nsync
 
+main0:
+            lda #1              ; A = bit counter
 main:
-    ldy	#0		; 2 set Y to 0
+            ldy #0              ; Y = #cycles at low level after high
 
 psync:
-    bit	tapein		;
-	bmi	psync
+            bit tapein          ; wait loop for low level
+            bmi psync
 
 ploop:
-    iny			; 2 cycles
-	bit	tapein		; 4 cycles
-	bpl	ploop		; 2 +1 if branch, +1 if in another page
-				; total ~9 cycles
+            iny                 ; 2 cycles
+            bit tapein          ; 4 cycles
+            bpl ploop           ; high level found, Y gets #cycles at low level
+                                ; 2 +1 if branch, +1 if in another page
 
-	cpy	#$40		; 2 cycles if Y - $40 > 0 endcode (770Hz)
-	bpl	endcode		; 2(3)
+                                ; total ~9 cycles
 
-	cpy	#$15		; 2 cycles if Y - $15 > 0 main (2000Hz)
-	bpl	main		; 2(3)
+            cpy #64             ; 2 cycles if Y >= 64 endcode (770Hz)
+            bge endcode         ; 2(3)
 
-	cpy	#$07		; 2, if Y<, then clear carry, if Y>= set carry
-store:
-    rol	store+1,x	; 7, roll carry bit into store
-	ldy	#0		; 2
-	asl			; 2 A*=2
-	bne	main		; 2(3)
-	lda	#1		; 2
-	inx			; 2 cycles
-	bne	main		; 2(3)
-	inc	store+2		; 6 cycles
-	jmp	main		; 3 cycles
-				; 34 subtotal max
-				; 36 subtotal max
+            cpy #20             ; 2 cycles if Y >= 20 0 main (2000Hz)
+            bge main            ; 2(3)
+
+            cpy #7              ; 2, if Y<, then clear carry, if Y>= set carry
+                                ; in next line, C will enter in current address
+
+
+store:                          ; warning: automodified code in store+1/store+2
+            rol >0,X            ; 7, roll carry bit into store
+            ldy #0              ; 2
+            asl                 ; 2 at bit 7, A = 0
+            bne main            ; 2(3)
+            inx                 ; 2 cycles
+            bne main0           ; 2(3)
+            inc store+2         ; 6 cycles
+            jmp main0           ; 3 cycles
+                                ; 37/42 subtotal max
 endcode:
-	txa			; write end of file location + 1
-	clc
-	adc	store+1
-	sta	store+1
-	bcc	endcheck	; LSB didn't roll over to zero
-	inc	store+2		; did roll over to zero, inc MSB
-endcheck:			; check for match of expected length
-sumcheck:
-	lda	#0
-	sta	pointer
-	lda	begload+1
-	sta	pointer+1
-	lda	#$ff		; init checksum
-	ldy	begload
+            txa                 ; write end of file location + 1
+            clc
+            adc store+1
+            sta store+1
+            bcc endcheck        ; LSB didn't roll over to zero
+            inc store+2         ; did roll over to zero, inc MSB
+endcheck:                       ; checksum control
+            lda #0
+            sta pointer
+            lda begload+1
+            sta pointer+1
+            lda #$ff            ; init checksum
+            ldy begload
 sumloop:
-	eor	(pointer),y
-	ldx	pointer+1 
-	cpx	endload+1   ;last page?
-	bcs	last
-	iny
-	bne	sumloop
-	inc	pointer+1
-	jmp	sumloop
+            eor (pointer),y
+            ldx pointer+1
+            cpx endload+1       ; last page?
+            bcs last
+            iny
+            bne sumloop
+            inc pointer+1
+            jmp sumloop
 last:
-	iny
-    beq exit
-	cpy	endload
-	bcc	sumloop
-    beq sumloop     ; <=
+            iny
+            beq exit
+            cpy endload
+            bcc sumloop         ; <
+            beq sumloop         ; =
 exit:
-    sta chksum
-	ldy	#1
-	eor	(endload),y
-	bne	error
-	jmp	ok
+            sta chksum
+            ldy #1
+            eor (endload),y
+            bne error
+            jmp ok
 error:
-	lda	#<errm
-	ldy	#>errm
-	jsr	print
-	rts
+            lda #<errm
+            ldy #>errm
+            jmp print
 ok:
-	lda	#<okm
-	ldy	#>okm
+            lda #<okm
+            ldy #>okm
 print:
-	sta	pointer
-	sty	pointer+1
-	ldy	#0
-	lda	(pointer),y	; load initial char
+            sta pointer
+            sty pointer+1
+            ldy #$FF
 print1:
-    ora	#$80
-	jsr	cout
-	iny
-	lda	(pointer),y
-	bne	print1
-	rts
+            iny
+            lda (pointer),y
+            beq exitprint
+            ora #$80
+            jsr cout
+            jmp print1
+exitprint:
+            rts
 
-okm:	asciiz	"OK"
-errm:	asciiz	"ERR"
+okm:        asciiz    "OK"
+errm:       asciiz    "KO"
