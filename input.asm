@@ -16,9 +16,9 @@ INPUTNUM
             inx
             jmp .L2
 .L3         cmp #'0'+$80        ; test if num else pass
-            bcc .L1             ; if < '0', pass
+            bcc .L2             ; if < '0', pass
             cmp #'9'+$80+1
-            bcs .L1             ; if > '9', pass
+            bcs .L2             ; if > '9', pass
             sta BUFF,X          ; else store in BUFF
             jsr COUT1
             jmp .L1
