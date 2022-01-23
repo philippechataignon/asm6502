@@ -6,7 +6,7 @@ TEMP        equ $EF             ; 1 byte
 
 CH          equ $24
 BASL        equ $28
-BUFF        equ $200
+BUFF        equ $BF00
 IOADR       equ $C000
 KBDSTRB     equ $C010
 COUT1       equ $FDF0
