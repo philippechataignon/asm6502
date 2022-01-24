@@ -1,2 +1,2 @@
-    org $E000
+    org $A000
     include "intbasic.asm"
