@@ -1,4 +1,4 @@
-            org $260
+            org $280
 
 cout        equ $FDED           ; character out sub
 prbyte      equ $FDDA           ; print byte in hex
@@ -14,8 +14,10 @@ pointer     equ $EB             ; LSB/MSB pointer
 readtape:
             lda begload         ; load begin LSB location
             sta store+1         ; store it for automodified location
+            sta sumloop+1       ; store it for automodified location
             lda begload+1       ; load begin MSB location
             sta store+2         ; store it for automodified location
+            sta sumloop+2       ; store it for automodified location
 
             ldx #0              ; X is used in ROL instr at store:
 
@@ -62,47 +64,24 @@ store:                          ; warning: automodified code in store+1/store+2
             jmp next_byte       ; 3 cycles
                                 ; 37/42 subtotal max
 endcode:
-            txa                 ; write end of file location + 1
-            clc
-            adc store+1
-            sta store+1
-            bcc endcheck        ; LSB didn't roll over to zero
-            inc store+2         ; did roll over to zero, inc MSB
-endcheck:                       ; checksum control
-            lda #0
-            sta pointer
-            lda begload+1
-            sta pointer+1
             lda #$ff            ; init checksum
-            ldy begload
-sumloop:
-            eor (pointer),y
-            ldx pointer+1
-            cpx endload+1       ; last page?
-            bcs last
-            iny
-            bne sumloop
-            inc pointer+1
-            jmp sumloop
-last:
-            iny
-            beq exit
-            cpy endload
-            bcc sumloop         ; <
-            beq sumloop         ; =
-exit:
-            sta chksum
-            ldy #1
-            eor (endload),y
-            bne error
-            jmp ok
+sumloop:                        ; warning: automodified code in sumloop+1/sumloop+2
+            eor >0
+            tax                 ; saves checksum in X
+            inc sumloop+1       ; incr LSB
+            bne nexteor
+            inc sumloop+2       ; incr MSB
+nexteor:
+            lda sumloop+1       ; 16 bits compare sumloop+1 < endload
+            cmp endload
+            lda sumloop+2
+            sbc endload+1
+            txa                 ; restore checksum
+            blt sumloop
+            beq exit            ; checksum OK, exit
 error:
             lda #<errm
             ldy #>errm
-            jmp print
-ok:
-            lda #<okm
-            ldy #>okm
 print:
             sta pointer
             sty pointer+1
@@ -110,12 +89,11 @@ print:
 print1:
             iny
             lda (pointer),y
-            beq exitprint
+            beq exit
             ora #$80
             jsr cout
             jmp print1
-exitprint:
+exit:
             rts
 
-okm:        asciiz    "OK"
 errm:       asciiz    "KO"
