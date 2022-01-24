@@ -23,9 +23,9 @@ nsync:
             bit tapein          ; wait for high level
             bpl nsync
 
-main0:
+next_byte:
             lda #1              ; A = bit counter
-main:
+next_bit:
             ldy #0              ; Y = #cycles at low level after high
 
 psync:
@@ -40,12 +40,13 @@ ploop:
 
                                 ; total ~9 cycles
 
-            cpy #64             ; 2 cycles if Y >= 64 endcode (770Hz)
+            cpy #64             ; 2 cycles if Y >= 64 (<= 770Hz) = ending detect
             bge endcode         ; 2(3)
 
-            cpy #20             ; 2 cycles if Y >= 20 0 main (2000Hz)
-            bge main            ; 2(3)
-
+            cpy #20             ; 2 cycles if Y >= 20 (<= 2000Hz) ignore and next bit
+            bge next_bit        ; 2(3)
+                                ; between 7 and 20 (2000-6000 Hz) -> 1
+                                ; between 0 and 7  (6000-12000 Hz) -> 0
             cpy #7              ; 2, if Y<, then clear carry, if Y>= set carry
                                 ; in next line, C will enter in current address
 
@@ -54,11 +55,11 @@ store:                          ; warning: automodified code in store+1/store+2
             rol >0,X            ; 7, roll carry bit into store
             ldy #0              ; 2
             asl                 ; 2 at bit 7, A = 0
-            bne main            ; 2(3)
+            bne next_bit            ; 2(3)
             inx                 ; 2 cycles
-            bne main0           ; 2(3)
+            bne next_byte       ; 2(3)
             inc store+2         ; 6 cycles
-            jmp main0           ; 3 cycles
+            jmp next_byte       ; 3 cycles
                                 ; 37/42 subtotal max
 endcode:
             txa                 ; write end of file location + 1
