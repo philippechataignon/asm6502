@@ -1,4 +1,4 @@
-            org $260
+            org $280
 
 cout        equ $FDED           ; character out sub
 prbyte      equ $FDDA           ; print byte in hex
@@ -6,17 +6,10 @@ tapein      equ $C060           ; read tape interface
 
 ; zero page parameters
 
-begload     equ $FA             ; begin load location LSB/MSB
-endload     equ $FC             ; end load location LSB/MSB
 chksum      equ $FE             ; checksum location
 pointer     equ $EB             ; LSB/MSB pointer
 
 readtape:
-            lda begload         ; load begin LSB location
-            sta store+1         ; store it for automodified location
-            lda begload+1       ; load begin MSB location
-            sta store+2         ; store it for automodified location
-
             ldx #0              ; X is used in ROL instr at store:
 
 nsync:
@@ -62,15 +55,8 @@ store:                          ; warning: automodified code in store+1/store+2
             jmp next_byte       ; 3 cycles
                                 ; 37/42 subtotal max
 endcode:
-            txa                 ; write end of file location + 1
-            clc
-            adc store+1
-            sta store+1
-            bcc endcheck        ; LSB didn't roll over to zero
-            inc store+2         ; did roll over to zero, inc MSB
-endcheck:                       ; checksum control
             lda #$ff            ; init checksum
-sumloop:
+sumloop:                        ; warning: automodified code in sumloop+1/sumloop+2
             eor >0
             tax                 ; saves checksum in X
             inc sumloop+1       ; incr LSB
@@ -108,3 +94,4 @@ exitprint:
 
 okm:        asciiz    "OK"
 errm:       asciiz    "KO"
+endload     word 0             ; end load location LSB/MSB
