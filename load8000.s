@@ -7,18 +7,25 @@ tapein      equ $C060           ; read tape interface
 ; zero page parameters
 
 begload     equ $FA             ; begin load location LSB/MSB
-endload     equ $FC             ; end load location LSB/MSB
-chksum      equ $FE             ; checksum location
+endload0    equ $FC             ; end load location LSB/MSB
 pointer     equ $EB             ; LSB/MSB pointer
 
-readtape:
+mon_entry:
             lda begload         ; load begin LSB location
             sta store+1         ; store it for automodified location
             sta sumloop+1       ; store it for automodified location
             lda begload+1       ; load begin MSB location
             sta store+2         ; store it for automodified location
             sta sumloop+2       ; store it for automodified location
+            lda endload0
+            sta endload
+            lda endload0+1
+            sta endload+1
+            jmp inline_entry
 
+            align 4
+
+inline_entry:
             ldx #0              ; X is used in ROL instr at store:
 
 nsync:
@@ -72,28 +79,19 @@ sumloop:                        ; warning: automodified code in sumloop+1/sumloo
             bne nexteor
             inc sumloop+2       ; incr MSB
 nexteor:
-            lda sumloop+1       ; 16 bits compare sumloop+1 < endload
-            cmp endload
-            lda sumloop+2
-            sbc endload+1
+            lda endload         ; 16 bits compare
+            cmp sumloop+1       ; 
+            lda endload+1
+            sbc sumloop+2
             txa                 ; restore checksum
-            blt sumloop
+            bge sumloop         ; while endload >= sumloop+1
             beq exit            ; checksum OK, exit
 error:
-            lda #<errm
-            ldy #>errm
-print:
-            sta pointer
-            sty pointer+1
-            ldy #$FF
-print1:
-            iny
-            lda (pointer),y
-            beq exit
-            ora #$80
+            lda #'K'+$80
             jsr cout
-            jmp print1
+            lda #'O'+$80
+            jsr cout
 exit:
             rts
-
-errm:       asciiz    "KO"
+endload     word 0              ; end load location LSB/MSB
+            align 8
