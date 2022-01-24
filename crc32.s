@@ -1,4 +1,4 @@
-            org     $280
+            org     $800
 
             ; Most reference books give the CRC-32 poly
             ; as $04C11DB7. This is actually the same if
