@@ -61,10 +61,9 @@ ploop:
 
 
 store:                          ; warning: automodified code in store+1/store+2
-            rol >0,X            ; 7, roll carry bit into store
-            ldy #0              ; 2
+            rol >0,X            ; 7, roll carry bit 1/0 into store
             asl                 ; 2 at bit 7, A = 0
-            bne next_bit            ; 2(3)
+            bne next_bit        ; 2(3)
             inx                 ; 2 cycles
             bne next_byte       ; 2(3)
             inc store+2         ; 6 cycles
@@ -80,11 +79,11 @@ sumloop:                        ; warning: automodified code in sumloop+1/sumloo
             inc sumloop+2       ; incr MSB
 nexteor:
             lda endload         ; 16 bits compare
-            cmp sumloop+1       ; 
+            cmp sumloop+1       ;
             lda endload+1
             sbc sumloop+2
             txa                 ; restore checksum
-            bge sumloop         ; while endload >= sumloop+1
+            bge sumloop         ; while (endload) >= (sumloop+1)
             beq exit            ; checksum OK, exit
 error:
             lda #'K'+$80
