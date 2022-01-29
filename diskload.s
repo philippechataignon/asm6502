@@ -8,7 +8,8 @@ prbyte      =    $FDDA         ; print byte in hex
 tapein      =    $C060        ; read tape interface
 warm        =    $FF69        ; back to monitor
 clear       =    $FC58        ; clear screen
-movecur     =    $FB5B        ; move cursor to ch,a
+tabv     =    $FB5B        ; move cursor to ch,a
+bascalc     =    $FBC1        ; calc line addr
 dos         =    $9D84
 asrom       =    $9D72
 locrpl      =    $3E3        ; locate RWTS paramlist jsr
@@ -42,11 +43,12 @@ fmptr       =    $0E        ; file manager pointer
 inf_zp      =    $10        ; inflate vars (10)
 temp        =    $1E        ; temp var
 ch          =    $24        ; cursor horizontal
+basl        =    $28        ; line addr form bascalc L
+bash        =    $29        ; line addr form bascalc H
 preg        =    $48        ; mon p reg
 
 ;            other vars
 
-invsp       =    $60        ; inverse space for draw
 data        =    $1000        ; 7 track dump from inflate
 boot1o      =    $96D0        ; tape loaded boot 1 location
 boot1       =    $3D0        ; target boot 1 location
@@ -64,7 +66,7 @@ start:
             lda #19              ; col 20
             sta ch
             lda #0               ; row 0
-            jsr movecur
+            jsr tabv
             lda #<track          ; print track
             ldy #>track
             jsr print
@@ -78,6 +80,17 @@ start:
             lda #<left           ; print left side of grid
             ldy #>left
             jsr print
+            jsr rdkey
+
+            lda #20
+            sta trknum
+            lda #5
+            sta secnum          ;sect 6
+            jsr draw_r
+            jsr rdkey
+            jsr draw_w
+            jsr rdkey
+            jsr draw_s
             jsr rdkey
 
 ;;setupiob:
@@ -109,6 +122,7 @@ start:
             lda #<formatm        ; print formatting
             ldy #>formatm
             jsr print
+            jsr rdkey
 
                                  ;;; file manager format
 ;;            jsr $3DC             ; load up Y and A
@@ -173,9 +187,11 @@ load:
             lda #<loadm          ; print loading data
             ldy #>loadm
             jsr print            ; flash
+            jsr rdkey
             lda #<loadm2         ; print loading data
             ldy #>loadm2
             jsr print
+            jsr rdkey
 
             sec
             lda #5
@@ -219,6 +235,7 @@ second:
             lda #<writem         ; print writing
             ldy #>writem
             jsr print
+            jsr rdkey
 
 ;;            lda #>data
 ;;            sta buffer
@@ -308,41 +325,28 @@ status:
             lda #0
             sta $24              ; horiz
             lda #22              ; vert
-            jsr movecur          ; move cursor to $24,a; 0 base
+            jsr tabv          ; move cursor to $24,a; 0 base
             jmp cleos
 draw_w:                          ; print a 'W' in the grid
-            clc
-            lda #4
-            adc secnum
-            tay
-            lda #4
-            adc trknum
             ldx #'W'
             jmp draw
 draw_r:                          ; print a 'R' in the grid
-            clc
-            lda #4
-            adc secnum
-            tay
-            lda #4
-            adc trknum
-            ldx #'R'
+            ldx #'R'-$40
             jmp draw
 draw_s:                          ; print a ' ' in the grid
+            ldx #$80+"."
+draw:
             clc
             lda #4
-            adc secnum
-            tay
-            lda #4
-            adc trknum
-            ldx #invsp
-draw:                            ; a=horiz, y=vert, x=letter
-            sta $24              ; horiz
-            tya
-            jsr movecur
+            adc secnum          ; num line
+            jsr bascalc
+            ldy trknum
+            iny                 ; add 4 to get col
+            iny
+            iny
+            iny
             txa
-            eor #$40
-            jsr cout
+            sta (basl),y        ; store char in screen ram
             rts
 line:
             lda #'-' | $80
@@ -362,7 +366,7 @@ print_loop: lda (prtptr),y
             iny
             jmp print_loop
 title:
-            abyte   ._ & $3f,"INSTA-DISK"
+            abyte   ._ & $3f,"DISKLOAD"
             byte    0
 errorm:
             abyte    +$80,"ERROR"
@@ -403,21 +407,21 @@ header:
             abyte    +$80,"    "
             byte    0
 left:
-            abyte    +$80,"  0!",$0D
-            abyte    +$80,"  1!",$0D
-            abyte    +$80,"  2!",$0D
-            abyte    +$80,"  3!",$0D
-            abyte    +$80,"  4!",$0D
-            abyte    +$80,"S 5!",$0D
-            abyte    +$80,"E 6!",$0D
-            abyte    +$80,"C 7!",$0D
-            abyte    +$80,"T 8!",$0D
-            abyte    +$80,"O 9!",$0D
-            abyte    +$80,"R A!",$0D
-            abyte    +$80,"  B!",$0D
-            abyte    +$80,"  C!",$0D
-            abyte    +$80,"  D!",$0D
-            abyte    +$80,"  E!",$0D
-            abyte    +$80,"  F!",$0D
+            abyte    +$80,"  0:",$0D
+            abyte    +$80,"  1:",$0D
+            abyte    +$80,"  2:",$0D
+            abyte    +$80,"  3:",$0D
+            abyte    +$80,"  4:",$0D
+            abyte    +$80,"S 5:",$0D
+            abyte    +$80,"E 6:",$0D
+            abyte    +$80,"C 7:",$0D
+            abyte    +$80,"T 8:",$0D
+            abyte    +$80,"O 9:",$0D
+            abyte    +$80,"R A:",$0D
+            abyte    +$80,"  B:",$0D
+            abyte    +$80,"  C:",$0D
+            abyte    +$80,"  D:",$0D
+            abyte    +$80,"  E:",$0D
+            abyte    +$80,"  F:",$0D
             byte    0
 infdata:
