@@ -22,8 +22,10 @@ warm        =    $FF69        ; back to monitor
 
 ;            dos routines
 
-locrpl      =    $3E3        ; locate RWTS paramlist jsr
+fm          =    $3D6        ; file manager entry
 rwts        =    $3D9        ; RWTS jsr
+locfpl      =    $3DC        ; locate file manager paramlist jsr
+locrpl      =    $3E3        ; locate RWTS paramlist jsr
 
 ;            zero page parameters
 
@@ -125,7 +127,7 @@ start:
             jsr rdkey
 
                                  ;;; file manager format
-;;            jsr $3DC             ; load up Y and A
+;;            jsr locfpl           ; load up Y and A
 ;;            sty fmptr
 ;;            sta fmptr+1
 ;;
@@ -157,7 +159,7 @@ start:
 ;;            ldy #$0D
 ;;            sta (fmptr),y
 ;;
-;;            jsr $3D6             ; doit!
+;;            jsr fm               ; call file manager
 ;;
 ;;            ldy #$0A             ; return code
 ;;            lda (fmptr),y
