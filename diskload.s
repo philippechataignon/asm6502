@@ -29,18 +29,18 @@ locrpl      =    $3E3        ; locate RWTS paramlist jsr
 
 ;            zero page parameters
 
-begload     =    $E0        ; begin load location LSB/MSB
-endload     =    $E2        ; end load location LSB/MSB
-chksum      =    $E4        ; checksum location
-secnum      =    $E5        ; loop var
-trknum      =    $E6        ; loop var
-segcnt      =    $E7        ; loop var
-buffer      =    $E8        ; MSB of RWTS buffer
-trkcnt      =    $E9        ; track counter (0-6)
-pointer     =    $EA        ; pointer LSB/MSB
-prtptr      =    $EC        ; pointer LSB/MSB
-fmptr       =    $EE        ; file manager pointer
-temp        =    $F0        ; temp var
+begload     =    $D0        ; begin load location LSB/MSB
+endload     =    $D2        ; end load location LSB/MSB
+chksum      =    $D4        ; checksum location
+secnum      =    $D5        ; loop var
+trknum      =    $D6        ; loop var
+segcnt      =    $D7        ; loop var
+buffer      =    $D8        ; MSB of RWTS buffer
+trkcnt      =    $D9        ; track counter (0-6)
+pointer     =    $DA        ; pointer LSB/MSB
+prtptr      =    $DC        ; pointer LSB/MSB
+fmptr       =    $DE        ; file manager pointer
+temp        =    $E0        ; temp var
 
 ;             monitor vars
 
