@@ -49,6 +49,7 @@ pointer     =   $DA        ; pointer LSB/MSB
 prtptr      =   $DC        ; pointer LSB/MSB
 fmptr       =   $DE        ; file manager pointer
 temp        =   $E0        ; temp var
+flag        =   $E1        ; 0 = format, $80 = no format
 
 ;             monitor vars
 
@@ -93,80 +94,36 @@ start:
             ldy #>left
             jsr print
 
-;;setupiob:
-;;            jsr locrpl           ; locate rwts paramlist
-;;            sty pointer          ; and save pointer
-;;            sta pointer+1
-;;
-;;            lda #1               ; table type
-;;            ldy #0               ; offset in RWTS
-;;            sta (pointer),y      ; write it to RWTS
-;;
-;;            lda #6 * 16          ; slot 6
-;;            ldy #1               ; offset in RWTS
-;;            sta (pointer),y      ; write it to RWTS
-;;
-;;            lda #1               ; drive number
-;;            ldy #2               ; offset in RWTS
-;;            sta (pointer),y      ; write it to RWTS
-;;
-;;            lda #254             ; volume number
-;;            ldy #3               ; offset in RWTS
-;;            sta (pointer),y      ; write it to RWTS
-;;
-;;format:                          ; format the diskette
-;;            lda infdata+20       ; check noformat flag
-;;            bne endformat        ; if not 0 jump to endformat
+setupiob:
+            ;jsr locrpl           ; locate rwts paramlist
+            sty pointer          ; and save pointer
+            sta pointer+1
+
+            ldy #3               ; offset in RWTS
+.L1:        lda rwts_param,y
+            sta (pointer),y      ; write it to RWTS
+            dey
+            bpl .L1
+
+
+format:                          ; format the diskette
+            lda flag
+            bmi endformat        ; if bit7=1, no format
 
             jsr clrstatus
             lda #<formatm        ; print formatting
             ldy #>formatm
             jsr print
-            lda #5
-            sta NDELAY
-            jsr delay
+            lda #4               ; read(1)/write(2) command
+            ldy #$c              ; offset in RWTS
+            sta (pointer),y      ; write it to RWTS
 
-                                 ;;; file manager format
-;;            jsr locfpl           ; load up Y and A
-;;            sty fmptr
-;;            sta fmptr+1
-;;
-;;            lda #$0B             ; init command
-;;            ldy #0
-;;            sta (fmptr),y
-;;
-;;            lda #$9D             ; DOS location
-;;            ldy #1
-;;            sta (fmptr),y
-;;
-;;            lda #254             ; volume number
-;;            ldy #4
-;;            sta (fmptr),y
-;;
-;;            lda #$01             ; drive number
-;;            ldy #5
-;;            sta (fmptr),y
-;;
-;;            lda #$06             ; slot number
-;;            ldy #6
-;;            sta (fmptr),y
-;;
-;;            lda #$00             ; scratch area LSB
-;;            ldy #$0C
-;;            sta (fmptr),y
-;;
-;;            lda #$92             ; scratch area MSB
-;;            ldy #$0D
-;;            sta (fmptr),y
-;;
-;;            jsr fm               ; call file manager
-;;
-;;            ldy #$0A             ; return code
-;;            lda (fmptr),y
-;;            beq endformat
-;;formaterror:
-;;            jmp diskerror
-;;endformat:
+            ;jsr locrpl           ; locate rwts paramlist
+            jsr rwts             ; do it!
+            bcc endformat
+            jmp diskerror
+
+endformat:
                                  ;;;begin segment loop (5)
             lda #0               ; 256 bytes/sector
             ldy #$0b             ; offset in RWTS
@@ -258,7 +215,7 @@ secloop:
 
             ;jsr locrpl           ; locate rwts paramlist
             jsr rwts             ; do it!
-            ;bcs diskerror
+            bcs diskerror
             ldx #$80+"."
             jsr draw             ; write dot
             lda #0
@@ -269,7 +226,7 @@ secloop:
 
             lda buffer           ; buffer += $10
             clc                  ; next page to write
-            adc #$10
+            adc #10
             sta buffer
 
             inc trknum           ; next track
@@ -292,25 +249,19 @@ done:
             jsr rdkey
             rts
 ;;          jmp reboot
-error:
-                                 ; turn motor off, just in case left on
-            ldx #$60             ; slot #6
-            lda motoroff,x       ; turn it off
 
-            lda #<errorm         ; print error
-            ldy #>errorm
-            jsr print
-;            jmp warm
-            rts
 diskerror:
             lda #0
             sta preg             ; fix p reg so mon is happy
+            ldx #$60             ; slot #6
+            lda motoroff,x       ; turn it off
             jsr clrstatus
             lda #<diskerrorm     ; print error
             ldy #>diskerrorm
             jsr print
 ;            jmp warm
             rts
+
 clrstatus:
             lda #0
             sta $24              ; horiz
@@ -332,23 +283,23 @@ draw:
             rts
 line:
             lda #'-' | $80
-loop0:
-            jsr cout
+.L1         jsr cout
             dex
-            bne loop0
+            bne .L1
             jsr crout
 rts:        rts
 print:
             sta prtptr
             sty prtptr+1
             ldy #$0
-print_loop: lda (prtptr),y
+.L1         lda (prtptr),y
             beq rts              ; return if 0 = end of string
             jsr cout
             iny
-            jmp print_loop
+            jmp .L1
 
 rwts:
+            clc
             lda #1
             sta NDELAY
 delay:
@@ -358,9 +309,7 @@ title:
             abyte -$40,"DISKLOAD" ; inverse
             byte  0
 diskerrorm:
-            abyte +$80,"DISK "
-errorm:
-            abyte +$80,"ERROR"
+            abyte +$80,"DISK ERROR"
             byte  0
 donem:
             abyte +$80,"DONE. PRESS [RETURN] TO REBOOT."
@@ -400,3 +349,5 @@ left:
             abyte +$80,"  E:",$0D
             abyte +$80,"  F:",$0D
             byte  0
+
+rwts_param  byte  1,$60,1,0             ; table type,slot,drive,volume
