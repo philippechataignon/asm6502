@@ -1,4 +1,10 @@
-            org     $800
+            ifndef ORG
+ORG         =     $800
+            endif
+
+            if ORG > 0
+            org     ORG
+            fi
 
             ; Most reference books give the CRC-32 poly
             ; as $04C11DB7. This is actually the same if
@@ -6,19 +12,19 @@
             ; to-left instead of left-to-right. Doing it
             ; this way means we won't have to explicitly
             ; reverse things afterwards
-POLY        equ     $EDB88320
+POLY        =     $EDB88320
 
-CRC         equ     $EB
-START       equ     $FA         ; 2 bytes
-END         equ     $FC         ; 2 bytes
-CUR         equ     $FE         ; 2 bytes
-COUT1       equ     $FDF0
-CRCT0       equ     $BC00       ; Four 256-byte tables
-CRCT1       equ     $BD00       ; (should be page-aligned for speed)
-CRCT2       equ     $BE00
-CRCT3       equ     $BF00
+CRC         =     $EB
+START       =     $FA         ; 2 bytes
+END         =     $FC         ; 2 bytes
+CUR         =     $FE         ; 2 bytes
+COUT1       =     $FDF0
+CRCT0       =     $BC00       ; Four 256-byte tables
+CRCT1       =     $BD00       ; (should be page-aligned for speed)
+CRCT2       =     $BE00
+CRCT3       =     $BF00
 
-INIT
+INIT:
             jsr     MAKECRCTABLE
             ldy     START+1     ; init CUR high byte with START high byte
             sty     CUR+1
@@ -30,7 +36,7 @@ INIT
             iny                 ; Y = 0
             sty     CUR         ; CUR = HH00
             ldy     START
-.LOOP1
+.LOOP1:
             lda     (CUR),y     ; CUR = HH00 + Y
             jsr     UPDCRC      ; update CRC
             ldx     CUR+1       ; is last page ?
@@ -40,30 +46,30 @@ INIT
             bne     .LOOP1
             inc     CUR+1
             jmp     .LOOP1
-.LASTPAGE
+.LASTPAGE:
             iny
             beq     EXIT       ; last iter when CUR ends with $FF gives 0 -> EXIT
             cpy     END         ; Y <= END ?
             bcc     .LOOP1      ; <
             beq     .LOOP1      ; =
-EXIT
+EXIT:
             ldy     #3          ; eor $FFFFFFFF for CRC at the end
-.COMPL      lda     CRC,Y
+.COMPL:     lda     CRC,Y
             eor     #$FF
             sta     CRC,Y
             jsr     COUTBYTE    ; and display
             dey
             bpl     .COMPL
             rts
-COUTNIB                         ; output a nibble (0-F)
+COUTNIB:                         ; output a nibble (0-F)
             ora     #$B0        ; convert to ASCII for number
             cmp     #$BA        ; >= BA (3A|80) -> not number but [A-F], need to add 6
             bcc     .DIGIT
             adc     #$06
-.DIGIT
+.DIGIT:
             jsr     COUT1
             rts
-COUTBYTE
+COUTBYTE:
             pha                 ; push A for low nibble
             lsr                 ; >> 4
             lsr
@@ -77,12 +83,12 @@ COUTBYTE
 
 MAKECRCTABLE:
             ldx     #0          ; X counts from 0 to 255
-.BYTELOOP   lda     #0          ; A contains the high byte of the CRC-32
+.BYTELOOP:  lda     #0          ; A contains the high byte of the CRC-32
             sta     CRC+2       ; The other three bytes are in memory
             sta     CRC+1
             stx     CRC
             ldy     #8          ; Y counts bits in a byte
-.BITLOOP    lsr                 ; The CRC-32 algorithm is similar to CRC-16
+.BITLOOP:   lsr                 ; The CRC-32 algorithm is similar to CRC-16
             ror     CRC+2       ; except that it is reversed (originally for
             ror     CRC+1       ; hardware reasons). This is why we shift
             ror     CRC         ; right instead of left here.
@@ -100,7 +106,7 @@ MAKECRCTABLE:
             eor     #POLY & $ff
             sta     CRC
             pla                 ; Restore high byte
-.NOADD      dey
+.NOADD:     dey
             bne     .BITLOOP    ; Do next bit
             sta     CRCT3,X     ; Save CRC into table, high to low bytes
             lda     CRC+2
@@ -127,4 +133,4 @@ UPDCRC:
             sta     CRC+2
             lda     CRCT3,X
             sta     CRC+3
-            rts
+       rts

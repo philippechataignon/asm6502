@@ -1,4 +1,10 @@
-            org $280
+            ifndef ORG
+ORG         =     $280
+            endif
+
+            if ORG > 0
+            org     ORG
+            fi
 
 cout        equ $FDED           ; character out sub
 prbyte      equ $FDDA           ; print byte in hex
