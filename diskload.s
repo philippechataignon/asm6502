@@ -31,7 +31,7 @@ warm        =   $FF69        ; back to monitor
 ;            dos routines
 
 fm          =   $3D6        ; file manager entry
-rwts        =   $3D9        ; RWTS jsr
+;rwts       =   $3D9        ; RWTS jsr
 locfpl      =   $3DC        ; locate file manager paramlist jsr
 locrpl      =   $3E3        ; locate RWTS paramlist jsr
 
@@ -56,6 +56,7 @@ ch          =   $24        ; cursor horizontal
 basl        =   $28        ; line addr form bascalc L
 bash        =   $29        ; line addr form bascalc H
 preg        =   $48        ; mon p reg
+line3       =   $580
 
 ;            other vars
 
@@ -121,7 +122,9 @@ start:
             lda #<formatm        ; print formatting
             ldy #>formatm
             jsr print
-            jsr rdkey
+            lda #5
+            sta NDELAY
+            jsr delay
 
                                  ;;; file manager format
 ;;            jsr locfpl           ; load up Y and A
@@ -178,8 +181,10 @@ start:
             lda #5
             sta segcnt
 segloop:
+            lda #$0
+            sta secnum
 
-                                 ;;; get 7 tracks from tape
+
 load:
             jsr draw_r
             jsr status
@@ -204,7 +209,10 @@ load:
             lda #>enddata         ; store end location MSB
             sta endload+1
 
-            ;jsr load8000         ; get data in $1000-$8000
+            lda #5
+            sta NDELAY
+            jsr delay
+            ;jsr load8000        ; get 7 tracks data in $1000-$8000
                                  ; turn motor on to save 1-2 sec
             ldx #$60             ; slot #6
             lda motoron,x        ; turn it on
@@ -215,7 +223,6 @@ load:
             lda #<writem         ; print writing
             ldy #>writem
             jsr print
-            jsr rdkey
 
             lda #>data
             sta buffer
@@ -247,7 +254,7 @@ secloop:
             sta (pointer),y      ; write it to RWTS
 
             ;jsr locrpl           ; locate rwts paramlist
-            ;jsr rwts             ; do it!
+            jsr rwts             ; do it!
             ;bcs diskerror
             jsr draw_s           ; write space
             lda #0
@@ -344,28 +351,29 @@ print_loop: lda (prtptr),y
             jsr cout
             iny
             jmp print_loop
+
+rwts:
+            lda #1
+            sta NDELAY
+delay:
+            include "delay.s"
+
 title:
             abyte -$40,"DISKLOAD" ; inverse
             byte  0
+diskerrorm:
+            abyte +$80,"DISK "
 errorm:
             abyte +$80,"ERROR"
-            byte  0
-diskerrorm:
-            abyte +$80,"DISK ERROR"
             byte  0
 donem:
             abyte +$80,"DONE. PRESS [RETURN] TO REBOOT."
             byte  0
-inflatem:
-            abyte +$80,"INFLATING DATA "
-            byte  0
 loadm:
-            asciiz "LOADING DATA"    ; flash
+            abyte +$80,"LOADING DATA"
+            byte  0
 formatm:
             abyte +$80,"FORMATTING DISK "
-            byte  0
-waitm:
-            abyte +$80,"WAITING FOR DATA: "
             byte  0
 writem:
             abyte +$80,"WRITING DATA "
