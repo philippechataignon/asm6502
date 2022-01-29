@@ -345,55 +345,54 @@ print_loop: lda (prtptr),y
             iny
             jmp print_loop
 title:
-            abyte   ._ & $3f,"DISKLOAD"
-            byte    0
+            abyte -$40,"DISKLOAD" ; inverse
+            byte  0
 errorm:
-            abyte    +$80,"ERROR"
-            byte    0
+            abyte +$80,"ERROR"
+            byte  0
 diskerrorm:
-            abyte    +$80,"DISK ERROR"
-            byte    0
+            abyte +$80,"DISK ERROR"
+            byte  0
 donem:
-            abyte    +$80,"DONE. PRESS [RETURN] TO REBOOT."
-            byte    0
+            abyte +$80,"DONE. PRESS [RETURN] TO REBOOT."
+            byte  0
 inflatem:
-            abyte    +$80,"INFLATING DATA "
-            byte    0
+            abyte +$80,"INFLATING DATA "
+            byte  0
 loadm:
-            abyte   ._ | $40,"LOADING DATA"
-            byte    0
+            asciiz "LOADING DATA"    ; flash
 formatm:
-            abyte    +$80,"FORMATTING DISK "
-            byte    0
+            abyte +$80,"FORMATTING DISK "
+            byte  0
 waitm:
-            abyte    +$80,"WAITING FOR DATA: "
-            byte    0
+            abyte +$80,"WAITING FOR DATA: "
+            byte  0
 writem:
-            abyte    +$80,"WRITING DATA "
-            byte    0
+            abyte +$80,"WRITING DATA "
+            byte  0
 track:
-            abyte    +$80,"TRACK",$0D
-            byte    0
+            abyte +$80,"TRACK",$0D
+            byte  0
 header:
-            abyte    +$80,"    00000000001111111111222222222233333",$0D
-            abyte    +$80,"    01234567890123456789012345678901234",$0D
-            abyte    +$80,"    "
-            byte    0
+            abyte +$80,"    00000000001111111111222222222233333",$0D
+            abyte +$80,"    01234567890123456789012345678901234",$0D
+            abyte +$80,"    "
+            byte  0
 left:
-            abyte    +$80,"  0:",$0D
-            abyte    +$80,"  1:",$0D
-            abyte    +$80,"  2:",$0D
-            abyte    +$80,"  3:",$0D
-            abyte    +$80,"  4:",$0D
-            abyte    +$80,"S 5:",$0D
-            abyte    +$80,"E 6:",$0D
-            abyte    +$80,"C 7:",$0D
-            abyte    +$80,"T 8:",$0D
-            abyte    +$80,"O 9:",$0D
-            abyte    +$80,"R A:",$0D
-            abyte    +$80,"  B:",$0D
-            abyte    +$80,"  C:",$0D
-            abyte    +$80,"  D:",$0D
-            abyte    +$80,"  E:",$0D
-            abyte    +$80,"  F:",$0D
-            byte    0
+            abyte +$80,"  0:",$0D
+            abyte +$80,"  1:",$0D
+            abyte +$80,"  2:",$0D
+            abyte +$80,"  3:",$0D
+            abyte +$80,"  4:",$0D
+            abyte +$80,"S 5:",$0D
+            abyte +$80,"E 6:",$0D
+            abyte +$80,"C 7:",$0D
+            abyte +$80,"T 8:",$0D
+            abyte +$80,"O 9:",$0D
+            abyte +$80,"R A:",$0D
+            abyte +$80,"  B:",$0D
+            abyte +$80,"  C:",$0D
+            abyte +$80,"  D:",$0D
+            abyte +$80,"  E:",$0D
+            abyte +$80,"  F:",$0D
+            byte  0
