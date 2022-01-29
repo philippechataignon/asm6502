@@ -2,46 +2,46 @@
 
 ; apple vectors
 
-cout        =    $FDED        ; character out sub
-crout       =    $FD8E        ; CR out sub
-prbyte      =    $FDDA         ; print byte in hex
-tapein      =    $C060        ; read tape interface
-warm        =    $FF69        ; back to monitor
-clear       =    $FC58        ; clear screen
-tabv     =    $FB5B        ; move cursor to ch,a
-bascalc     =    $FBC1        ; calc line addr
 dos         =    $9D84
 asrom       =    $9D72
-locrpl      =    $3E3        ; locate RWTS paramlist jsr
-rwts        =    $3D9        ; RWTS jsr
-cleos       =    $FC42        ; clear to end of screen
 init        =    $A54F
+tapein      =    $C060        ; read tape interface
 motoroff    =    $C088        ; Turn drive motor off
 motoron     =    $C089        ; Turn drive motor on
 reboot      =    $FAA6        ; reboot machine
+tabv        =    $FB5B        ; move cursor to ch,a
+bascalc     =    $FBC1        ; calc line addr
 bell        =    $FBDD        ; ding
+cleos       =    $FC42        ; clear to end of screen
+clear       =    $FC58        ; clear screen
 rdkey       =    $FD0C        ; read key
+crout       =    $FD8E        ; CR out sub
+prbyte      =    $FDDA         ; print byte in hex
+cout        =    $FDED        ; character out sub
+warm        =    $FF69        ; back to monitor
 
-;            my vectors
+;            dos routines
 
-readtape    =    $9000
-inflate     =    $9B00
+locrpl      =    $3E3        ; locate RWTS paramlist jsr
+rwts        =    $3D9        ; RWTS jsr
 
 ;            zero page parameters
 
-begload     =    $00        ; begin load location LSB/MSB
-endload     =    $02        ; end load location LSB/MSB
-chksum      =    $04        ; checksum location
-secnum      =    $05        ; loop var
-trknum      =    $06        ; loop var
-segcnt      =    $07        ; loop var
-buffer      =    $08        ; MSB of RWTS buffer
-trkcnt      =    $09        ; track counter (0-6)
-pointer     =    $0A        ; pointer LSB/MSB
-prtptr      =    $0C        ; pointer LSB/MSB
-fmptr       =    $0E        ; file manager pointer
-inf_zp      =    $10        ; inflate vars (10)
-temp        =    $1E        ; temp var
+begload     =    $E0        ; begin load location LSB/MSB
+endload     =    $E2        ; end load location LSB/MSB
+chksum      =    $E4        ; checksum location
+secnum      =    $E5        ; loop var
+trknum      =    $E6        ; loop var
+segcnt      =    $E7        ; loop var
+buffer      =    $E8        ; MSB of RWTS buffer
+trkcnt      =    $E9        ; track counter (0-6)
+pointer     =    $EA        ; pointer LSB/MSB
+prtptr      =    $EC        ; pointer LSB/MSB
+fmptr       =    $EE        ; file manager pointer
+temp        =    $F0        ; temp var
+
+;             monitor vars
+
 ch          =    $24        ; cursor horizontal
 basl        =    $28        ; line addr form bascalc L
 bash        =    $29        ; line addr form bascalc H
@@ -49,13 +49,13 @@ preg        =    $48        ; mon p reg
 
 ;            other vars
 
-data        =    $1000        ; 7 track dump from inflate
-boot1o      =    $96D0        ; tape loaded boot 1 location
-boot1       =    $3D0        ; target boot 1 location
-cmpbuf      =    $9200        ; buffer for sector check
-count       =    $900
+;data        =    $1000        ; 7 track loaded
+;boot1o      =    $96D0        ; tape loaded boot 1 location
+;boot1       =    $3D0         ; target boot 1 location
+;cmpbuf      =    $9200        ; buffer for sector check
+;count       =    $900
 
-            org    $9700
+            org    $9000
 
 start:
             jsr clear            ; clear screen
