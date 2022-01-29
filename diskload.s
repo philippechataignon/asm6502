@@ -24,7 +24,7 @@ cleos       =   $FC42        ; clear to end of screen
 clear       =   $FC58        ; clear screen
 rdkey       =   $FD0C        ; read key
 crout       =   $FD8E        ; CR out sub
-prbyte      =   $FDDA         ; print byte in hex
+prbyte      =   $FDDA        ; print byte in hex
 cout        =   $FDED        ; character out sub
 warm        =   $FF69        ; back to monitor
 
@@ -118,7 +118,7 @@ start:
 ;;            lda infdata+20       ; check noformat flag
 ;;            bne endformat        ; if not 0 jump to endformat
 
-            jsr status
+            jsr clrstatus
             lda #<formatm        ; print formatting
             ldy #>formatm
             jsr print
@@ -186,8 +186,9 @@ segloop:
 
 
 load:
-            jsr draw_r
-            jsr status
+            ldx #'R'-$40
+            jsr draw
+            jsr clrstatus
             lda #<loadm          ; print loading data
             ldy #>loadm
             jsr print            ; flash
@@ -217,9 +218,10 @@ load:
             ldx #$60             ; slot #6
             lda motoron,x        ; turn it on
 
-            jsr status
                                  ;;;begin track loop (7)
-            jsr status
+            ldx #$80+" "
+            jsr draw             ; write dot
+            jsr clrstatus
             lda #<writem         ; print writing
             ldy #>writem
             jsr print
@@ -238,7 +240,8 @@ trkloop:
             lda #$F
             sta secnum
 secloop:
-            jsr draw_w           ; write sector from buffer to disk
+            ldx #'W'-$40
+            jsr draw
             lda secnum           ; sector number
             ldy #5               ; offset in RWTS
             sta (pointer),y      ; write it to RWTS
@@ -256,7 +259,8 @@ secloop:
             ;jsr locrpl           ; locate rwts paramlist
             jsr rwts             ; do it!
             ;bcs diskerror
-            jsr draw_s           ; write space
+            ldx #$80+"."
+            jsr draw             ; write dot
             lda #0
             sta preg             ; fix p reg so mon is happy
 
@@ -280,14 +284,14 @@ secloop:
 
                                          ;;; prompt for data only load?
 done:
-            jsr status
+            jsr clrstatus
             lda #<donem          ; print done
             ldy #>donem
             jsr print
             jsr bell
             jsr rdkey
             rts
-;;            jmp reboot
+;;          jmp reboot
 error:
                                  ; turn motor off, just in case left on
             ldx #$60             ; slot #6
@@ -301,26 +305,18 @@ error:
 diskerror:
             lda #0
             sta preg             ; fix p reg so mon is happy
-            jsr status
+            jsr clrstatus
             lda #<diskerrorm     ; print error
             ldy #>diskerrorm
             jsr print
 ;            jmp warm
             rts
-status:
+clrstatus:
             lda #0
             sta $24              ; horiz
             lda #22              ; vert
-            jsr tabv          ; move cursor to $24,a; 0 base
+            jsr tabv             ; move cursor to $24,a; 0 base
             jmp cleos
-draw_w:                          ; print a 'W' in the grid
-            ldx #'W'-$40
-            jmp draw
-draw_r:                          ; print a 'R' in the grid
-            ldx #'R'+$80
-            jmp draw
-draw_s:                          ; print a ' ' in the grid
-            ldx #$80+"."
 draw:
             clc
             lda #4
