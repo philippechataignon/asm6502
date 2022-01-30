@@ -8,7 +8,7 @@ ORG         =     $300
 
 NDELAY      = $ef
 
-            ldy #20
+            ldy #$80
             ldx #0
 .loop1      dex             ;2 cycles
             bne .loop1      ;3c => 5c * 256 = 1280 µs = 1.28 ms
