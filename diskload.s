@@ -19,7 +19,6 @@ motoron     =   $C089        ; Turn drive motor on
 reboot      =   $FAA6        ; reboot machine
 tabv        =   $FB5B        ; move cursor to ch,a
 bascalc     =   $FBC1        ; calc line addr
-bell        =   $FBDD        ; ding
 cleos       =   $FC42        ; clear to end of screen
 clear       =   $FC58        ; clear screen
 rdkey       =   $FD0C        ; read key
@@ -120,6 +119,9 @@ format:                          ; format the diskette
 
             ;jsr locrpl           ; locate rwts paramlist
             jsr rwts             ; do it!
+            lda #5
+            sta NDELAY
+            jsr delay
             bcc endformat
             jmp diskerror
 
@@ -236,7 +238,6 @@ done:
             lda #>donem          ; print done
             ldy #<donem
             jsr print
-            jsr bell
             jsr rdkey
             rts
 ;;          jmp reboot

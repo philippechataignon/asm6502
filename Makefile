@@ -29,6 +29,7 @@ apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin 
 input.hex: input.s input_vars.asm input.asm
 print.hex: print.s input_vars.asm print.asm
 integer.hex: integer.s input_vars.asm input.asm print.asm
+diskload.hex: delay.s
 
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s))
