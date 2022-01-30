@@ -48,7 +48,6 @@ trkcnt      =   $D9        ; track counter (0-6)
 pointer     =   $DA        ; pointer LSB/MSB
 prtptr      =   $DC        ; pointer LSB/MSB
 fmptr       =   $DE        ; file manager pointer
-temp        =   $E0        ; temp var
 flag        =   $E1        ; 0 = format, $80 = no format
 
 ;             monitor vars
@@ -63,6 +62,7 @@ line3       =   $580
 
 data        =   $1000         ; 7 track loaded in $1000-$8000
 enddata     =   $8000
+slot        =   $60         ; slot 6 * 16
 ;boot1o      =    $96D0        ; tape loaded boot 1 location
 ;boot1       =    $3D0         ; target boot 1 location
 ;cmpbuf      =    $9200        ; buffer for sector check
@@ -72,26 +72,26 @@ enddata     =   $8000
 
 start:
             jsr clear            ; clear screen
-            lda #<title          ; print title
-            ldy #>title
+            lda #>title          ; print title
+            ldy #<title
             jsr print
                                  ; TRACK
             lda #19              ; col 20
             sta ch
             lda #0               ; row 0
             jsr tabv
-            lda #<track          ; print track
-            ldy #>track
+            lda #>track          ; print track
+            ldy #<track
             jsr print
 
-            lda #<header         ; print header
-            ldy #>header
+            lda #>header         ; print header
+            ldy #<header
             jsr print
             ldx #35              ; length of line
             jsr line
 
-            lda #<left           ; print left side of grid
-            ldy #>left
+            lda #>left           ; print left side of grid
+            ldy #<left
             jsr print
 
 setupiob:
@@ -111,8 +111,8 @@ format:                          ; format the diskette
             bmi endformat        ; if bit7=1, no format
 
             jsr clrstatus
-            lda #<formatm        ; print formatting
-            ldy #>formatm
+            lda #>formatm        ; print formatting
+            ldy #<formatm
             jsr print
             lda #4               ; read(1)/write(2) command
             ldy #$c              ; offset in RWTS
@@ -126,14 +126,14 @@ format:                          ; format the diskette
 endformat:
                                  ;;;begin segment loop (5)
             lda #0               ; 256 bytes/sector
-            ldy #$0b             ; offset in RWTS
+            ldy #$b             ; offset in RWTS
             sta (pointer),y      ; write it to RWTS
 
-            lda #0               ; buffer LSB
+            ;lda #0               ; buffer LSB
             ldy #8               ; offset in RWTS
             sta (pointer),y      ; write it to RWTS
 
-            lda #0
+            ;lda #0
             sta trknum           ; start with track 0
             lda #5
             sta segcnt
@@ -146,23 +146,14 @@ load:
             ldx #'R'-$40
             jsr draw
             jsr clrstatus
-            lda #<loadm          ; print loading data
-            ldy #>loadm
+            lda #>loadm          ; print loading data
+            ldy #<loadm
             jsr print            ; flash
 
-            sec
-            lda #5
-            sbc segcnt
-            asl
-            asl
-            tax
-            stx temp
-
-            ldx temp
-            lda #$00
+            lda #$00             ; prepare loading data.enddata
             sta begload
             sta endload
-            lda #>data
+            lda #>data            ; store start loc MSB
             sta begload+1
             lda #>enddata         ; store end location MSB
             sta endload+1
@@ -172,15 +163,15 @@ load:
             jsr delay
             ;jsr load8000        ; get 7 tracks data in $1000-$8000
                                  ; turn motor on to save 1-2 sec
-            ldx #$60             ; slot #6
+            ldx #slot            ; slot #6
             lda motoron,x        ; turn it on
 
                                  ;;;begin track loop (7)
             ldx #$80+" "
             jsr draw             ; write dot
             jsr clrstatus
-            lda #<writem         ; print writing
-            ldy #>writem
+            lda #>writem         ; print writing
+            ldy #<writem
             jsr print
 
             lda #>data
@@ -242,8 +233,8 @@ secloop:
                                          ;;; prompt for data only load?
 done:
             jsr clrstatus
-            lda #<donem          ; print done
-            ldy #>donem
+            lda #>donem          ; print done
+            ldy #<donem
             jsr print
             jsr bell
             jsr rdkey
@@ -253,11 +244,11 @@ done:
 diskerror:
             lda #0
             sta preg             ; fix p reg so mon is happy
-            ldx #$60             ; slot #6
+            ldx #slot            ; slot #6
             lda motoroff,x       ; turn it off
             jsr clrstatus
-            lda #<diskerrorm     ; print error
-            ldy #>diskerrorm
+            lda #>diskerrorm     ; print error
+            ldy #<diskerrorm
             jsr print
 ;            jmp warm
             rts
@@ -289,10 +280,10 @@ line:
             jsr crout
 rts:        rts
 print:
-            sta prtptr
-            sty prtptr+1
-            ldy #$0
-.L1         lda (prtptr),y
+            sta prtptr+1         ; store A=MSB
+            sty prtptr           ; store Y=LSB
+            ldy #0
+.L1         lda (prtptr),y       ; 
             beq rts              ; return if 0 = end of string
             jsr cout
             iny
@@ -305,6 +296,8 @@ rwts:
 delay:
             include "delay.s"
 
+;            align 8
+
 title:
             abyte -$40,"DISKLOAD" ; inverse
             byte  0
@@ -312,16 +305,16 @@ diskerrorm:
             abyte +$80,"DISK ERROR"
             byte  0
 donem:
-            abyte +$80,"DONE. PRESS [RETURN] TO REBOOT."
+            abyte +$80,"DONE. PRESS ANY KEY TO REBOOT"
             byte  0
 loadm:
-            abyte +$80,"LOADING DATA"
+            abyte +$80,"LOADING"
             byte  0
 formatm:
-            abyte +$80,"FORMATTING DISK "
+            abyte +$80,"FORMATTING"
             byte  0
 writem:
-            abyte +$80,"WRITING DATA "
+            abyte +$80,"WRITING"
             byte  0
 track:
             abyte +$80,"TRACK",$0D
@@ -350,4 +343,4 @@ left:
             abyte +$80,"  F:",$0D
             byte  0
 
-rwts_param  byte  1,$60,1,0             ; table type,slot,drive,volume
+rwts_param  byte  1,slot,1,0             ; table type,slot,drive,volume
