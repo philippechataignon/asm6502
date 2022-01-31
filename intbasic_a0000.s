@@ -1,2 +1,4 @@
-    org $A000
-    include "intbasic.asm"
+ORG = $A000
+    
+    org ORG
+    include "intbasic.s"
