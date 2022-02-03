@@ -2,7 +2,7 @@ XL = $FA      ; X and result as XL..XL+3
 YL = $FC      ; Y and 16 high bits of result
 TL = $EB      ; T contains X initial value
 
-    org $803
+* = $803
 
     lda XL    ; Put X in T
     ldy XL+1
@@ -13,11 +13,11 @@ TL = $EB      ; T contains X initial value
     sty XL+1
 
     ldy #16   ; We'll loop 16 times over Y bits
-.L1 asl XL    ; Shift the entire 32 bits over one bit position.
+L1  asl XL    ; Shift the entire 32 bits over one bit position.
     rol XL+1
     rol XL+2  ; equivalent of YL
     rol XL+3  ; equivalent of YH
-    bcc .L2   ; Skip the adding-in to the result if
+    bcc L2    ; Skip the adding-in to the result if
               ; the high bit shifted out was 0.
     clc       ; Else, add with carry to intermediate result.
     lda TL    ; Add X (0,0,TH,TL) with carry to intermediate result
@@ -30,6 +30,6 @@ TL = $EB      ; T contains X initial value
     adc XL+2
     sta XL+2
 
-.L2 dey       ; If we haven't done 16 iterations yet,
-    bne .L1   ; then go around again.
+L2  dey       ; If we haven't done 16 iterations yet,
+    bne L1    ; then go around again.
     rts
