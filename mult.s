@@ -1,7 +1,5 @@
-;  $12345678 will be in the order 34 12 78 56
-; wanted 78 56 34 12
-XL = $FA
-YL = $FC
+XL = $FC
+YL = $FA
 TL = $EB
 
     org $803
@@ -35,16 +33,4 @@ TL = $EB
 
 .L2 dey       ; If we haven't done 16 iterations yet,
     bne .L1    ; then go around again.
-    lda YL    ; Get the MSB
-    ldy YL+1
-    sta TL    ; put it in the scratchpad.
-    sty TL+1
-    lda XL    ; Get the LSB
-    ldy XL+1
-    sta YL    ; put it in MSB
-    sty YL+1
-    lda TL    ; Get the MSB
-    ldy TL+1
-    sta XL    ; put it in LSB
-    sty XL+1
     rts
