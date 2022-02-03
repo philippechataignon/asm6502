@@ -1,36 +1,35 @@
-XL = $FC
-YL = $FA
+XL = $FA
+YL = $FC
 TL = $EB
 
     org $803
 
-    lda YL    ; Get the multiplicand and
-    ldy YL+1
-    sta TL    ; put it in the scratchpad.
+    lda XL    ; Get the X value
+    ldy XL+1
+    sta TL    ; put X it in the scratchpad T
     sty TL+1
     ldy #0
-    sty YL    ; Zero-out the original multiplicand area.
-    sty YL+1
+    sty XL    ; Zero-out the original multiplicand area.
+    sty XL+1
 
     ldy #16   ; We'll loop 16 times.
-.L1 asl YL    ; Shift the entire 32 bits over one bit position.
-    rol YL+1
-    rol XL
+.L1 asl XL    ; Shift the entire 32 bits over one bit position.
     rol XL+1
-    bcc .L2    ; Skip the adding-in to the result if
+    rol XL+2
+    rol XL+3
+    bcc .L2   ; Skip the adding-in to the result if
               ; the high bit shifted out was 0.
-    clc       ; Else, add multiplier to intermediate result.
-    lda TL
-    adc YL
-    sta YL
-    lda TL+1
-    adc YL+1
-    sta YL+1
-
-    lda #0    ; If C=1, incr lo byte of hi cell.
+    clc       ; Else, add with carry to intermediate result.
+    lda TL    ; Add X (0,0,TH,TL) with carry to intermediate result
     adc XL
     sta XL
+    lda TL+1
+    adc XL+1
+    sta XL+1
+    lda #0    ; If C=1, incr XL+2 = third byte
+    adc XL+2
+    sta XL+2
 
 .L2 dey       ; If we haven't done 16 iterations yet,
-    bne .L1    ; then go around again.
+    bne .L1   ; then go around again.
     rts
