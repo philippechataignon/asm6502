@@ -1,22 +1,22 @@
-XL = $FA
-YL = $FC
-TL = $EB
+XL = $FA      ; X and result as XL..XL+3
+YL = $FC      ; Y and 16 high bits of result
+TL = $EB      ; T contains X initial value
 
     org $803
 
-    lda XL    ; Get the X value
+    lda XL    ; Put X in T
     ldy XL+1
-    sta TL    ; put X it in the scratchpad T
+    sta TL
     sty TL+1
     ldy #0
-    sty XL    ; Zero-out the original multiplicand area.
+    sty XL    ; Zero-out 2 LSB of result
     sty XL+1
 
-    ldy #16   ; We'll loop 16 times.
+    ldy #16   ; We'll loop 16 times over Y bits
 .L1 asl XL    ; Shift the entire 32 bits over one bit position.
     rol XL+1
-    rol XL+2
-    rol XL+3
+    rol XL+2  ; equivalent of YL
+    rol XL+3  ; equivalent of YH
     bcc .L2   ; Skip the adding-in to the result if
               ; the high bit shifted out was 0.
     clc       ; Else, add with carry to intermediate result.
