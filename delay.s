@@ -1,9 +1,9 @@
             ifndef ORG
-ORG         =     $300
+ORG         = $300
             endif
 
             if ORG > 0
-            org     ORG
+*           = ORG
             fi
 
 NDELAY      = $ef

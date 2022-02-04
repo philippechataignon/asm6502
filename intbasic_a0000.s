@@ -1,4 +1,4 @@
 ORG = $A000
-    
-    org ORG
+*   = ORG
+
     include "intbasic.s"

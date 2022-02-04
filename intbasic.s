@@ -1,9 +1,9 @@
             ifndef ORG
-ORG         =     $E000
+ORG         = $E000
             endif
 
             if ORG > 0
-            org     ORG
+*           = ORG
             fi
 
 ;*******************************************************************************
@@ -28,97 +28,97 @@ ORG         =     $E000
 ; file for Integer BASIC.  The entire program was written out by hand.         *
 ;*******************************************************************************
 
-ETX             equ     $03               ;Ctrl+C
-CR              equ     $0d               ;carriage return
-BLANK           equ     $20               ;space
-DQT             equ     $22               ;double quote
-MON_WNDWDTH     equ     $21               ;width of scroll window
-MON_CH          equ     $24               ;cursor horizontal displacement
-MON_CV          equ     $25               ;cursor vertical displacement
-MON_GBASL       equ     $26               ;base address for lo-res drawing (lo)
-MON_H2          equ     $2c               ;right end of horizontal line drawn by HLINE
-MON_V2          equ     $2d               ;bottom of vertical line drawn by VLINE
-MON_PROMPT      equ     $33               ;prompt character
-MON_A1L         equ     $3c               ;general purpose
-MON_A1H         equ     $3d               ;general purpose
-MON_A2L         equ     $3e               ;general purpose
-MON_A2H         equ     $3f               ;general purpose
-LOMEM           equ     $4a               ;pointer to start of variables
-HIMEM           equ     $4c               ;pointer to end of program
-MON_RNDL        equ     $4e               ;low byte of KEYIN "random" value
-MON_RNDH        equ     $4f               ;high byte of KEYIN "random" value
-NOUNSTKL        equ     $50               ;noun stack low bytes
-SYNSTKH         equ     $58               ;syntax stack high byte
-NOUNSTKH        equ     $78               ;noun stack high bytes
-SYNSTKL         equ     $80               ;syntax stack low bytes
-NOUNSTKC        equ     $a0               ;noun stack counter
-TXTNDXSTK       equ     $a8               ;text index stack
-TXTNDX          equ     $c8               ;text index val (OUTVAL)
-LEADBL          equ     $c9               ;leading blanks index (YTEMP)
-PP              equ     $ca               ;pointer to start of program
-PV              equ     $cc               ;pointer to end of vars
-ACC             equ     $ce               ;main accumulator
-SRCH            equ     $d0               ;pointer to search var table
-TOKNDXSTK       equ     $d1               ;token index stack
-SRCH2           equ     $d2               ;second var search pointer
-IFFLAG          equ     $d4               ;IF/THEN fail flag
-CRFLAG          equ     $d5               ;carriage return flag
-VERBNOW         equ     $d6               ;verb currently in use
-PRFLAG          equ     $d7               ;print it now flag
-XSAVE           equ     $d8               ;temp X-reg save
-RUNFLAG         equ     $d9               ;run mode flag
-AUX             equ     $da               ;aux counter
-PR              equ     $dc               ;current line value
-PX              equ     $e0               ;pointer to current verb
-P1              equ     $e2               ;aux pointer 1 (delete line ptr)
-P2              equ     $e4               ;aux pointer 2 (line num , next num, ...)
-P3              equ     $e6               ;aux pointer 3 (next ptr)
-TOKNDX          equ     $f1               ;token index val
-PCON            equ     $f2               ;continue pointer (PRDEC low/hi)
-AUTOINC         equ     $f4               ;auto line increment
-AUTOLN          equ     $f6               ;current auto line
-AUTOFLAG        equ     $f8               ;auto line mode flag ($ff=on)
-CHAR            equ     $f9               ;current char
-LEADZR          equ     $fa               ;leading zeroes index ($00,$a0,$b0)
-FORNDX          equ     $fb               ;FOR-NEXT loop index
-GOSUBNDX        equ     $fc               ;GOSUB index
-SYNSTKDX        equ     $fd               ;syntax stack index val
-SYNPAG          equ     $fe               ;pointer to syntax page
-STK_00          equ     $0100
-STK_10          equ     $0110
-STK_20          equ     $0120
-STK_30          equ     $0130
-STK_40          equ     $0140
-STK_50          equ     $0150
-STK_60          equ     $0160
-STK_70          equ     $0170
-STK_80          equ     $0180
-STK_90          equ     $0190
-STK_A0          equ     $01a0
-STK_B0          equ     $01b0
-STK_C0          equ     $01c0
-STK_D0          equ     $01d0
-IN              equ     $0200             ;input buffer
-KBD             equ     $c000             ;R last key pressed + 128
-KBDSTRB         equ     $c010             ;RW keyboard strobe
-MON_PLOT        equ     $f800             ;lo-res plot at X=Y-reg, Y=Acc
-MON_HLINE       equ     $f819             ;lo-res horiz line at Y=Acc with X from $2c
-MON_VLINE       equ     $f828             ;lo-res vert line at X=Y-reg and Y from Acc to $2b
-MON_GBASCALC    equ     $f847             ;compute gfx base addr for line in Acc
-MON_SETCOL      equ     $f864             ;set lo-res color to Acc
-MON_PREAD       equ     $fb1e             ;read paddle specifed by X-reg, return in Y-reg
-MON_SETTXT      equ     $fb39             ;set screen to text mode
-MON_SETGR       equ     $fb40             ;set screen to graphics mode
-MON_VTAB        equ     $fc22             ;tab to row specified in Acc
-MON_NXTCHAR     equ     $fd75
-MON_CROUT       equ     $fd8e             ;print a carriage return
-MON_COUT        equ     $fded             ;print Acc to output device via $36-37
-MON_INPORT      equ     $fe8b
-MON_OUTPORT     equ     $fe95
-MON_WRITE       equ     $fecd             ;write data to cassette
-MON_WRITE0      equ     $fecf
-MON_READ        equ     $fefd             ;read data from cassette
-MON_BELL        equ     $ff3a             ;sound bell
+ETX             = $03               ;Ctrl+C
+CR              = $0d               ;carriage return
+BLANK           = $20               ;space
+DQT             = $22               ;double quote
+MON_WNDWDTH     = $21               ;width of scroll window
+MON_CH          = $24               ;cursor horizontal displacement
+MON_CV          = $25               ;cursor vertical displacement
+MON_GBASL       = $26               ;base address for lo-res drawing (lo)
+MON_H2          = $2c               ;right end of horizontal line drawn by HLINE
+MON_V2          = $2d               ;bottom of vertical line drawn by VLINE
+MON_PROMPT      = $33               ;prompt character
+MON_A1L         = $3c               ;general purpose
+MON_A1H         = $3d               ;general purpose
+MON_A2L         = $3e               ;general purpose
+MON_A2H         = $3f               ;general purpose
+LOMEM           = $4a               ;pointer to start of variables
+HIMEM           = $4c               ;pointer to end of program
+MON_RNDL        = $4e               ;low byte of KEYIN "random" value
+MON_RNDH        = $4f               ;high byte of KEYIN "random" value
+NOUNSTKL        = $50               ;noun stack low bytes
+SYNSTKH         = $58               ;syntax stack high byte
+NOUNSTKH        = $78               ;noun stack high bytes
+SYNSTKL         = $80               ;syntax stack low bytes
+NOUNSTKC        = $a0               ;noun stack counter
+TXTNDXSTK       = $a8               ;text index stack
+TXTNDX          = $c8               ;text index val (OUTVAL)
+LEADBL          = $c9               ;leading blanks index (YTEMP)
+PP              = $ca               ;pointer to start of program
+PV              = $cc               ;pointer to end of vars
+ACC             = $ce               ;main accumulator
+SRCH            = $d0               ;pointer to search var table
+TOKNDXSTK       = $d1               ;token index stack
+SRCH2           = $d2               ;second var search pointer
+IFFLAG          = $d4               ;IF/THEN fail flag
+CRFLAG          = $d5               ;carriage return flag
+VERBNOW         = $d6               ;verb currently in use
+PRFLAG          = $d7               ;print it now flag
+XSAVE           = $d8               ;temp X-reg save
+RUNFLAG         = $d9               ;run mode flag
+AUX             = $da               ;aux counter
+PR              = $dc               ;current line value
+PX              = $e0               ;pointer to current verb
+P1              = $e2               ;aux pointer 1 (delete line ptr)
+P2              = $e4               ;aux pointer 2 (line num , next num, ...)
+P3              = $e6               ;aux pointer 3 (next ptr)
+TOKNDX          = $f1               ;token index val
+PCON            = $f2               ;continue pointer (PRDEC low/hi)
+AUTOINC         = $f4               ;auto line increment
+AUTOLN          = $f6               ;current auto line
+AUTOFLAG        = $f8               ;auto line mode flag ($ff=on)
+CHAR            = $f9               ;current char
+LEADZR          = $fa               ;leading zeroes index ($00,$a0,$b0)
+FORNDX          = $fb               ;FOR-NEXT loop index
+GOSUBNDX        = $fc               ;GOSUB index
+SYNSTKDX        = $fd               ;syntax stack index val
+SYNPAG          = $fe               ;pointer to syntax page
+STK_00          = $0100
+STK_10          = $0110
+STK_20          = $0120
+STK_30          = $0130
+STK_40          = $0140
+STK_50          = $0150
+STK_60          = $0160
+STK_70          = $0170
+STK_80          = $0180
+STK_90          = $0190
+STK_A0          = $01a0
+STK_B0          = $01b0
+STK_C0          = $01c0
+STK_D0          = $01d0
+IN              = $0200             ;input buffer
+KBD             = $c000             ;R last key pressed + 128
+KBDSTRB         = $c010             ;RW keyboard strobe
+MON_PLOT        = $f800             ;lo-res plot at X=Y-reg, Y=Acc
+MON_HLINE       = $f819             ;lo-res horiz line at Y=Acc with X from $2c
+MON_VLINE       = $f828             ;lo-res vert line at X=Y-reg and Y from Acc to $2b
+MON_GBASCALC    = $f847             ;compute gfx base addr for line in Acc
+MON_SETCOL      = $f864             ;set lo-res color to Acc
+MON_PREAD       = $fb1e             ;read paddle specifed by X-reg, return in Y-reg
+MON_SETTXT      = $fb39             ;set screen to text mode
+MON_SETGR       = $fb40             ;set screen to graphics mode
+MON_VTAB        = $fc22             ;tab to row specified in Acc
+MON_NXTCHAR     = $fd75
+MON_CROUT       = $fd8e             ;print a carriage return
+MON_COUT        = $fded             ;print Acc to output device via $36-37
+MON_INPORT      = $fe8b
+MON_OUTPORT     = $fe95
+MON_WRITE       = $fecd             ;write data to cassette
+MON_WRITE0      = $fecf
+MON_READ        = $fefd             ;read data from cassette
+MON_BELL        = $ff3a             ;sound bell
 
 BASIC           jsr     COLD
 BASIC2          jmp     WARM

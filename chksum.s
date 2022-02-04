@@ -1,17 +1,14 @@
-; Will do an EOR on a memory range
-; Usage: to do between 2A0 and 2E5
-; FA: A0 02 E5 02
-;
-STARTL      equ     $FA
-STARTH      equ     $FB
-ENDL        equ     $FC
-ENDH        equ     $FD
-CURL        equ     $FE
-CURH        equ     $FF
-RES         equ     $EC
-COUT1       equ     $FDF0
+STARTL      =     $FA
+STARTH      =     $FB
+ENDL        =     $FC
+ENDH        =     $FD
+CURL        =     $FE
+CURH        =     $FF
+RES         =     $EC
+COUT1       =     $FDF0
 
-            org     $2A0
+*           =     $2A0
+
 INIT
             ldy     STARTH      ; init CUR with START
             sty     CURH

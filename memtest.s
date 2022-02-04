@@ -18,16 +18,17 @@ CHR2SCR     macro
             sta SCREEN + \1 ; pos = param
             endm
 
-START       equ $FA
-END         equ $FB
-CURL        equ $FC
-CURH        equ $FD
-SCREEN      equ $400            ; line 0
-COUT1       equ $FDF0
-CR          equ $FC62
-HOME        equ $FC58
+START       = $FA
+END         = $FB
+CURL        = $FC
+CURH        = $FD
+SCREEN      = $400            ; line 0
+COUT1       = $FDF0
+CR          = $FC62
+HOME        = $FC58
 
-            org $280
+*           = $280
+
 INIT
             jsr HOME
             ldy #0

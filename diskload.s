@@ -1,73 +1,67 @@
             ifndef ORG
-ORG         =   $9000
+ORG         = $9000
             endif
 
             if ORG > 0
-            org     ORG
+*           = ORG
             fi
 
-load8000    =   $280
+load8000    = $280
 
 ; apple vectors
 
-dos         =   $9D84
-asrom       =   $9D72
-init        =   $A54F
-tapein      =   $C060        ; read tape interface
-motoroff    =   $C088        ; Turn drive motor off
-motoron     =   $C089        ; Turn drive motor on
-reboot      =   $FAA6        ; reboot machine
-tabv        =   $FB5B        ; move cursor to ch,a
-bascalc     =   $FBC1        ; calc line addr
-cleos       =   $FC42        ; clear to end of screen
-clear       =   $FC58        ; clear screen
-rdkey       =   $FD0C        ; read key
-crout       =   $FD8E        ; CR out sub
-prbyte      =   $FDDA        ; print byte in hex
-cout        =   $FDED        ; character out sub
-warm        =   $FF69        ; back to monitor
+dos         = $9D84
+asrom       = $9D72
+init        = $A54F
+tapein      = $C060        ; read tape interface
+motoroff    = $C088        ; Turn drive motor off
+motoron     = $C089        ; Turn drive motor on
+reboot      = $FAA6        ; reboot machine
+tabv        = $FB5B        ; move cursor to ch,a
+bascalc     = $FBC1        ; calc line addr
+cleos       = $FC42        ; clear to end of screen
+clear       = $FC58        ; clear screen
+rdkey       = $FD0C        ; read key
+crout       = $FD8E        ; CR out sub
+prbyte      = $FDDA        ; print byte in hex
+cout        = $FDED        ; character out sub
+warm        = $FF69        ; back to monitor
 
 ;            dos routines
 
-fm          =   $3D6        ; file manager entry
-;rwts       =   $3D9        ; RWTS jsr
-locfpl      =   $3DC        ; locate file manager paramlist jsr
-locrpl      =   $3E3        ; locate RWTS paramlist jsr
+fm          = $3D6         ; file manager entry
+;rwts       = $3D9         ; RWTS jsr
+locfpl      = $3DC         ; locate file manager paramlist jsr
+locrpl      = $3E3         ; locate RWTS paramlist jsr
 
 ;            zero page parameters
 
-begload     =   $D0        ; begin load location LSB/MSB
-endload     =   $D2        ; end load location LSB/MSB
-chksum      =   $D4        ; checksum location
-secnum      =   $D5        ; loop var
-trknum      =   $D6        ; loop var
-segcnt      =   $D7        ; loop var
-buffer      =   $D8        ; MSB of RWTS buffer
-trkcnt      =   $D9        ; track counter (0-6)
-pointer     =   $DA        ; pointer LSB/MSB
-prtptr      =   $DC        ; pointer LSB/MSB
-fmptr       =   $DE        ; file manager pointer
-flag        =   $E1        ; 0 = format, $80 = no format
+begload     = $D0          ; begin load location LSB/MSB
+endload     = $D2          ; end load location LSB/MSB
+chksum      = $D4          ; checksum location
+secnum      = $D5          ; loop var
+trknum      = $D6          ; loop var
+segcnt      = $D7          ; loop var
+buffer      = $D8          ; MSB of RWTS buffer
+trkcnt      = $D9          ; track counter (0-6)
+pointer     = $DA          ; pointer LSB/MSB
+prtptr      = $DC          ; pointer LSB/MSB
+fmptr       = $DE          ; file manager pointer
+flag        = $E1          ; 0 = format, $80 = no format
 
 ;             monitor vars
 
-ch          =   $24        ; cursor horizontal
-basl        =   $28        ; line addr form bascalc L
-bash        =   $29        ; line addr form bascalc H
-preg        =   $48        ; mon p reg
-line3       =   $580
+ch          = $24          ; cursor horizontal
+basl        = $28          ; line addr form bascalc L
+bash        = $29          ; line addr form bascalc H
+preg        = $48          ; mon p reg
+line3       = $580
 
 ;            other vars
 
-data        =   $1000         ; 7 track loaded in $1000-$8000
-enddata     =   $8000
-slot        =   $60         ; slot 6 * 16
-;boot1o      =    $96D0        ; tape loaded boot 1 location
-;boot1       =    $3D0         ; target boot 1 location
-;cmpbuf      =    $9200        ; buffer for sector check
-;count       =    $900
-
-            org    $9000
+data        = $1000        ; 7 track loaded in $1000-$8000
+enddata     = $8000        ;
+slot        = $60          ; slot 6 * 16
 
 start:
             jsr clear            ; clear screen
@@ -185,7 +179,6 @@ trkloop:
             ldy #4               ; offset in RWTS
             sta (pointer),y      ; write it to RWTS
 
-
                                  ;;;begin sector loop (16), backwards is faster, much faster
             lda #$F
             sta secnum
@@ -230,9 +223,8 @@ secloop:
             dec segcnt
             beq done             ; 0, all done with 5 segments
             jmp segloop
-                                         ;;;end segment loop
-
-                                         ;;; prompt for data only load?
+                                ;;;end segment loop
+                                ;;; prompt for data only load?
 done:
             jsr clrstatus
             lda #>donem          ; print done
@@ -284,7 +276,7 @@ print:
             sta prtptr+1         ; store A=MSB
             sty prtptr           ; store Y=LSB
             ldy #0
-.L1         lda (prtptr),y       ; 
+.L1         lda (prtptr),y       ;
             beq rts              ; return if 0 = end of string
             jsr cout
             iny
@@ -296,8 +288,6 @@ rwts:
             sta NDELAY
 delay:
             include "delay.s"
-
-;            align 8
 
 title:
             abyte -$40,"DISKLOAD" ; inverse

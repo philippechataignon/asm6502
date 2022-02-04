@@ -3,18 +3,18 @@ ORG         =     $280
             endif
 
             if ORG > 0
-            org     ORG
+*           = ORG
             fi
 
-cout        equ $FDED           ; character out sub
-prbyte      equ $FDDA           ; print byte in hex
-tapein      equ $C060           ; read tape interface
+cout        = $FDED           ; character out sub
+prbyte      = $FDDA           ; print byte in hex
+tapein      = $C060           ; read tape interface
 
 ; zero page parameters
 
-begload     equ $FA             ; begin load location LSB/MSB
-endload0    equ $FC             ; end load location LSB/MSB
-pointer     equ $EB             ; LSB/MSB pointer
+begload     = $FA             ; begin load location LSB/MSB
+endload0    = $FC             ; end load location LSB/MSB
+pointer     = $EB             ; LSB/MSB pointer
 
 mon_entry:
             lda begload         ; load begin LSB location

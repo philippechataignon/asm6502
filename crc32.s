@@ -1,9 +1,9 @@
             ifndef ORG
-ORG         =     $800
+ORG         = $800
             endif
 
             if ORG > 0
-            org     ORG
+*           = ORG
             fi
 
             ; Most reference books give the CRC-32 poly
@@ -12,17 +12,17 @@ ORG         =     $800
             ; to-left instead of left-to-right. Doing it
             ; this way means we won't have to explicitly
             ; reverse things afterwards
-POLY        =     $EDB88320
+POLY        = $EDB88320
 
-CRC         =     $EB
-START       =     $FA         ; 2 bytes
-END         =     $FC         ; 2 bytes
-CUR         =     $FE         ; 2 bytes
-COUT1       =     $FDF0
-CRCT0       =     $BC00       ; Four 256-byte tables
-CRCT1       =     $BD00       ; (should be page-aligned for speed)
-CRCT2       =     $BE00
-CRCT3       =     $BF00
+CRC         = $EB
+START       = $FA         ; 2 bytes
+END         = $FC         ; 2 bytes
+CUR         = $FE         ; 2 bytes
+COUT1       = $FDF0
+CRCT0       = $BC00       ; Four 256-byte tables
+CRCT1       = $BD00       ; (should be page-aligned for speed)
+CRCT2       = $BE00
+CRCT3       = $BF00
 
 INIT:
             jsr     MAKECRCTABLE

@@ -3,23 +3,23 @@ ORG         =     $BD00
             endif
 
             if ORG > 0
-            org     ORG
+* =  ORG
             fi
 
             ifndef VAR
 
-NUM         equ $FA             ; 4 bytes
-FLAG        equ $FE             ; 1 byte
-SAVE        equ $EB             ; 4 bytes
-PTR         equ $EB             ; 2 bytes
-TEMP        equ $EF             ; 1 byte
+NUM         = $FA             ; 4 bytes
+FLAG        = $FE             ; 1 byte
+SAVE        = $EB             ; 4 bytes
+PTR         = $EB             ; 2 bytes
+TEMP        = $EF             ; 1 byte
 
-CH          equ $24
-BASL        equ $28
-BUFF        equ $BF00
-IOADR       equ $C000
-KBDSTRB     equ $C010
-COUT1       equ $FDF0
+CH          = $24
+BASL        = $28
+BUFF        = $BF00
+IOADR       = $C000
+KBDSTRB     = $C010
+COUT1       = $FDF0
 
             fi
 
