@@ -1,0 +1,9 @@
+From https://github.com/cc65/wiki/wiki/Apple-II-6.-Zero-Page-locations-and-memory-usage
+
+06-09: 4
+19-1F: 7
+CE-CF: 2
+D6-D7: 2 ; D6 = lock
+E3:1
+EB-EF: 5
+FA-FF: 6
