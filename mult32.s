@@ -1,10 +1,15 @@
-X = $F0         ; X
-Y = $F4         ; Y
+    ifndef ORG
+ORG         = $BC00
+    endif
+
+X = $6          ; X
+Y = $EB         ; Y
 R = $FA         ; R result
-T = $EB
+T = $19         ; T temp
 
-
-* = $803
+    if ORG > 0
+* = ORG
+    fi
 
     lda #0      ; clear result
     sta R

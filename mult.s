@@ -2,7 +2,7 @@ XL = $FA      ; X and result as XL..XL+3
 YL = $FC      ; Y and 16 high bits of result
 TL = $EB      ; T contains X initial value
 
-* = $803
+* = $BC00
 
     lda XL    ; Put X in T
     ldy XL+1
@@ -29,7 +29,7 @@ L1  asl XL    ; 5 Shift the entire 32 bits over one bit position.
     lda #0    ; 3 If C=1, incr XL+2 = third byte
     adc XL+2  ; 3
     sta XL+2  ; 3  = 29 µs
-              ; total = 16 * 20 + 16 * 0.5 * 30 = 560 µs = 0.56 ms 
+              ; total = 16 * 20 + 16 * 0.5 * 30 = 560 µs = 0.56 ms
 L2  dey       ; If we haven't done 16 iterations yet,
     bne L1    ; then go around again.
     rts
