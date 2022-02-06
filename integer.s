@@ -9,10 +9,10 @@ ORG         =     $BD00
             ifndef VAR
 
 NUM         = $FA             ; 4 bytes
-FLAG        = $FE             ; 1 byte
+FLAG        = $E3             ; 1 byte
 SAVE        = $EB             ; 4 bytes
 PTR         = $EB             ; 2 bytes
-TEMP        = $EF             ; 1 byte
+TEMP        = $D7             ; 1 byte
 
 CH          = $24
 BASL        = $28
