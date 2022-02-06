@@ -4,18 +4,20 @@ ORG         = $BC00
 
 X = $6          ; X
 Y = $EB         ; Y
-R = $FA         ; R result
+M = $FA         ; R result
+    ifndef T
 T = $19         ; T temp
+    fi
 
     if ORG > 0
 * = ORG
     fi
 
     lda #0      ; clear result
-    sta R
-    sta R+1
-    sta R+2
-    sta R+3
+    sta M
+    sta M+1
+    sta M+2
+    sta M+3
     lda Y       ; copy Y to T
     sta T
     lda Y+1
@@ -25,28 +27,28 @@ T = $19         ; T temp
     lda Y+3
     sta T+3
     ldy #32     ; loop 32 times over Y bits
-L1  asl R       ; shift 32 bits R
-    rol R+1
-    rol R+2
-    rol R+3
+L1  asl M       ; shift 32 bits R
+    rol M+1
+    rol M+2
+    rol M+3
     asl T       ; shift 32 bits Y to get high bit
     rol T+1
     rol T+2
     rol T+3     ; get Y high bit in C
     bcc L2      ; skip if C=0
-    clc         ; else, add X to R
-    lda R
+    clc         ; else, add X to M
+    lda M
     adc X
-    sta R
-    lda R+1
+    sta M
+    lda M+1
     adc X+1
-    sta R+1
-    lda R+2
+    sta M+1
+    lda M+2
     adc X+2
-    sta R+2
-    lda R+3
+    sta M+2
+    lda M+3
     adc X+3
-    sta R+3
+    sta M+3
 L2  dey       ; 32 iterations ?
     bne L1    ; next Y bit
     rts

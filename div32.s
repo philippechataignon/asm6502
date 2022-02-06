@@ -1,14 +1,21 @@
-; div32.s
+        ifndef ORG
+ORG     = $BC80
+        endif
+
 SIZE    = 4
 
 ; N and R must be adjacent
 ; Zero-Page   ; INPUT   ; OUPUT
-T       = $19 ;         ;
+        ifndef T
+T       = $19
+        fi
 D       = $EB ; / d     ;
 N       = $F8 ; n       ; q = n/d
 R       = $FC ; 0       ; r = q - (n/d)*d
 
-* = $BB00
+        if ORG > 0
+*       = ORG
+        fi
 
         ; init R = 0
         ldx #SIZE-1
@@ -20,15 +27,15 @@ R       = $FC ; 0       ; r = q - (n/d)*d
         ; main loop: 32 iterations
         ldx #8*SIZE
 LOOP    asl N+0         ; Shift high bit of N into R
-        rol N+1
-        rol N+2
+        rol N+1         ; N LSB = 0 (ASL) and will be 1
+        rol N+2         ; if INC N below
         rol N+3         ; N high bit enters in R low
         rol R+0
         rol R+1
         rol R+2
         rol R+3
         sec
-        lda R+0         ; T = R - D
+        lda R+0         ; T = R - D on 32 bits
         sbc D+0
         sta T+0
         lda R+1
