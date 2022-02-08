@@ -1,9 +1,9 @@
-TOPT=--intel-hex -a -B -b
+TOPT=--intel-hex -B -q 
 VOPT=-maxerrors=50 -esc -quiet
 #VOPT=-maxerrors=50 -ast -esc -quiet
 
 %.bin: %.s
-	64tass $(TOPT) -L $(<:.s=.lst) -o "$@" "$<"
+	64tass $(TOPT) -b -L $(<:.s=.lst) -o "$@" "$<"
 
 %.hex: %.s
 	64tass $(TOPT) -L $(<:.s=.lst) -o "$@" "$<"
@@ -31,4 +31,4 @@ apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin 
 diskload.hex: delay.S
 
 clean:
-	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s))
+	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s)) *.bin *.hex *.lst
