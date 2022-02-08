@@ -1,28 +1,23 @@
-        ifndef ORG
-ORG     = $BC80
-        endif
-
+ORG     :?= $BC80
 SIZE    = 4
 
 ; N and R must be adjacent
 ; Zero-Page   ; INPUT   ; OUPUT
-        ifndef T
-T       = $19
-        fi
-D       = $EB ; / d     ;
-N       = $F8 ; n       ; q = n/d
-R       = $FC ; 0       ; r = q - (n/d)*d
+T       :?= $19
+D       :?= $EB ; / d     ;
+N       :?= $F8 ; n       ; q = n/d
+R       :?= $FC ; 0       ; r = q - (n/d)*d
 
-        if ORG > 0
+        .if ORG > 0
 *       = ORG
-        fi
+        .fi
 
         ; init R = 0
         ldx #SIZE-1
         ldy #0
-.L1     sty R,X
+_L1     sty R,X
         dex
-        bpl .L1
+        bpl _L1
 
         ; main loop: 32 iterations
         ldx #8*SIZE
@@ -51,10 +46,10 @@ LOOP    asl N+0         ; Shift high bit of N into R
         inc N           ; N LSB 0->1
         ; Update R <- T
         ldy #SIZE-1
-.L2     lda T,Y
+_L2     lda T,Y
         sta R,Y
         dey
-        bpl .L2
+        bpl _L2
 NEXT    dex        ; next bit
         bne LOOP   ; if any
         rts

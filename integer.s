@@ -1,12 +1,8 @@
-            ifndef ORG
-ORG         =     $BD00
-            endif
+ORG         :?=     $BD00
 
-            if ORG > 0
+            .if ORG > 0
 * =  ORG
-            fi
-
-            ifndef VAR
+            .fi
 
 NUM         = $FA             ; 4 bytes
 FLAG        = $E3             ; 1 byte
@@ -21,31 +17,29 @@ IOADR       = $C000
 KBDSTRB     = $C010
 COUT1       = $FDF0
 
-            fi
-
 INPUTNUM
             ldx #$0
-.L1         dex                 ; $FF at first iteration
-.L2         bit IOADR           ; key down?
-            bpl .L2             ; wait loop
+_L1         dex                 ; $FF at first iteration
+_L2         bit IOADR           ; key down?
+            bpl _L2             ; wait loop
             lda IOADR           ; get keycode
             bit KBDSTRB         ; clr key strobe
             cmp #$8D            ; return ?
             beq EXIT            ; yes, exit input loop
             cmp #$88            ; backspace ?
-            bne .L3             ; no, continue
+            bne _L3             ; no, continue
             cpx #$FF            ; yes, is first char ?
-            beq .L2             ; yes, do nothing
+            beq _L2             ; yes, do nothing
             dec CH              ; no, point to previous char
             inx
-            jmp .L2
-.L3         cmp #'0'+$80        ; test if num else pass
-            bcc .L2             ; if < '0', pass
+            jmp _L2
+_L3         cmp #'0'+$80        ; test if num else pass
+            bcc _L2             ; if < '0', pass
             cmp #'9'+$80+1
-            bcs .L2             ; if > '9', pass
+            bcs _L2             ; if > '9', pass
             sta BUFF,X          ; else store in BUFF
             jsr COUT1
-            jmp .L1
+            jmp _L1
 EXIT        txa                 ; copy X to A to compute nb digits in Y
             eor #$FF            ; inverse all bits
             sta TEMP
@@ -58,11 +52,11 @@ EXIT        txa                 ; copy X to A to compute nb digits in Y
             sty NUM+1
             sty NUM+2
             sty NUM+3
-.M0         lda (PTR),Y         ; get char (PTR is fixed)
+_L0         lda (PTR),Y         ; get char (PTR is fixed)
             and #$0F            ; keep low nibble
             tax                 ; X = index loop
             clc
-.M1         beq .M2             ; if X > 0, add POWER to NUM (32 bits)
+_L1         beq _L2             ; if X > 0, add POWER to NUM (32 bits)
             lda NUM
             adc POWER0,Y
             sta NUM
@@ -76,54 +70,54 @@ EXIT        txa                 ; copy X to A to compute nb digits in Y
             adc POWER3,Y
             sta NUM+3
             dex
-            jmp .M1             ; next add iteration
-.M2         iny
+            jmp _L1             ; next add iteration
+_L2         iny
             cpy TEMP
-            bcc .M0             ; next digit/char
+            bcc _L0             ; next digit/char
             rts
 
-POWER0      defb 1 & $ff
-            defb 10 & $ff
-            defb 100 & $ff
-            defb 1000 & $ff
-            defb 10000 & $ff
-            defb 100000 & $ff
-            defb 1000000 & $ff
-            defb 10000000 & $ff
-            defb 100000000 & $ff
-            defb 1000000000 & $ff
-POWER1      defb 1 >> 8 & $ff
-            defb 10 >> 8 & $ff
-            defb 100 >> 8 & $ff
-            defb 1000 >> 8 & $ff
-            defb 10000 >> 8 & $ff
-            defb 100000 >> 8 & $ff
-            defb 1000000 >> 8 & $ff
-            defb 10000000 >> 8 & $ff
-            defb 100000000 >> 8 & $ff
-            defb 1000000000 >> 8 & $ff
-POWER2      defb 1 >> 16 & $ff
-            defb 10 >> 16 & $ff
-            defb 100 >> 16 & $ff
-            defb 1000 >> 16 & $ff
-            defb 10000 >> 16 & $ff
-            defb 100000 >> 16 & $ff
-            defb 1000000 >> 16 & $ff
-            defb 10000000 >> 16 & $ff
-            defb 100000000 >> 16 & $ff
-            defb 1000000000 >> 16 & $ff
-POWER3      defb 1 >> 24 & $ff
-            defb 10 >> 24 & $ff
-            defb 100 >> 24 & $ff
-            defb 1000 >> 24 & $ff
-            defb 10000 >> 24 & $ff
-            defb 100000 >> 24 & $ff
-            defb 1000000 >> 24 & $ff
-            defb 10000000 >> 24 & $ff
-            defb 100000000 >> 24 & $ff
-            defb 1000000000 >> 24 & $ff
+POWER0      .byte 1 & $ff
+            .byte 10 & $ff
+            .byte 100 & $ff
+            .byte 1000 & $ff
+            .byte 10000 & $ff
+            .byte 100000 & $ff
+            .byte 1000000 & $ff
+            .byte 10000000 & $ff
+            .byte 100000000 & $ff
+            .byte 1000000000 & $ff
+POWER1      .byte 1 >> 8 & $ff
+            .byte 10 >> 8 & $ff
+            .byte 100 >> 8 & $ff
+            .byte 1000 >> 8 & $ff
+            .byte 10000 >> 8 & $ff
+            .byte 100000 >> 8 & $ff
+            .byte 1000000 >> 8 & $ff
+            .byte 10000000 >> 8 & $ff
+            .byte 100000000 >> 8 & $ff
+            .byte 1000000000 >> 8 & $ff
+POWER2      .byte 1 >> 16 & $ff
+            .byte 10 >> 16 & $ff
+            .byte 100 >> 16 & $ff
+            .byte 1000 >> 16 & $ff
+            .byte 10000 >> 16 & $ff
+            .byte 100000 >> 16 & $ff
+            .byte 1000000 >> 16 & $ff
+            .byte 10000000 >> 16 & $ff
+            .byte 100000000 >> 16 & $ff
+            .byte 1000000000 >> 16 & $ff
+POWER3      .byte 1 >> 24 & $ff
+            .byte 10 >> 24 & $ff
+            .byte 100 >> 24 & $ff
+            .byte 1000 >> 24 & $ff
+            .byte 10000 >> 24 & $ff
+            .byte 100000 >> 24 & $ff
+            .byte 1000000 >> 24 & $ff
+            .byte 10000000 >> 24 & $ff
+            .byte 100000000 >> 24 & $ff
+            .byte 1000000000 >> 24 & $ff
 
-            align 8
+            .align $100
 
 PRINTNUM
             lda FLAG                ; set P bit to 0
@@ -134,30 +128,30 @@ PRINTNUM
             dex
             stx TEMP                ; 0,1,3 for 8/16/32 bits
 
-.L0         lda NUM,X               ; saves NUM in SAVE
+_L0         lda NUM,X               ; saves NUM in SAVE
             sta SAVE,X
             dex
-            bpl .L0
+            bpl _L0
             bit FLAG                ; test bit 7 = S
-            bpl .L3                 ; bpl -> N = bit7 = S = 0
+            bpl _L3                 ; bpl -> N = bit7 = S = 0
             ldx TEMP
             lda NUM,X               ; high order byte
-            bpl .L3                 ; with bit7 = 0 -> unsigned
-.L1         lda NUM,X               ; negate x and output '-'
+            bpl _L3                 ; with bit7 = 0 -> unsigned
+_L1         lda NUM,X               ; negate x and output '-'
             eor #$ff
             sta NUM,X
             dex
-            bpl .L1
+            bpl _L1
             inc NUM
-            bne .L2
+            bne _L2
             inc NUM+1
-            bne .L2
+            bne _L2
             inc NUM+2
-            bne .L2
+            bne _L2
             inc NUM+3
-.L2         lda #'-'+$C0            ; '-' screen code
+_L2         lda #'-'+$C0            ; '-' screen code
             jsr COUT1
-.L3
+_L3
             ldx TEMP
             ldy NBLOOP,X            ; Offset to nb loop
             lda #%00000001
@@ -172,34 +166,34 @@ PRINTNUM
             jmp RESTORE
 
 PRINT8
-.L1
+_L1
             ldx #$FF
             sec                     ; Start with digit=-1
-.L2
+_L2
             lda NUM
             sbc POWER0,Y
             sta NUM                 ; Subtract current tens
             inx
-            bcs .L2                 ; Loop until <0
+            bcs _L2                 ; Loop until <0
             lda NUM
             adc POWER0,Y
             sta NUM                 ; Add current tens back in
             txa
-            bne .L3                 ; >0 -> print
+            bne _L3                 ; >0 -> print
             bit FLAG                ; bit 7 = N
-            bvc .L4                 ; if V==0 -> initial 0
-.L3
+            bvc _L4                 ; if V==0 -> initial 0
+_L3
             jsr PRXDIGIT            ; Print this digit
-.L4
+_L4
             dey
-            bpl .L1                 ; Loop for next digit
+            bpl _L1                 ; Loop for next digit
             jmp RESTORE
 
 PRINT16
-.L1
+_L1
             ldx #$FF
             sec                     ; Start with digit=-1
-.L2
+_L2
             lda NUM
             sbc POWER0,Y
             sta NUM                 ; Subtract current tens
@@ -207,7 +201,7 @@ PRINT16
             sbc POWER1,Y
             sta NUM+1
             inx
-            bcs .L2                 ; Loop until <0
+            bcs _L2                 ; Loop until <0
             lda NUM
             adc POWER0,Y
             sta NUM                 ; Add current tens back in
@@ -215,21 +209,21 @@ PRINT16
             adc POWER1,Y
             sta NUM+1
             txa
-            bne .L3                 ; >0 -> print
+            bne _L3                 ; >0 -> print
             bit FLAG                ; bit 7 = N
-            bvc .L4                 ; if V==0 -> initial 0
-.L3
+            bvc _L4                 ; if V==0 -> initial 0
+_L3
             jsr PRXDIGIT            ; Print this digit
-.L4
+_L4
             dey
-            bpl .L1                 ; Loop for next digit
+            bpl _L1                 ; Loop for next digit
             jmp RESTORE
 
 PRINT32
-.L1
+_L1
             ldx #$FF
             sec                     ; Start with digit=-1
-.L2
+_L2
             lda NUM
             sbc POWER0,Y
             sta NUM                 ; Subtract current tens
@@ -243,7 +237,7 @@ PRINT32
             sbc POWER3,Y
             sta NUM+3
             inx
-            bcs .L2                 ; Loop until <0
+            bcs _L2                 ; Loop until <0
             lda NUM
             adc POWER0,Y
             sta NUM                 ; Add current tens back in
@@ -257,20 +251,20 @@ PRINT32
             adc POWER3,Y
             sta NUM+3
             txa
-            bne .L3                 ; >0 -> print
+            bne _L3                 ; >0 -> print
             bit FLAG                ; bit 7 = N
-            bvc .L4                 ; if V==0 -> initial 0
-.L3
+            bvc _L4                 ; if V==0 -> initial 0
+_L3
             jsr PRXDIGIT            ; Print this digit
-.L4
+_L4
             dey
-            bpl .L1                 ; Loop for next digit
+            bpl _L1                 ; Loop for next digit
 RESTORE
             ldx TEMP
-.L0         lda SAVE,X
+_L0         lda SAVE,X
             sta NUM,X
             dex
-            bpl .L0
+            bpl _L0
             rts
 
 PRXDIGIT                            ; output digit in X
@@ -282,4 +276,4 @@ PRXDIGIT                            ; output digit in X
             sta FLAG
             rts                     ; Restore A and return
 
-NBLOOP      defb 2,4,0,9
+NBLOOP      .byte 2,4,0,9

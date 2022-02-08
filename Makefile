@@ -1,4 +1,4 @@
-TOPT=--intel-hex
+TOPT=--intel-hex -a -B -b
 VOPT=-maxerrors=50 -esc -quiet
 #VOPT=-maxerrors=50 -ast -esc -quiet
 

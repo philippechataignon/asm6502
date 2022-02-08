@@ -1,17 +1,13 @@
-    ifndef ORG
-ORG         = $BC00
-    endif
+ORG :?= $BC00
 
 X = $6          ; X
 Y = $EB         ; Y
 M = $FA         ; R result
-    ifndef T
-T = $19         ; T temp
-    fi
+T :?= $19         ; T temp
 
-    if ORG > 0
+    .if ORG > 0
 * = ORG
-    fi
+    .fi
 
     lda #0      ; clear result
     sta M
