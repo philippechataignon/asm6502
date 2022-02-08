@@ -20,10 +20,10 @@ print   .macro
         rts
 
         .include "printstr.s"
+        .include "apple_enc.inc"
+        .enc "apple"
 
-        .enc  "apple"
-        .cdef " _",$B0
-MSG     .null " !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_",$8D
-MSG2    .null "HELLO WORLD!"
-MSG3    .null "HELLO WORLD3!"
+MSG     .null " !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_"
+MSG2    .null "HELLO WORLD2!\n"
+MSG3    .null "HELLO WORLD3!\n\n\n"
 MSG4    .null "HELLO WORLD4!"

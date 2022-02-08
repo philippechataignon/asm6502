@@ -9,7 +9,7 @@
 ; will test $0500-$BFFF
 ; note : program location page can't be tested
 
-            .include "screen_enc.inc"
+            .include "apple_enc.inc"
 
 CHR2SCR     .macro
             ora #$B0        ; normal 0-9 -> B0 B9, A -> BA
@@ -89,9 +89,7 @@ CHAR1       CHR2SCR 38      ; output pos 38
 CHAR2       CHR2SCR 39      ; output pos 39
             rts
 
-            .enc "apple_n"
-            .cdef $20,$5F,$A0
-MSG_PASS    .text   "PASS"
-            .enc "apple_i"
-            .cdef $20,$5F,-$20
-MSG_ERR     .text   "ERR"
+            .enc "apple"
+MSG_PASS    .text   "PASS123!#$+-/]["
+            .enc "apple_inv"
+MSG_ERR     .text   "ERR123!#$+-/]["

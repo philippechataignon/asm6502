@@ -58,6 +58,8 @@ data        = $1000        ; 7 track loaded in $1000-$8000
 enddata     = $8000        ;
 slot        = $60          ; slot 6 * 16
 
+.include "apple_enc.inc"
+
 start:
             jsr clear            ; clear screen
             lda #>title          ; print title
@@ -284,22 +286,14 @@ rwts:
 delay:
             .include "delay.s"
 
-title:
+            .enc "apple_inv"
+title:      .null "DISKLOAD"
 
-inv         .macro
-                .for c in \1
-                .text c - $40
-                .next
-                .byte 0
-            .endm
-
-            inv "DISKLOAD" ; inverse
+diskerrorm:
+            .enc "apple_flash"
+            .null "DISK ERROR"
 
             .enc "apple"
-            .cdef " _",$A0
-            .edef "\n",$8d
-diskerrorm:
-            .null "DISK ERROR"
 donem:
             .null "DONE. PRESS ANY KEY TO REBOOT"
 loadm:
