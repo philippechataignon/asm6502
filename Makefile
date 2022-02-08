@@ -1,4 +1,4 @@
-TOPT=--intel-hex -B -q -m --tab-size=4 --line-numbers
+TOPT=--intel-hex -q -m --tab-size=4 --line-numbers
 VOPT=-maxerrors=50 -esc -quiet
 #VOPT=-maxerrors=50 -ast -esc -quiet
 
