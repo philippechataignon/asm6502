@@ -1,4 +1,4 @@
-;********************************************************************************
+;*****************************/**************************************************
 ;* Disassembly of Applesoft II BASIC, as found in the Apple ][+.                *
 ;*                                                                              *
 ;* This project is a conversion of Bob Sander-Cederlof's "S-C DocuMentor:       *
@@ -200,107 +200,107 @@ MON_WRITE   =     $fecd           ;write data to cassette
 MON_READ    =     $fefd           ;read data from cassette
 MON_READ2   =     $ff02           ;read data from cassette
 
-            org     $d000
+            *= $d000
 ; Branch table for tokens.  Entries are (address-1).
 TOKEN_ADDR_TABLE
-            word    END-1           ;token $80
-            word    FOR-1
-            word    NEXT-1
-            word    DATA-1
-            word    INPUT-1
-            word    DEL-1
-            word    DIM-1
-            word    READ-1
-            word    GR-1
-            word    TEXT-1
-            word    PR_NUMBER-1
-            word    IN_NUMBER-1
-            word    CALL-1
-            word    PLOT-1
-            word    HLIN-1
-            word    VLIN-1
-            word    HGR2-1          ;$90
-            word    HGR-1
-            word    HCOLOR-1
-            word    HPLOT-1
-            word    DRAW-1
-            word    XDRAW-1
-            word    HTAB-1
-            word    MON_HOME-1      ;HOME command goes directly to monitor routine
-            word    ROT-1
-            word    SCALE-1
-            word    SHLOAD-1
-            word    TRACE-1
-            word    NOTRACE-1
-            word    NORMAL-1
-            word    INVERSE-1
-            word    FLASH-1
-            word    COLOR-1         ;$a0
-            word    POP-1
-            word    VTAB-1
-            word    HIMEM-1
-            word    LOMEM-1
-            word    ONERR-1
-            word    RESUME-1
-            word    RECALL-1
-            word    STORE-1
-            word    SPEED-1
-            word    LET-1
-            word    GOTO-1
-            word    RUN-1
-            word    IF-1
-            word    RESTORE-1
-            word    AMPERV-1        ;jumps directly to the page 3 vector
-            word    GOSUB-1         ;$b0
-            word    POP-1           ;RETURN and POP go to same handler
-            word    REM-1
-            word    STOP-1
-            word    ONGOTO-1
-            word    WAIT-1
-            word    LOAD-1
-            word    SAVE-1
-            word    DEF-1
-            word    POKE-1
-            word    PRINT-1
-            word    CONT-1
-            word    LIST-1
-            word    CLEAR-1
-            word    GET-1
-            word    NEW-1           ;$bf
+            .word    END-1           ;token $80
+            .word    FOR-1
+            .word    NEXT-1
+            .word    DATA-1
+            .word    INPUT-1
+            .word    DEL-1
+            .word    DIM-1
+            .word    READ-1
+            .word    GR-1
+            .word    TEXT-1
+            .word    PR_NUMBER-1
+            .word    IN_NUMBER-1
+            .word    CALL-1
+            .word    PLOT-1
+            .word    HLIN-1
+            .word    VLIN-1
+            .word    HGR2-1          ;$90
+            .word    HGR-1
+            .word    HCOLOR-1
+            .word    HPLOT-1
+            .word    DRAW-1
+            .word    XDRAW-1
+            .word    HTAB-1
+            .word    MON_HOME-1      ;HOME command goes directly to monitor routine
+            .word    ROT-1
+            .word    SCALE-1
+            .word    SHLOAD-1
+            .word    TRACE-1
+            .word    NOTRACE-1
+            .word    NORMAL-1
+            .word    INVERSE-1
+            .word    FLASH-1
+            .word    COLOR-1         ;$a0
+            .word    POP-1
+            .word    VTAB-1
+            .word    HIMEM-1
+            .word    LOMEM-1
+            .word    ONERR-1
+            .word    RESUME-1
+            .word    RECALL-1
+            .word    STORE-1
+            .word    SPEED-1
+            .word    LET-1
+            .word    GOTO-1
+            .word    RUN-1
+            .word    IF-1
+            .word    RESTORE-1
+            .word    AMPERV-1        ;jumps directly to the page 3 vector
+            .word    GOSUB-1         ;$b0
+            .word    POP-1           ;RETURN and POP go to same handler
+            .word    REM-1
+            .word    STOP-1
+            .word    ONGOTO-1
+            .word    WAIT-1
+            .word    LOAD-1
+            .word    SAVE-1
+            .word    DEF-1
+            .word    POKE-1
+            .word    PRINT-1
+            .word    CONT-1
+            .word    LIST-1
+            .word    CLEAR-1
+            .word    GET-1
+            .word    NEW-1           ;$bf
 ; No direct pointer for $C0-C7: TAB(, TO, FN, SPC(, THEN, AT, NOT, STEP.  Math
 ; operation addresses are below, in MATHTBL.
-; 
+;
 ; Additional functions follow. Addresses are the actual entry points,
 ; unadjusted.
-            word    SGN             ;$d2
-            word    INT
-            word    ABS
-            word    USRVEC          ;jumps directly to zero-page vector
-            word    FRE
-            word    ERROR           ;SCRN(
-            word    PDL
-            word    POS
-            word    SQR
-            word    RND
-            word    LOG
-            word    EXP
-            word    COS
-            word    SIN
-            word    TAN             ;$e0
-            word    ATN
-            word    PEEK
-            word    LEN
-            word    STR
-            word    VAL
-            word    ASC
-            word    CHRSTR
-            word    LEFTSTR
-            word    RIGHTSTR
-            word    MIDSTR          ;$ea
+            .word    SGN             ;$d2
+            .word    INT
+            .word    ABS
+            .word    USRVEC          ;jumps directly to zero-page vector
+            .word    FRE
+            .word    ERROR           ;SCRN(
+            .word    PDL
+            .word    POS
+            .word    SQR
+            .word    RND
+            .word    LOG
+            .word    EXP
+            .word    COS
+            .word    SIN
+            .word    TAN             ;$e0
+            .word    ATN
+            .word    PEEK
+            .word    LEN
+            .word    STR
+            .word    VAL
+            .word    ASC
+            .word    CHRSTR
+            .word    LEFTSTR
+            .word    RIGHTSTR
+            .word    MIDSTR          ;$ea
 ; Math operator branch table
-; 
+;
 ; One-byte precedence code, followed by two-byte address - 1
-; 
+;
 ; P_OR   $46  "or" is lowest precedence
 ; P_AND  $50
 ; P_REL  $64  relational operators
@@ -308,138 +308,138 @@ TOKEN_ADDR_TABLE
 ; P_MUL  $7B  * and /
 ; P_PWR  $7D  exponentiation
 ; P_NEQ  $7F  unary - and comparison =
-MATHTBL     byte    P_ADD
-            word    FADDT-1         ;$C8 +
-            byte    P_ADD
-            word    FSUBT-1         ;$C9 -
-            byte    P_MUL
-            word    FMULTT-1        ;$CA *
-            byte    P_MUL
-            word    FDIVT-1         ;$CB /
-            byte    P_PWR
-            word    FPWRT-1         ;$CC ^
-            byte    P_AND
-            word    AND-1           ;$CD AND
-            byte    P_OR
-            word    OR-1            ;$CE OR
-M_NEG       byte    P_NEQ
-            word    NEGOP-1         ;$CF >
-M_EQU       byte    P_NEQ
-            word    EQUOP-1         ;$D0 =
-M_REL       byte    P_REL
-            word    RELOPS-1        ;$D1 <
+MATHTBL     .byte    P_ADD
+            .word    FADDT-1         ;$C8 +
+            .byte    P_ADD
+            .word    FSUBT-1         ;$C9 -
+            .byte    P_MUL
+            .word    FMULTT-1        ;$CA *
+            .byte    P_MUL
+            .word    FDIVT-1         ;$CB /
+            .byte    P_PWR
+            .word    FPWRT-1         ;$CC ^
+            .byte    P_AND
+            .word    ANDOP-1           ;$CD AND
+            .byte    P_OR
+            .word    OR-1            ;$CE OR
+M_NEG       .byte    P_NEQ
+            .word    NEGOP-1         ;$CF >
+M_EQU       .byte    P_NEQ
+            .word    EQUOP-1         ;$D0 =
+M_REL       .byte    P_REL
+            .word    RELOPS-1        ;$D1 <
 ;********************************************************************************
 ;* Token name table                                                             *
 ;********************************************************************************
 TOKEN_NAME_TABLE
-            byte   "EN","D"+$80           ;$80
-            byte   "FO","R"+$80           ;$81
-            byte   "NEX","T"+$80          ;$82
-            byte   "DAT","A"+$80          ;$83
-            byte   "INPU","T"+$80         ;$84
-            byte   "DE","L"+$80           ;$85
-            byte   "DI","M"+$80           ;$86
-            byte   "REA","D"+$80          ;$87
-            byte   "G","R"+$80            ;$88
-            byte   "TEX","T"+$80          ;$89
-            byte   "PR","#"+$80           ;$8a
-            byte   "IN","#"+$80           ;$8b
-            byte   "CAL","L"+$80          ;$8c
-            byte   "PLO","T"+$80          ;$8d
-            byte   "HLI","N"+$80          ;$8e
-            byte   "VLI","N"+$80          ;$8f
-            byte   "HGR","2"+$80          ;$90
-            byte   "HG","R"+$80           ;$91
-            byte   "HCOLOR","="+$80       ;$92
-            byte   "HPLO","T"+$80         ;$93
-            byte   "DRA","W"+$80          ;$94
-            byte   "XDRA","W"+$80         ;$95
-            byte   "HTA","B"+$80          ;$96
-            byte   "HOM","E"+$80          ;$97
-            byte   "ROT","="+$80          ;$98
-            byte   "SCALE","="+$80        ;$99
-            byte   "SHLOA","D"+$80        ;$9a
-            byte   "TRAC","E"+$80         ;$9b
-            byte   "NOTRAC","E"+$80       ;$9c
-            byte   "NORMA","L"+$80        ;$9d
-            byte   "INVERS","E"+$80       ;$9e
-            byte   "FLAS","H"+$80         ;$9f
-            byte   "COLOR","="+$80        ;$a0
-            byte   "PO","P"+$80           ;$a1
-            byte   "VTA","B"+$80          ;$a2
-            byte   "HIMEM",":"+$80        ;$a3
-            byte   "LOMEM",":"+$80        ;$a4
-            byte   "ONER","R"+$80         ;$a5
-            byte   "RESUM","E"+$80        ;$a6
-            byte   "RECAL","L"+$80        ;$a7
-            byte   "STOR","E"+$80         ;$a8
-            byte   "SPEED","="+$80        ;$a9
-            byte   "LE","T"+$80           ;$aa
-            byte   "GOT","O"+$80          ;$ab
-            byte   "RU","N"+$80           ;$ac
-            byte   "I","F"+$80            ;$ad
-            byte   "RESTOR","E"+$80       ;$ae
-            byte   "&"+$80                ;$af
-            byte   "GOSU","B"+$80         ;$b0
-            byte   "RETUR","N"+$80        ;$b1
-            byte   "RE","M"+$80           ;$b2
-            byte   "STO","P"+$80          ;$b3
-            byte   "O","N"+$80            ;$b4
-            byte   "WAI","T"+$80          ;$b5
-            byte   "LOA","D"+$80          ;$b6
-            byte   "SAV","E"+$80          ;$b7
-            byte   "DE","F"+$80           ;$b8
-            byte   "POK","E"+$80          ;$b9
-            byte   "PRIN","T"+$80         ;$ba
-            byte   "CON","T"+$80          ;$bb
-            byte   "LIS","T"+$80          ;$bc
-            byte   "CLEA","R"+$80         ;$bd
-            byte   "GE","T"+$80           ;$be
-            byte   "NE","W"+$80           ;$bf
-            byte   "TAB","("+$80          ;$c0
-            byte   "T","O"+$80            ;$c1
-            byte   "F","N"+$80            ;$c2
-            byte   "SPC","("+$80          ;$c3
-            byte   "THE","N"+$80          ;$c4
-            byte   "A","T"+$80            ;$c5
-            byte   "NO","T"+$80           ;$c6
-            byte   "STE","P"+$80          ;$c7
-            byte    "+"+$80             ;$c8
-            byte    "-"+$80             ;$c9
-            byte    "*"+$80             ;$ca
-            byte    "/"+$80             ;$cb
-            byte    "^"+$80             ;$cc
-            byte   "AN","D"+$80           ;$cd
-            byte   "O","R"+$80            ;$ce
-            byte    ">"+$80             ;$cf
-            byte    "="+$80             ;$d0
-            byte    "<"+$80             ;$d1
-            byte   "SG","N"+$80           ;$d2
-            byte   "IN","T"+$80           ;$d3
-            byte   "AB","S"+$80           ;$d4
-            byte   "US","R"+$80           ;$d5
-            byte   "FR","E"+$80           ;$d6
-            byte   "SCRN","("+$80         ;$d7
-            byte   "PD","L"+$80           ;$d8
-            byte   "PO","S"+$80           ;$d9
-            byte   "SQ","R"+$80           ;$da
-            byte   "RN","D"+$80           ;$db
-            byte   "LO","G"+$80           ;$dc
-            byte   "EX","P"+$80           ;$dd
-            byte   "CO","S"+$80           ;$de
-            byte   "SI","N"+$80           ;$df
-            byte   "TA","N"+$80           ;$e0
-            byte   "AT","N"+$80           ;$e1
-            byte   "PEE","K"+$80          ;$e2
-            byte   "LE","N"+$80           ;$e3
-            byte   "STR","$"+$80          ;$e4
-            byte   "VA","L"+$80           ;$e5
-            byte   "AS","C"+$80           ;$e6
-            byte   "CHR","$"+$80          ;$e7
-            byte   "LEFT","$"+$80         ;$e8
-            byte   "RIGHT","$"+$80        ;$e9
-            byte   "MID","$"+$80          ;$ea
-            byte    $00             ;end of token name table
+            .shift   "END"           ;$80
+            .shift   "FOR"           ;$81
+            .shift   "NEXT"          ;$82
+            .shift   "DATA"          ;$83
+            .shift   "INPUT"         ;$84
+            .shift   "DEL"           ;$85
+            .shift   "DIM"           ;$86
+            .shift   "READ"          ;$87
+            .shift   "GR"            ;$88
+            .shift   "TEXT"          ;$89
+            .shift   "PR#"           ;$8a
+            .shift   "IN#"           ;$8b
+            .shift   "CALL"          ;$8c
+            .shift   "PLOT"          ;$8d
+            .shift   "HLIN"          ;$8e
+            .shift   "VLIN"          ;$8f
+            .shift   "HGR2"          ;$90
+            .shift   "HGR"           ;$91
+            .shift   "HCOLOR="       ;$92
+            .shift   "HPLOT"         ;$93
+            .shift   "DRAW"          ;$94
+            .shift   "XDRAW"         ;$95
+            .shift   "HTAB"          ;$96
+            .shift   "HOME"          ;$97
+            .shift   "ROT="          ;$98
+            .shift   "SCALE="        ;$99
+            .shift   "SHLOAD"        ;$9a
+            .shift   "TRACE"         ;$9b
+            .shift   "NOTRACE"       ;$9c
+            .shift   "NORMAL"        ;$9d
+            .shift   "INVERSE"       ;$9e
+            .shift   "FLASH"         ;$9f
+            .shift   "COLOR="        ;$a0
+            .shift   "POP"           ;$a1
+            .shift   "VTAB"          ;$a2
+            .shift   "HIMEM:"        ;$a3
+            .shift   "LOMEM:"        ;$a4
+            .shift   "ONERR"         ;$a5
+            .shift   "RESUME"        ;$a6
+            .shift   "RECALL"        ;$a7
+            .shift   "STORE"         ;$a8
+            .shift   "SPEED="        ;$a9
+            .shift   "LET"           ;$aa
+            .shift   "GOTO"          ;$ab
+            .shift   "RUN"           ;$ac
+            .shift   "IF"            ;$ad
+            .shift   "RESTORE"       ;$ae
+            .shift   "&"             ;$af
+            .shift   "GOSUB"         ;$b0
+            .shift   "RETURN"        ;$b1
+            .shift   "REM"           ;$b2
+            .shift   "STOP"          ;$b3
+            .shift   "ON"            ;$b4
+            .shift   "WAIT"          ;$b5
+            .shift   "LOAD"          ;$b6
+            .shift   "SAVE"          ;$b7
+            .shift   "DEF"           ;$b8
+            .shift   "POKE"          ;$b9
+            .shift   "PRINT"         ;$ba
+            .shift   "CONT"          ;$bb
+            .shift   "LIST"          ;$bc
+            .shift   "CLEAR"         ;$bd
+            .shift   "GET"           ;$be
+            .shift   "NEW"           ;$bf
+            .shift   "TAB("          ;$c0
+            .shift   "TO"            ;$c1
+            .shift   "FN"            ;$c2
+            .shift   "SPC("          ;$c3
+            .shift   "THEN"          ;$c4
+            .shift   "AT"            ;$c5
+            .shift   "NOT"           ;$c6
+            .shift   "STEP"          ;$c7
+            .shift    "+"             ;$c8
+            .shift    "-"             ;$c9
+            .shift    "*"             ;$ca
+            .shift    "/"             ;$cb
+            .shift    "^"             ;$cc
+            .shift   "AND"           ;$cd
+            .shift   "OR"            ;$ce
+            .shift    ">"             ;$cf
+            .shift    "="             ;$d0
+            .shift    "<"             ;$d1
+            .shift   "SGN"           ;$d2
+            .shift   "INT"           ;$d3
+            .shift   "ABS"           ;$d4
+            .shift   "USR"           ;$d5
+            .shift   "FRE"           ;$d6
+            .shift   "SCRN("         ;$d7
+            .shift   "PDL"           ;$d8
+            .shift   "POS"           ;$d9
+            .shift   "SQR"           ;$da
+            .shift   "RND"           ;$db
+            .shift   "LOG"           ;$dc
+            .shift   "EXP"           ;$dd
+            .shift   "COS"           ;$de
+            .shift   "SIN"           ;$df
+            .shift   "TAN"           ;$e0
+            .shift   "ATN"           ;$e1
+            .shift   "PEEK"          ;$e2
+            .shift   "LEN"           ;$e3
+            .shift   "STR$"          ;$e4
+            .shift   "VAL"           ;$e5
+            .shift   "ASC"           ;$e6
+            .shift   "CHR$"          ;$e7
+            .shift   "LEFT$"         ;$e8
+            .shift   "RIGHT$"        ;$e9
+            .shift   "MID$"          ;$ea
+            .byte    $00             ;end of token name table
 ;********************************************************************************
 ;* Error messages                                                               *
 ;*                                                                              *
@@ -447,37 +447,37 @@ TOKEN_NAME_TABLE
 ;* start of the table from the address of the error.  Currently no way to do    *
 ;* that in SourceGen, so the constants are project symbols instead.)            *
 ;********************************************************************************
-ERROR_MSGS  byte   "NEXT WITHOUT FO","R"+$80
-            byte   "SYNTA","X"+$80
-            byte   "RETURN WITHOUT GOSU","B"+$80
-            byte   "OUT OF DAT","A"+$80
-            byte   "ILLEGAL QUANTIT","Y"+$80
-            byte   "OVERFLO","W"+$80
-            byte   "OUT OF MEMOR","Y"+$80
-            byte   "UNDEF'D STATEMEN","T"+$80
-            byte   "BAD SUBSCRIP","T"+$80
-            byte   "REDIM'D ARRA","Y"+$80
-            byte   "DIVISION BY ZER","O"+$80
-            byte   "ILLEGAL DIREC","T"+$80
-            byte   "TYPE MISMATC","H"+$80
-            byte   "STRING TOO LON","G"+$80
-            byte   "FORMULA TOO COMPLE","X"+$80
-            byte   "CAN'T CONTINU","E"+$80
-            byte   "UNDEF'D FUNCTIO","N"+$80
-QT_ERROR    byte   " ERROR",$07,$00
-QT_IN       byte   " IN ",$00
-QT_BREAK    byte   $0d,"BREAK",$07,$00
+ERROR_MSGS  .shift   "NEXT WITHOUT FO","R"
+            .shift   "SYNTA","X"
+            .shift   "RETURN WITHOUT GOSU","B"
+            .shift   "OUT OF DAT","A"
+            .shift   "ILLEGAL QUANTIT","Y"
+            .shift   "OVERFLO","W"
+            .shift   "OUT OF MEMOR","Y"
+            .shift   "UNDEF'D STATEMEN","T"
+            .shift   "BAD SUBSCRIP","T"
+            .shift   "REDIM'D ARRA","Y"
+            .shift   "DIVISION BY ZER","O"
+            .shift   "ILLEGAL DIREC","T"
+            .shift   "TYPE MISMATC","H"
+            .shift   "STRING TOO LON","G"
+            .shift   "FORMULA TOO COMPLE","X"
+            .shift   "CAN'T CONTINU","E"
+            .shift   "UNDEF'D FUNCTIO","N"
+QT_ERROR    .text   " ERROR",$07,$00
+QT_IN       .text   " IN ",$00
+QT_BREAK    .text   $0d,"BREAK",$07,$00
 
 ; Called by NEXT and FOR to scan through the stack for a frame with the same
 ; variable.
-; 
+;
 ;   FORPNT = address of variable if FOR or NEXT
 ;          = $xxFF if called from RETURN
 ;            <<< BUG: should be $FFxx >>>
-; 
+;
 ;   returns .NE. if variable not found,
 ;           X = stack ptr after skipping all frames
-; 
+;
 ;           .EQ. if variable found
 ;           X = stack ptr of frame found
 GTFORPNT    tsx
@@ -507,7 +507,7 @@ LD38B       txa                     ;no, so try next frame (if any)
 LD392       rts
 
 ; Move block of memory up
-; 
+;
 ;   On entry:
 ;     (Y,A) = HIGHDS = destination end + 1
 ;     LOWTR = lowest address of source
@@ -553,7 +553,7 @@ LD3CE       dec     HIGHTR+1        ;down to next block of 256
             rts                     ;no, finished
 
 ; Check if enough room left on stack for FOR, GOSUB, or expression evaluation.
-CHKMEM      asl     A
+CHKMEM      asl
             adc     #54
             bcs     MEMERR          ;...mem full err
             sta     INDEX
@@ -563,14 +563,14 @@ CHKMEM      asl     A
             rts
 
 ; Check if enough room between arrays and strings.
-; 
+;
 ;   (Y,A) = addr arrays need to grow to
 REASON      cpy     FRETOP+1        ;high byte
             bcc     LD40F           ;plenty of room
             bne     LD3ED           ;not enough, try garbage collection
             cmp     FRETOP          ;low byte
             bcc     LD40F           ;enough room
-; 
+;
 LD3ED       pha                     ;save (Y,A), TEMP1, and TEMP2
             ldx     #9              ;(should be #FAC-TEMP1-1)
             tya
@@ -690,7 +690,7 @@ LD49F       clc
             bcc     LD4A7
             dec     INDEX+1
             clc
-; 
+;
 LD4A7       lda     (INDEX),y       ;move higher lines of program
             sta     (DEST),y        ;down over the deleted line
             iny
@@ -699,7 +699,7 @@ LD4A7       lda     (INDEX),y       ;move higher lines of program
             inc     DEST+1
             dex
             bne     LD4A7
-; 
+;
 PUT_NEW_LINE
             lda     INPUT_BUFFER    ;any characters after line #?
             beq     FIX_LINKS       ;no, so nothing to insert
@@ -887,7 +887,7 @@ LD5FD       lda     (FAC),y         ;scan through table for BIT7 = 1
             iny                     ;next token one beyond that
             bne     LD604           ;...usually enough to bump Y-reg
             inc     FAC+1           ;next set of 256 token chars
-LD604       asl     A               ;see if sign bit set on char
+LD604       asl                     ;see if sign bit set on char
             bcc     LD5FD           ;no, more in this name
             lda     (FAC),y         ;yes, at next name; end of table?
             bne     LD5A8           ;no, not end of table
@@ -901,7 +901,7 @@ LD610       sta     INPUT_BUFFER-3,y ;store another 00 on end
             rts
 
 ; Search for line
-; 
+;
 ;   LINNUM = line # to find
 ;   if not found: carry = 0
 ;                 LOWTR points at next line
@@ -955,7 +955,7 @@ SCRTCH      lda     #$00
             adc     #$00
             sta     VARTAB+1
             sta     PRGEND+1
-; 
+;
 SETPTRS     jsr     STXTPT          ;set TXTPTR to TXTTAB - 1
             lda     #$00            ;(this could have been byte $2C)
 ;********************************************************************************
@@ -973,7 +973,7 @@ CLEARC      lda     MEMSIZE         ;clear string area
             sta     STREND          ;low end of free space
             sty     STREND+1
             jsr     RESTORE         ;set DATA pointer to beginning
-; 
+;
 STKINI      ldx     #TEMPST
             stx     TEMPPT
             pla                     ;save return address
@@ -1199,7 +1199,7 @@ LD7E5       ldy     #$00
             sta     TXTPTR
             bcc     TRACE_
             inc     TXTPTR+1
-; 
+;
 TRACE_      bit     TRCFLG          ;is trace on?
             bpl     LD81D           ;no
             ldx     CURLIN+1        ;yes, are we running?
@@ -1218,7 +1218,7 @@ LD81D       jsr     CHRGET          ;get first chr of statement
 GOEND       beq     END4
 
 ; Execute a statement
-; 
+;
 ;   A-reg is first char of statement
 ;   Carry is set
 EXECUTE_STATEMENT
@@ -1228,7 +1228,7 @@ EXECUTE_STATEMENT_1
             bcc     LD83F           ;not token, must be LET
             cmp     #$40            ;statement-type token?
             bcs     SYNERR_1        ;no, syntax error
-            asl     A               ;double to get index
+            asl                     ;double to get index
             tay                     ;into address table
             lda     TOKEN_ADDR_TABLE+1,y
             pha                     ;put address on stack
@@ -1457,7 +1457,7 @@ POP         bne     RTS_5
             cmp     #TOK_GOSUB      ;last GOSUB found?
             beq     RETURN
             ldx     #ERR_NOGOSUB
-            byte    $2C ; bit    $5aa2           ;fake: BIT xxxx skips ahead to JMP ERROR
+            .byte    $2C ; bit    $5aa2           ;fake: BIT xxxx skips ahead to JMP ERROR
 UNDERR      ldx     #ERR_UNDEFSTAT
             jmp     ERROR
 
@@ -1491,7 +1491,7 @@ RTS_6       rts
 
 ; Scan ahead to next ':' or EOL
 DATAN       ldx     #":"            ;get offset in Y to EOL or ':'
-            byte    $2C             ; bit     FAC_SIGN      ;fake
+            .byte    $2C             ; bit     FAC_SIGN      ;fake
 REMN        ldx     #$00            ;to EOL only
             stx     CHARAC
             ldy     #$00
@@ -1575,20 +1575,20 @@ LDA12       bcs     RTS_7           ;not a digit
             cmp     #$19            ;(should be #>6400) line # too large?
             bcs     ON_1            ;yes, > 63999, go indirectly to "SYNTAX ERROR"
 ; <<< DANGEROUS CODE >>>
-; 
+;
 ; Note that if A-reg = $AB on the line above, ON_1 will compare = and cause a
 ; catastrophic jump to $22D9 (for GOTO), or other locations for other calls to
 ; LINGET.
-; 
+;
 ; You can see this if you first put BRK in $22D9, then type "GO TO 437761".
-; 
+;
 ; Any value from 437760 through 440319 will cause the problem.  ($AB00-ABFF)
-; 
+;
 ; <<< DANGEROUS CODE >>>
             lda     LINNUM          ;multiply by ten
-            asl     A
+            asl
             rol     INDEX
-            asl     A
+            asl
             rol     INDEX
             adc     LINNUM
             sta     LINNUM
@@ -1622,11 +1622,11 @@ LET         jsr     PTRGET          ;get <var>
             pha
             jsr     FRMEVL          ;evalute <exp>
             pla
-            rol     A
+            rol
             jsr     CHKVAL
             bne     LET_STRING
             pla
-; 
+;
 LET2        bpl     LDA77           ;real variable
             jsr     ROUND_FAC       ;integer var: round to 32 bits
             jsr     AYINT           ;truncate to 16 bits
@@ -1729,7 +1729,7 @@ LDB0E       adc     #16
             and     #$f0            ;round to 16 or 32
             sta     MON_CH
             bcc     PR_NEXT_CHAR    ;...always
-; 
+;
 PR_TAB_OR_SPC
             php                     ;C=0 for SPC(, C=1 for TAB(
             jsr     GTBYTC          ;get value
@@ -1747,7 +1747,7 @@ LDB21       plp                     ;TAB( or SPC(
 LDB2B       inx
 NXSPC       dex
             bne     DOSPC           ;more spaces to print
-; 
+;
 PR_NEXT_CHAR
             jsr     CHRGET
             jmp     PRINT2          ;continue parsing print list
@@ -1774,10 +1774,10 @@ LDB44       dex
             jmp     LDB44
 
 OUTSP       lda     #" "            ;print a space
-            byte    $2C             ;bit    $3fa9           ;skip over next line
+            .byte    $2C             ;bit    $3fa9           ;skip over next line
 OUTQUES     lda     #"?"            ;print question mark
 ; Print char from A-reg
-; 
+;
 ; Note: POKE 243,32 ($20 in $F3) will convert output to lower case.  This can be
 ; cancelled by NORMAL, INVERSE, or FLASH or POKE 243,0.
 OUTDO       ora     #$80            ;print A-reg
@@ -1807,7 +1807,7 @@ ERLIN       sta     CURLIN
             jmp     SYNERR
 
 INPERR      pla
-; 
+;
 RESPERR     bit     ERRFLG          ;ON ERR turned on?
             bpl     LDB90           ;no, give reentry a try
             ldx     #254            ;error code = 254
@@ -1864,11 +1864,11 @@ NXIN        jsr     OUTQUES         ;print "?"
 READ        ldx     DATPTR          ;(Y,X) points at next DATA statement
             ldy     DATPTR+1
             lda     #$98            ;set INPUTFLG=$98
-            byte    $2C             ;bit     $00a9         ;trick to PROCESS_INPUT_LIST
+            .byte    $2C             ;bit     $00a9         ;trick to PROCESS_INPUT_LIST
 INPUT_FLAG_ZERO
             lda     #$00            ;set INPUTFLG = $00
 ; Process input list
-; 
+;
 ;   (Y,X) is address of input data string
 ;   A-reg = value for INPUTFLG: $00 for INPUT
 ;                               $40 for GET
@@ -2001,8 +2001,8 @@ LDCD1       ldy     #$00            ;INPUT: any more chars on line?
 
 LDCDE       rts
 
-ERR_EXTRA   byte   "?EXTRA IGNORED",$0d,$00
-ERR_REENTRY byte   "?REENTER",$0d,$00
+ERR_EXTRA   .text   "?EXTRA IGNORED",$0d,$00
+ERR_REENTRY .text   "?REENTER",$0d,$00
 
 ;********************************************************************************
 ;* NEXT statement                                                               *
@@ -2070,11 +2070,11 @@ LDD55       txa                     ;pop off FOR-frame, loop is done
 FRMNUM      jsr     FRMEVL
 ; Make sure FAC is numeric
 CHKNUM      clc
-            byte    $24             ; bit    MON_KSWL        ;dummy for skip
+            .byte    $24             ; bit    MON_KSWL        ;dummy for skip
 ; Make sure FAC is string
 CHKSTR      sec
 ; Make sure FAC is correct type.
-; 
+;
 ;   if C=0, type must be numeric
 ;   if C=1, type must be string
 CHKVAL      bit     VALTYP          ;$00 if numeric, $FF if string
@@ -2093,8 +2093,8 @@ FRMEVL      ldx     TXTPTR          ;decrement TXTPTR
             dec     TXTPTR+1
 LDD81       dec     TXTPTR
             ldx     #$00            ;start with precedence = 0
-            byte    $24             ;bit    $48             ;track to skip following PHA
-; 
+            .byte    $24             ;bit    $48             ;track to skip following PHA
+;
 FRMEVL_1    pha                     ;push relops flags
             txa
             pha                     ;save last precedence
@@ -2103,7 +2103,7 @@ FRMEVL_1    pha                     ;push relops flags
             jsr     FRM_ELEMENT     ;get an element
             lda     #$00
             sta     CPRTYP          ;clear comparison operator flags
-; 
+;
 FRMEVL_2    jsr     CHRGOT          ;check for relational operators
 LDD98       sec                     ;> is $CF, = is $D0, < is $D1
             sbc     #TOK_GREATER    ;> is 0, = is 1, < is 2
@@ -2111,7 +2111,7 @@ LDD98       sec                     ;> is $CF, = is $D0, < is $D1
             cmp     #3
             bcs     LDDB4           ;not relational operator
             cmp     #1              ;set carry if "=" or "<"
-            rol     A               ;now > is 0, = is 3, < is 5
+            rol               ;now > is 0, = is 3, < is 5
             eor     #$01            ;now > is 1, = is 2, < is 4
             eor     CPRTYP          ;set bits of CPRTYP:  00000<=>
             cmp     CPRTYP          ;check for illegal combinations
@@ -2131,10 +2131,10 @@ LDDB4       ldx     CPRTYP          ;did we find a relational operator?
 
 LDDC5       adc     #$ff            ;+-*/ is 0123
             sta     INDEX
-            asl     A               ;multiply by 3
+            asl               ;multiply by 3
             adc     INDEX           ;+-*/ is 0,3,6,9
             tay
-; 
+;
 ; Clear variables
 LASTOP      =    $87    ;Overlaps with TXPSV
 SGNCPR      =    $ab    ;Overlaps with STRNG1
@@ -2157,7 +2157,7 @@ SAVOP       jsr     FRM_RECURSE     ;save rest, call FRMEVL recursively
 FRM_RELATIONAL
             lsr     VALTYP          ;VALTYP = 0 (numeric), = $FF (string)
             txa                     ;set CPRTYP to 0000<=>C
-            rol     A               ;where C=0 if #, C=1 if string
+            rol               ;where C=0 if #, C=1 if string
             ldx     TXTPTR          ;back up TXTPTR
             bne     LDDEE
             dec     TXTPTR+1
@@ -2182,7 +2182,7 @@ FRM_RECURSE lda     MATHTBL+2,y
 SNTXERR     jmp     SYNERR
 
 ; Stack (FAC)
-; 
+;
 ; Three entry points:
 ;   _1, from FRMEVL
 ;   _2, from STEP
@@ -2216,7 +2216,7 @@ NOTMATH     ldy     #$ff            ;set up to exit routine
             pla
 GOEX        beq     EXIT            ;exit if no math to do
 ; Perform stacked operation.
-; 
+;
 ;   A-reg = precedence byte
 ;   Stack: 1 - CPRMASK
 ;          5 - ARG
@@ -2226,10 +2226,10 @@ FRM_PERFORM_1
             beq     LDE41           ;yes, allow string compare
             jsr     CHKNUM          ;must be numeric value
 LDE41       sty     LASTOP
-; 
+;
 FRM_PERFORM_2
             pla                     ;get 0000<=>C from stack
-            lsr     A               ;shift to 00000<=> form
+            lsr               ;shift to 00000<=> form
             sta     CPRMASK         ;00000<=>
             pla
             sta     ARG             ;get floating point value off stack,
@@ -2249,7 +2249,7 @@ EXIT        lda     FAC             ;FAC exponent in A-reg
             rts                     ;status .EQ. if FAC=0; RTS goes to perform operation
 
 ; Get element in expression
-; 
+;
 ; Get value of variable or number at TXTPNT, or point to string descriptor if a
 ; string, and put in FAC.
 FRM_ELEMENT lda     #$00            ;assume numeric
@@ -2269,7 +2269,7 @@ LDE6C       jsr     ISLETC          ;variable name?
             cmp     #'"'            ;string constant?
             bne     NOT_            ;no
 ; String constant element
-; 
+;
 ;   Set (Y,A) = TXTPTR + carry
 STRTXT      lda     TXTPTR          ;add carry to get address of 1st char
             ldy     TXTPTR+1
@@ -2280,7 +2280,7 @@ LDE8A       jsr     STRLIT          ;build descriptor to string; get address of 
             jmp     POINT           ;point TXTPTR after trailing quote
 
 ; NOT function
-; 
+;
 ;   if FAC=0, return FAC=1
 ;   if FAC<>0, return FAC=0
 NOT_        cmp     #TOK_NOT
@@ -2292,7 +2292,7 @@ NOT_        cmp     #TOK_NOT
 EQUOP       lda     FAC             ;set TRUE if FAC = zero
             bne     LDE9F           ;false
             ldy     #$01            ;true
-            byte    $2C             ;bit     $00a0         ;trick to skip next 2 bytes
+            .byte    $2C             ;bit     $00a0         ;trick to skip next 2 bytes
 LDE9F       ldy     #$00            ;false
             jmp     SNGFLT
 
@@ -2308,9 +2308,9 @@ SGN_        cmp     #TOK_SGN
 PARCHK      jsr     CHKOPN          ;is there a '(' at TXTPTR?
             jsr     FRMEVL          ;yes, evaluate expression
 CHKCLS      lda     #")"            ;check for ')'
-            byte    $2C             ;bit    $28a9           ;trick
+            .byte    $2C             ;bit    $28a9           ;trick
 CHKOPN      lda     #"("
-            byte    $2C             ;bit    $2ca9           ;trick
+            .byte    $2C             ;bit    $2ca9           ;trick
 CHKCOM      lda     #","            ;comma at TXTPTR?
 ; Unless char at TXTPTR = A-reg, syntax error
 SYNCHR      ldy     #$00
@@ -2362,7 +2362,7 @@ SCREEN      jsr     CHRGET
 
 UNARY       cmp     #TOK_SCRN       ;not unary, do special
             beq     SCREEN
-            asl     A               ;double token to get index
+            asl               ;double token to get index
             pha
             tax
             jsr     CHRGET
@@ -2400,12 +2400,12 @@ LDF3F       lda     $cfdc,y         ;(should be UNFNC - TOK_SGN - TOK_SGN + $100
 OR          lda     ARG             ;OR operator
             ora     FAC             ;if result nonzero, it is true
             bne     TRUE
-AND         lda     ARG             ;AND operator
+ANDOP       lda     ARG             ;AND operator
             beq     FALSE           ;if either is zero, result is false
             lda     FAC
             bne     TRUE
 FALSE       ldy     #$00            ;return FAC=0
-            byte    $2C             ;bit    $01a0           ;trick
+            .byte    $2C             ;bit    $01a0           ;trick
 TRUE        ldy     #$01            ;return FAC=1
             jmp     SNGFLT
 
@@ -2450,7 +2450,7 @@ STRCMP_1    iny
             dex
             bne     STRCMP_2        ;more chars in both strings
             ldx     FAC_SIGN        ;if = so far, decide by length
-; 
+;
 NUMCMP      bmi     CMPDONE
             clc
             bcc     CMPDONE         ;...always
@@ -2461,10 +2461,10 @@ STRCMP_2    lda     (ARG+3),y
             ldx     #$ff            ;in case ARG greater
             bcs     CMPDONE         ;it is
             ldx     #$01            ;FAC greater
-; 
+;
 CMPDONE     inx                     ;convert FF,0,1 to 0,1,2
             txa
-            rol     A               ;and to 0,2,4 if C=0, else 1,2,5
+            rol               ;and to 0,2,4 if C=0, else 1,2,5
             and     CPRMASK         ;00000<=>
             beq     LDFCA           ;if no match: false
             lda     #$01            ;at least one match: true
@@ -2490,13 +2490,13 @@ DIM         tax                     ;non-zero, flags PTRGET DIM called
             rts
 
 ; PTRGET - general variable scan
-; 
+;
 ; Scans variable name at TXTPTR, and searches the VARTAB and ARYTAB for the
 ; name.  If not found, create variable of appropriate type.  Return with address
 ; in VARPNT and (Y,A).
-; 
+;
 ; Actual activity controlled somewhat by two flags:
-; 
+;
 ;   DIMFLG - nonzero if called from DIM
 ;            else = 0
 ;   SUBFLG - = $00
@@ -2524,7 +2524,7 @@ NAMOK       ldx     #$00
 
             jmp     RESTART
 
-            byte    $00             ;wasted byte
+            .byte    $00             ;wasted byte
 
 PTRGET4     jsr     CHRGET          ;second char of variable name
             bcc     LE011           ;numeric
@@ -2590,10 +2590,10 @@ LE073       clc
             bne     LE059           ;...always
 
 ; Check if A-reg is ASCII letter A-Z
-; 
+;
 ; Return carry = 1 if A-Z
 ;              = 0 if not
-; 
+;
 ; <<< NOTE: faster and shorter code: >>>
 ;    cmp #'Z'+1  ;compare hi end
 ;    bcs .1      ;above A-Z
@@ -2622,16 +2622,16 @@ NAME_NOT_FOUND
             ldy     #>C_ZERO        ;point to a constant zero
             rts                     ;new variable used in expression = 0
 
-C_ZERO      word    $0000           ;integer or real zero, or null string
+C_ZERO      .word    $0000           ;integer or real zero, or null string
 
 ; Make a new simple variable
-; 
+;
 ; Move arrays up 7 bytes to make room for new variable.  Enter 7-byte variable
 ; data in the hole.
 ; Clear variables
-NUMDIM      =    $0f    
-ARYPNT      =    $94    
-INDX        =    $99    
+NUMDIM      =    $0f
+ARYPNT      =    $94
+INDX        =    $99
 
 MAKE_NEW_VARIABLE
             lda     ARYTAB          ;set up call to BLTU to
@@ -2684,10 +2684,10 @@ LE0E8       sta     VARPNT          ;address in VARPNT and (Y,A)
             rts
 
 ; Compute address of first value in array
-; 
+;
 ; ARYPNT = LOWTR + #dims*2 + 5
 GETARY      lda     NUMDIM          ;get # of dimensions
-GETARY2     asl     A               ;#dims*2 (size of each dim in 2 bytes)
+GETARY2     asl               ;#dims*2 (size of each dim in 2 bytes)
             adc     #5              ;+ 5 (2 for name, 2 for offset to next array, 1 for #dims)
             adc     LOWTR           ;address of this array in ARYTAB
             ldy     LOWTR+1
@@ -2699,7 +2699,7 @@ LE0F9       sta     ARYPNT          ;address of first value in array
 
 ; <<< meant to be -32768, which would be 9080000000 >>>
 ; <<< 1 byte short, so picks up $20 from next instruction >>>
-NEG32768    byte   $90,$80,$00,$00        ;-32768.00049 in floating point
+NEG32768    .byte   $90,$80,$00,$00        ;-32768.00049 in floating point
 
 ; Evaluate numeric formula at TXTPTR, converting result to integer 0 <= X <=
 ; 32767 in FAC+3,4
@@ -2793,7 +2793,7 @@ LE188       iny                     ;point at offset to next array
 
 ; ERROR: bad subscripts
 SUBERR      ldx     #ERR_BADSUBS
-            byte    $2C             ;bit    $35a2           ;trick to skip next line
+            .byte    $2C             ;bit    $35a2           ;trick to skip next line
 ; ERROR: illegal quantity
 IQERR       ldx     #ERR_ILLQTY
 JER         jmp     ERROR
@@ -2905,7 +2905,7 @@ LE22E       dec     ARYPNT+1        ;point to next page
             bne     RTS_9           ;yes, we are finished
             iny                     ;no, now need to find the element
 ; Find specified array element
-; 
+;
 ; LOWTR,y points at # of dims in array descriptor.  The subscripts are all on
 ; the stack as integers.
 FIND_ARRAY_ELEMENT
@@ -2927,7 +2927,7 @@ FAE_1       sta     STRNG2+1
             txa
             cmp     (LOWTR),y
             bcc     FAE_3           ;not too large
-; 
+;
 GSE         jmp     SUBERR          ;bad subscripts error
 
 GME         jmp     MEMERR          ;mem full error
@@ -2969,7 +2969,7 @@ LE298       stx     RESULT+2        ;set up multiplier
             lda     VARPNT          ; and in (Y,A)
 RTS_9       rts
 
-; Multiply STRNG2 by (LOWTR,Y) leaving product in (A,X).  Hi-byte also in Y. 
+; Multiply STRNG2 by (LOWTR,Y) leaving product in (A,X).  Hi-byte also in Y.
 ; Used only by array subscript routines.
 MULTIPLY_SUBSCRIPT
             sty     INDEX           ;save Y-reg
@@ -2984,10 +2984,10 @@ MULTIPLY_SUBS_1
             ldx     #$00            ;product = 0 initially
             ldy     #$00
 LE2C0       txa                     ;double product
-            asl     A               ;low byte
+            asl               ;low byte
             tax
             tya                     ;high byte
-            rol     A               ;if too large, set carry
+            rol               ;if too large, set carry
             tay
             bcs     GME             ;too large, "mem full error"
             asl     STRNG2          ;next bit of multiplicand
@@ -3022,7 +3022,7 @@ LE2E5       jsr     GARBAG          ;collect all the garbage in sight
             sbc     STREND+1        ;free space in (Y,A)
 ; Fall into GIVAYF to float the value.  Note that values over 32767 will return
 ; as negative.
-; 
+;
 ; Float the signed integer in (A,Y).
 GIVAYF      ldx     #$00            ;mark FAC value type real
             stx     VALTYP
@@ -3047,7 +3047,7 @@ ERRDIR      ldx     CURLIN+1        ;=$FF if direct mode
             inx                     ;makes $FF into zero
             bne     RTS_9           ;return if running mode
             ldx     #ERR_ILLDIR     ;direct mode, give error
-            byte    $2C             ;bit    LE0A2           ;trick to skip next 2 bytes
+            .byte    $2C             ;bit    LE0A2           ;trick to skip next 2 bytes
 UNDFNC      ldx     #ERR_UNDEFFUNC  ;undefined function error
             jmp     ERROR
 
@@ -3143,7 +3143,7 @@ LE3A9       pla                     ;retrieve TXTPTR after FN call
             sta     TXTPTR+1
 ; Stack now has 5-byte value of the argument variable, and FNCNAM points at the
 ; variable.
-; 
+;
 ; Store five bytes from stack at FNCNAM.
 FNCDATA     ldy     #$00
             pla
@@ -3196,7 +3196,7 @@ STRLIT      ldx     #'"'            ;set up literal scan to stop on
             stx     ENDCHR
 ; Build a descriptor for string starting at (Y,A) and terminated by $00, CHARAC,
 ; or ENDCHR.
-; 
+;
 ; Return with descriptor in a temporary and address of descriptor in FAC+3,4.
 STRLT2      sta     STRNG1          ;save address of string
             sty     STRNG1+1
@@ -3231,7 +3231,7 @@ LE41F       tya                     ;length of string
             ldy     STRNG1+1
             jsr     MOVSTR          ;move it in
 ; Store descriptor in temporary descriptor stack.
-; 
+;
 ; The descriptor is now in FAC, FAC+1, FAC+2.  Put address of temp descriptor in
 ; FAC+3,4.
 PUTNEW      ldx     TEMPPT          ;pointer to next temp string slot
@@ -3264,9 +3264,9 @@ PUTEMP      lda     FAC             ;copy temp descriptor into temp stack
             rts
 
 ; Make space for string at bottom of string space.
-; 
+;
 ;   A-reg = # bytes space to make
-; 
+;
 ; Return with A-reg same, and (Y,X) = address of space allocated
 GETSPA      lsr     GARFLG          ;clear signbit of flag
 LE454       pha                     ;A-reg holds length
@@ -3371,7 +3371,7 @@ LE4D9       sta     INDEX           ;set up ptr to start of array
             iny
             lda     (INDEX),y       ;# of dimensions for this array
             ldy     #$00
-            asl     A               ;preamble size = 2*#dims + 5
+            asl               ;preamble size = 2*#dims + 5
             adc     #5
             adc     INDEX           ;make index point at first element
             sta     INDEX           ; in the array
@@ -3440,7 +3440,7 @@ MOVE_HIGHEST_STRING_TO_TOP
             beq     CHECK_EXIT      ;no, return
             lda     LENGTH          ;get length of variable element
             and     #$04            ;was 7 or 3, make 4 or 0
-            lsr     A               ;2 or 0; in simple variables,
+            lsr               ;2 or 0; in simple variables,
             tay                     ; name precedes descriptor
             sta     LENGTH          ;2 or 0
             lda     (FNCNAM),y      ;get length from descriptor
@@ -3758,13 +3758,13 @@ POINT       ldx     STRNG2
             rts
 
 ; Evalute "EXP1,EXP2"
-; 
+;
 ;   Convert EXP1 to 16-bit number in LINNUM
 ;   Convert EXP2 to 8-bit number in X-reg
 GTNUM       jsr     FRMNUM
             jsr     GETADR
 ; Evaluate ",expression"
-; 
+;
 ;   Convert expression to single byte in X-reg
 COMBYTE     jsr     CHKCOM          ;must have comma first
             jmp     GETBYT          ;convert expression to byte in X-reg
@@ -3858,7 +3858,7 @@ LE7C6       ldx     FAC_EXTENSION
             stx     ARG_EXTENSION
             ldx     #ARG            ;set up to shift ARG
             lda     ARG             ;exponent
-; 
+;
 FADD_2      tay
             beq     RTS_10          ;if ARG=0, we are finished
             sec
@@ -3960,7 +3960,7 @@ NORMALIZE_FAC_3
             rol     FAC+3
             rol     FAC+2
             rol     FAC+1
-; 
+;
 NORMALIZE_FAC_4
             bpl     NORMALIZE_FAC_3 ;until top bit = 1
             sec
@@ -4022,7 +4022,7 @@ OVERFLOW    ldx     #ERR_OVERFLOW
 ; Shift 1,X through 5,X right
 ;   A-reg = negative of shift count
 ;   X-reg = pointer to bytes to be shifted
-; 
+;
 ;   Return with Y-reg=0, carry=0, extension bits in A-reg
 SHIFT_RIGHT_1
             ldx     #RESULT-1       ;shift result right
@@ -4056,26 +4056,26 @@ SHIFT_RIGHT_4
             ror     2,x
             ror     3,x
             ror     4,x
-            ror     A               ;extension
+            ror               ;extension
             iny                     ;count the shift
             bne     SHIFT_RIGHT_3
 SHIFT_RIGHT_5
             clc                     ;return with carry clear
             rts
 
-CON_ONE     byte   $81,$00,$00,$00,$00
-POLY_LOG    byte   3               ;# of coefficients - 1
-            byte   $7f,$5e,$56,$cb,$79      ;* X^7 +
-            byte   $80,$13,$9b,$0b,$64      ;* X^5 +
-            byte   $80,$76,$38,$93,$16      ;* X^3 +
-            byte   $82,$38,$aa,$3b,$20      ;* X
-; 
+CON_ONE     .byte   $81,$00,$00,$00,$00
+POLY_LOG    .byte   3               ;# of coefficients - 1
+            .byte   $7f,$5e,$56,$cb,$79      ;* X^7 +
+            .byte   $80,$13,$9b,$0b,$64      ;* X^5 +
+            .byte   $80,$76,$38,$93,$16      ;* X^3 +
+            .byte   $82,$38,$aa,$3b,$20      ;* X
+;
 CON_SQR_HALF
-            byte   $80,$35,$04,$f3,$34
-CON_SQR_TWO byte   $81,$35,$04,$f3,$34
+            .byte   $80,$35,$04,$f3,$34
+CON_SQR_TWO .byte   $81,$35,$04,$f3,$34
 CON_NEG_HALF
-            byte   $80,$80,$00,$00,$00
-CON_LOG_TWO byte   $80,$31,$72,$17,$f8
+            .byte   $80,$80,$00,$00,$00
+CON_LOG_TWO .byte   $80,$31,$72,$17,$f8
 
 ;********************************************************************************
 ;* LOG statement                                                                *
@@ -4138,7 +4138,7 @@ LE987       jsr     ADD_EXPONENTS
 MULTIPLY_1  bne     MULTIPLY_2      ;this byte non-zero
             jmp     SHIFT_RIGHT_1   ;A-reg=0, just shift ARG right 8
 
-MULTIPLY_2  lsr     A               ;shift bit into carry
+MULTIPLY_2  lsr               ;shift bit into carry
             ora     #$80            ;supply sentinel bit
 LE9B8       tay                     ;remaining multiplier to Y-reg
             bcc     LE9D4           ;this multiplier bit = 0
@@ -4161,7 +4161,7 @@ LE9D4       ror     RESULT
             ror     RESULT+3
             ror     FAC_EXTENSION
             tya                     ;remaining multiplier
-            lsr     A               ;LSB into carry
+            lsr               ;LSB into carry
             bne     LE9B8           ;if sentinel still here, multiply
 RTS_13      rts                     ;8 x 32 completed
 
@@ -4193,7 +4193,7 @@ LOAD_ARG_FROM_YA
             rts
 
 ; Add exponents of ARG and FAC (called by FMULT and FDIV).
-; 
+;
 ; Also check for overflow, and set result sign.
 ADD_EXPONENTS
             lda     ARG
@@ -4204,7 +4204,7 @@ ADD_EXPONENTS_1
             bcc     LEA1B           ;in range
             bmi     JOV             ;overflow
             clc
-            byte    $2C             ;bit    $1410           ;trick to skip
+            .byte    $2C             ;bit    $1410           ;trick to skip
 LEA1B       bpl     ZERO            ;overflow
             adc     #$80            ;re-bias
             sta     FAC             ;result
@@ -4244,7 +4244,7 @@ MUL10       jsr     COPY_FAC_TO_ARG_ROUNDED
             beq     JOV             ;overflow
 LEA4F       rts
 
-CON_TEN     byte   $84,$20,$00,$00,$00
+CON_TEN     .byte   $84,$20,$00,$00,$00
 
 ; Divide FAC by 10.
 DIV10       jsr     COPY_FAC_TO_ARG_ROUNDED
@@ -4282,7 +4282,7 @@ LEA80       ldy     ARG+1           ;see if FAC can be subtracted
             ldy     ARG+4
             cpy     FAC+4
 LEA96       php                     ;save the answer, and also roll the
-            rol     A               ; bit into the quotient, sentinel out
+            rol               ; bit into the quotient, sentinel out
             bcc     LEAA3           ;no sentinel, still not 8 trips
             inx                     ;8 trips, store byte of quotient
             sta     RESULT+3,x
@@ -4318,12 +4318,12 @@ LEAB4       tay                     ;save quotient/sentinel byte
 LEAD1       lda     #$40            ;do a few extension bits
             bne     LEAA3           ;...always
 
-LEAD5       asl     A               ;left justify the extension bits we did
-            asl     A
-            asl     A
-            asl     A
-            asl     A
-            asl     A
+LEAD5       asl               ;left justify the extension bits we did
+            asl
+            asl
+            asl
+            asl
+            asl
             sta     FAC_EXTENSION
             plp
             jmp     COPY_RESULT_INTO_FAC
@@ -4370,7 +4370,7 @@ LOAD_FAC_FROM_YA
 ; Round FAC, store in TEMP2.
 STORE_FAC_IN_TEMP2_ROUNDED
             ldx     #TEMP2          ;pack FAC into TEMP2
-            byte    $2C             ;bit    $93a2           ;trick to branch
+            .byte    $2C             ;bit    $93a2           ;trick to branch
 ; Round FAC, store in TEMP1.
 STORE_FAC_IN_TEMP1_ROUNDED
             ldx     #TEMP1          ;pack FAC into TEMP1
@@ -4440,14 +4440,14 @@ INCREMENT_MANTISSA
             jmp     NORMALIZE_FAC_6 ;hi byte = 0, so shift left
 
 ; Test FAC for zero and sign.
-; 
+;
 ;   FAC > 0, return +1
 ;   FAC = 0, return  0
 ;   FAC < 0, return -1
 SIGN        lda     FAC             ;check sign of FAC and
             beq     RTS_15          ; return -1,0,1 in A-reg
 SIGN1       lda     FAC_SIGN
-SIGN2       rol     A               ;msbit to carry
+SIGN2       rol               ;msbit to carry
             lda     #$ff            ;-1
             bcs     RTS_15          ;msbit = 1
             lda     #$01            ;+1
@@ -4463,13 +4463,13 @@ FLOAT       sta     FAC+1           ;put in high byte of mantissa
             sta     FAC+2
             ldx     #$88            ;use exponent 2^9
 ; Float unsigned value in FAC+1,2.
-; 
+;
 ;   X-reg = exponent
 FLOAT_1     lda     FAC+1           ;msbit=0, set carry; =1, clear carry
             eor     #$ff
-            rol     A
+            rol
 ; Float unsigned value in FAC+1,2
-; 
+;
 ;   X-reg = exponent
 ;   C=0 to make value negative
 ;   C=1 to make value positive
@@ -4530,10 +4530,10 @@ LEBE9       lda     FAC_SIGN        ;numbers are different
 LEBEF       jmp     SIGN2           ;convert +1 or -1
 
 ; Quick integer function.
-; 
+;
 ; Converts fp value in FAC to integer value in FAC+1 ... FAC+4, by shifting
 ; right with sign extension until fractional bits are out.
-; 
+;
 ; This subroutine assumes the exponent < 32.
 QINT        lda     FAC             ;look at FAC exponent
             beq     QINT_3          ;FAC=0, so finished
@@ -4578,7 +4578,7 @@ INT         lda     FAC             ;check if exponent < 32
             lda     FAC_SIGN        ;get sign of value
             sty     FAC_SIGN        ;Y=0, clear sign
             eor     #$80            ;toggle actual sign
-            rol     A               ;and save in carry
+            rol               ;and save in carry
             lda     #$a0            ;set exponent to 32
             sta     FAC             ; because 4-byte integer now
             lda     FAC+4           ;save low 8 bits of integer form
@@ -4593,7 +4593,7 @@ QINT_3      sta     FAC+1           ;FAC=0, so clear all 4 bytes for
 RTS_17      rts
 
 ; Convert string to FP value in FAC.
-; 
+;
 ;   String pointed to by TXTPTR
 ;   First char already scanned by CHRGET
 ;   A-reg=first char, C=0 if digit
@@ -4637,7 +4637,7 @@ FIN_3       cmp     #"."            ;check for decimal point
             bne     FIN_6           ;...always, number completed
 
 LEC85       ror     EXPSGN          ;C=1, set flag negative
-; 
+;
 FIN_4       jsr     CHRGET          ;get next digit of exponent
 FIN_5       bcc     GETEXP          ;char is a digit of exponent
 FIN_6       bit     EXPSGN          ;end of number, check exp sign
@@ -4656,7 +4656,7 @@ FIN_10      ror     DPFLG           ;C=1, set DPFLG for decimal point
 ; operator between.
 ; "PRINT 11..22" gives no error, because it is just the concatenation of two
 ; numbers.
-; 
+;
 ; Number terminated, adjust exponent now.
 FIN_7       lda     EXPON           ;E-value
 FIN_8       sec                     ;modify with count of digits
@@ -4710,11 +4710,11 @@ GETEXP      lda     EXPON           ;check current value
             bmi     LED05           ;large negative exponent makes FAC=0
             jmp     OVERFLOW        ;large positive exponent is error
 
-LECF7       asl     A               ;exponent times 10
-            asl     A
+LECF7       asl               ;exponent times 10
+            asl
             clc
             adc     EXPON
-            asl     A
+            asl
             clc                     ;<<< ASL already did this! >>>
             ldy     #$00            ;add the new digit
             adc     (TXTPTR),y      ;but this is in ASCII
@@ -4724,10 +4724,10 @@ LED05       sta     EXPON           ;new value
             jmp     FIN_4           ;back for more
 
 CON_99999999_9
-            byte   $9b,$3e,$bc,$1f,$fd      ;99,999,999.9
+            .byte   $9b,$3e,$bc,$1f,$fd      ;99,999,999.9
 CON_999999999
-            byte   $9e,$6e,$6b,$27,$fd      ;999,999,999
-CON_BILLION byte   $9e,$6e,$6b,$28,$00      ;1,000,000,000
+            .byte   $9e,$6e,$6b,$27,$fd      ;999,999,999
+CON_BILLION .byte   $9e,$6e,$6b,$28,$00      ;1,000,000,000
 
 ; Print "IN <LINE #>".
 INPRT       lda     #<QT_IN         ;print " IN "
@@ -4798,7 +4798,7 @@ LED7F       jsr     DIV10           ;too large, divide by ten
 LED86       jsr     FADDH           ;round adjusted result
 LED89       jsr     QINT            ;convert adjusted value to 32-bit integer
 ; FAC+1 ... FAC+4 is now in integer form with power of ten adjustment in TMPEXP.
-; 
+;
 ; If -10 < TMPEXP > 1, print in decimal form.  Otherwise, print in exponential
 ; form.
 FOUT_2      ldx     #$01            ;assume 1 digit before "."
@@ -4921,17 +4921,17 @@ FOUT_6      lda     #<STACK         ;point (Y,A) at beginning of string
             ldy     #>STACK         ;(STR$ started string at STACK-1, but
             rts                     ; STR$ doesn't use (Y,A) anyway.)
 
-CON_HALF    byte   $80,$00,$00,$00,$00      ;fp constant 0.5
+CON_HALF    .byte   $80,$00,$00,$00,$00      ;fp constant 0.5
 ; Powers of 10 from 1e8 down to 1, as 32-bit integers, with alternating signs.
-DECTBL      byte   $fa,$0a,$1f,$00        ;-100000000
-            byte   $00,$98,$96,$80        ;10000000
-            byte   $ff,$f0,$bd,$c0        ;-1000000
-            byte   $00,$01,$86,$a0        ;100000
-            byte   $ff,$ff,$d8,$f0        ;-10000
-            byte   $00,$00,$03,$e8        ;1000
-            byte   $ff,$ff,$ff,$9c        ;-100
-            byte   $00,$00,$00,$0a        ;10
-            byte   $ff,$ff,$ff,$ff        ;-1
+DECTBL      .byte   $fa,$0a,$1f,$00        ;-100000000
+            .byte   $00,$98,$96,$80        ;10000000
+            .byte   $ff,$f0,$bd,$c0        ;-1000000
+            .byte   $00,$01,$86,$a0        ;100000
+            .byte   $ff,$ff,$d8,$f0        ;-10000
+            .byte   $00,$00,$03,$e8        ;1000
+            .byte   $ff,$ff,$ff,$9c        ;-100
+            .byte   $00,$00,$00,$0a        ;10
+            .byte   $ff,$ff,$ff,$ff        ;-1
 
 ;********************************************************************************
 ;* SQR statement                                                                *
@@ -4944,7 +4944,7 @@ SQR         jsr     COPY_FAC_TO_ARG_ROUNDED
             ldy     #>CON_HALF
             jsr     LOAD_FAC_FROM_YA
 ; Exponentiation operation
-; 
+;
 ; ARG ^ FAC = EXP( LOG(ARG) * FAC )
 FPWRT       beq     EXP             ;if FAC=0, ARG^FAC=EXP(0)
             lda     ARG             ;if ARG=0, ARG^FAC=0
@@ -4972,7 +4972,7 @@ LEEBA       jsr     MFA             ;move argument to FAC
             jsr     FMULT
             jsr     EXP             ;E ^ log(FAC)
             pla                     ;get flag for negative ARG
-            lsr     A               ;<<< LSR,BCC could be merely BPL >>>
+            lsr               ;<<< LSR,BCC could be merely BPL >>>
             bcc     RTS_18          ;not negative, finished
 ; Negate value in FAC.
 NEGOP       lda     FAC             ;if FAC=0, no need to complement
@@ -4982,16 +4982,16 @@ NEGOP       lda     FAC             ;if FAC=0, no need to complement
             sta     FAC_SIGN
 RTS_18      rts
 
-CON_LOG_E   byte   $81,$38,$aa,$3b,$29      ;log(e) to base 2
-POLY_EXP    byte   7               ;(# of terms in polynomial) - 1
-            byte   $71,$34,$58,$3e,$56      ;(LOG(2)^7)/8!
-            byte   $74,$16,$7e,$b3,$1b      ;(LOG(2)^6)/7!
-            byte   $77,$2f,$ee,$e3,$85      ;(LOG(2)^5)/6!
-            byte   $7a,$1d,$84,$1c,$2a      ;(LOG(2)^4)/5!
-            byte   $7c,$63,$59,$58,$0a      ;(LOG(2)^3)/4!
-            byte   $7e,$75,$fd,$e7,$c6      ;(LOG(2)^2)/3!
-            byte   $80,$31,$72,$18,$10      ;LOG(2)/2!
-            byte   $81,$00,$00,$00,$00      ;1
+CON_LOG_E   .byte   $81,$38,$aa,$3b,$29      ;log(e) to base 2
+POLY_EXP    .byte   7               ;(# of terms in polynomial) - 1
+            .byte   $71,$34,$58,$3e,$56      ;(LOG(2)^7)/8!
+            .byte   $74,$16,$7e,$b3,$1b      ;(LOG(2)^6)/7!
+            .byte   $77,$2f,$ee,$e3,$85      ;(LOG(2)^5)/6!
+            .byte   $7a,$1d,$84,$1c,$2a      ;(LOG(2)^4)/5!
+            .byte   $7c,$63,$59,$58,$0a      ;(LOG(2)^3)/4!
+            .byte   $7e,$75,$fd,$e7,$c6      ;(LOG(2)^2)/3!
+            .byte   $80,$31,$72,$18,$10      ;LOG(2)/2!
+            .byte   $81,$00,$00,$00,$00      ;1
 
 ;********************************************************************************
 ;* EXP statement                                                                *
@@ -5025,7 +5025,7 @@ LEF27       jsr     INT             ;get INT(FAC)
             sec                     ;back to normal bias
             sbc     #$01
             pha                     ;save exponent
-; 
+;
             ldx     #5              ;swap ARG and FAC
 LEF37       lda     ARG,x           ;<<< why swap? it is doing      >>>
             ldy     FAC,x           ;<<< -(A-B) when (B-A) is the   >>>
@@ -5047,14 +5047,14 @@ LEF37       lda     ARG,x           ;<<< why swap? it is doing      >>>
             rts                     ;<<< wasted byte here, could have just JMP ADD_EXPONENTS_1 >>>
 
 ; Odd polynomial subroutine
-; 
+;
 ;   F(x) = x * P(x^2)
-; 
+;
 ;   where: x is value in FAC
 ;          (Y,A) points at coefficient table
 ;          first byte of coeff. table is N
 ;          coefficients follow, highest power first
-; 
+;
 ;   P(x^2) computed using normal polynomial subroutine
 POLYNOMIAL_ODD
             sta     SERPNT          ;save address of coefficient table
@@ -5068,9 +5068,9 @@ POLYNOMIAL_ODD
             jmp     FMULT           ;multiply x by P(x^2) and exit
 
 ; Normal polynomial subroutine
-; 
+;
 ;   P(x) = C(0)*x^n + C(1)*x^(n-1) + ... + C(n)
-; 
+;
 ;   where: x is value in FAC
 ;          (Y,A) points at coefficient table
 ;          first byte of coeff. table is N
@@ -5103,8 +5103,8 @@ LEF96       sta     SERPNT
             bne     LEF89           ; then add another term
 RTS_19      rts                     ;finished
 
-CON_RND_1   byte   $98,$35,$44,$7a        ;<<< these are missing one byte >>>
-CON_RND_2   byte   $68,$28,$b1,$46        ;<<< for fp values              >>>
+CON_RND_1   .byte   $98,$35,$44,$7a        ;<<< these are missing one .byte >>>
+CON_RND_2   .byte   $68,$28,$b1,$46        ;<<< for fp values              >>>
 
 ;********************************************************************************
 ;* RND statement                                                                *
@@ -5158,9 +5158,9 @@ SIN         jsr     COPY_FAC_TO_ARG_ROUNDED
             sta     SGNCPR          ;<<< changes SGNCPR again        >>>
             jsr     FSUBT           ;subtract to get fractional part
 ; FAC = angle as a fraction of a full circle
-; 
+;
 ; Now fold the range into a quarter circle.
-; 
+;
 ; <<< there are much simpler ways to do this >>>
             lda     #<QUARTER       ;1/4 - fraction makes
             ldy     #>QUARTER       ;-3/4 <= fraction < 1/4
@@ -5215,18 +5215,18 @@ TAN         jsr     STORE_FAC_IN_TEMP1_ROUNDED
 TAN_1       pha                     ;shame, shame!
             jmp     SIN_1
 
-CON_PI_HALF byte   $81,$49,$0f,$da,$a2
-CON_PI_DOUB byte   $83,$49,$0f,$da,$a2
-QUARTER     byte   $7f,$00,$00,$00,$00
-POLY_SIN    byte   5                        ;power of polynomial
-            byte   $84,$e6,$1a,$2d,$1b      ;(2PI)^11/11!
-            byte   $86,$28,$07,$fb,$f8      ;(2PI)^9/9!
-            byte   $87,$99,$68,$89,$01      ;(2PI)^7/7!
-            byte   $87,$23,$35,$df,$e1      ;(2PI)^5/5!
-            byte   $86,$a5,$5d,$e7,$28      ;(2PI)^3/3!
-            byte   $83,$49,$0f,$da,$a2      ;2PI
+CON_PI_HALF .byte   $81,$49,$0f,$da,$a2
+CON_PI_DOUB .byte   $83,$49,$0f,$da,$a2
+QUARTER     .byte   $7f,$00,$00,$00,$00
+POLY_SIN    .byte   5                        ;power of polynomial
+            .byte   $84,$e6,$1a,$2d,$1b      ;(2PI)^11/11!
+            .byte   $86,$28,$07,$fb,$f8      ;(2PI)^9/9!
+            .byte   $87,$99,$68,$89,$01      ;(2PI)^7/7!
+            .byte   $87,$23,$35,$df,$e1      ;(2PI)^5/5!
+            .byte   $86,$a5,$5d,$e7,$28      ;(2PI)^3/3!
+            .byte   $83,$49,$0f,$da,$a2      ;2PI
 ; <<< next 10 bytes are never referenced >>>
-            byte   $a6,$d3,$c1,$c8,$d4,$c8,$d5,$c4,$ce,$ca  ;xor with $87 to get "MICROSOFT!"
+            .byte   $a6,$d3,$c1,$c8,$d4,$c8,$d5,$c4,$ce,$ca  ;xor with $87 to get "MICROSOFT!"
 
 ;********************************************************************************
 ;* ATN statement                                                                *
@@ -5259,23 +5259,23 @@ LF0C7       pla                     ;was it negative?
 
 RTS_20      rts
 
-POLY_ATN    byte   11              ;power of polynomial
-            byte   $76,$b3,$83,$bd,$d3
-            byte   $79,$1e,$f4,$a6,$f5
-            byte   $7b,$83,$fc,$b0,$10
-            byte   $7c,$0c,$1f,$67,$ca
-            byte   $7c,$de,$53,$cb,$c1
-            byte   $7d,$14,$64,$70,$4c
-            byte   $7d,$b7,$ea,$51,$7a
-            byte   $7d,$63,$30,$88,$7e
-            byte   $7e,$92,$44,$99,$3a
-            byte   $7e,$4c,$cc,$91,$c7
-            byte   $7f,$aa,$aa,$aa,$13
-            byte   $81,$00,$00,$00,$00
+POLY_ATN    .byte   11              ;power of polynomial
+            .byte   $76,$b3,$83,$bd,$d3
+            .byte   $79,$1e,$f4,$a6,$f5
+            .byte   $7b,$83,$fc,$b0,$10
+            .byte   $7c,$0c,$1f,$67,$ca
+            .byte   $7c,$de,$53,$cb,$c1
+            .byte   $7d,$14,$64,$70,$4c
+            .byte   $7d,$b7,$ea,$51,$7a
+            .byte   $7d,$63,$30,$88,$7e
+            .byte   $7e,$92,$44,$99,$3a
+            .byte   $7e,$4c,$cc,$91,$c7
+            .byte   $7f,$aa,$aa,$aa,$13
+            .byte   $81,$00,$00,$00,$00
 
 ; Generic copy of CHRGET subroutine, which is copied into $00B1...00C8 during
 ; initialization.
-; 
+;
 ; Cornelis Bongers described several improvements to CHRGET in Micro magazine or
 ; Call-A.P.P.L.E. (I don't remember which or exactly when).
 GENERIC_CHRGET
@@ -5297,7 +5297,7 @@ LF122       rts
 ; Initial value for random number, also copied in along with CHRGET, but
 ; erroneously:
 ; <<< the last byte is not copied >>>
-            byte   $80,$4f,$c7,$52,$58      ;approx. = .811635157
+            .byte   $80,$4f,$c7,$52,$58      ;approx. = .811635157
 
 ; Clear variables
 ;LASTPT      =    $53    ;Overlaps TEMPPT+1
@@ -5323,7 +5323,7 @@ COLD_START  ldx     #$ff            ;set direct mode flag
             sta     USRVEC+1
             sty     USRVEC+2
 ; Move generic CHRGET and random seed into place
-; 
+;
 ; <<< Note that loop value is wrong!  The last byte of the random seed is not
 ; copied into page zero! >>>
             ldx     #$1c            ;(should be #GENERIC_END-GENERIC_CHRGET-1)
@@ -5332,7 +5332,7 @@ LF152       lda     GENERIC_CHRGET-1,x
             stx     SPEEDZ          ;on last pass stores $01
             dex
             bne     LF152
-; 
+;
             stx     TRCFLG          ;X-reg=0, turn off tracing
             txa                     ;A-reg=0
             sta     SHIFT_SIGN_EXT
@@ -5431,7 +5431,7 @@ PR_NUMBER   jsr     GETBYT          ;get slot number in X-reg
             jmp     MON_OUTPORT     ;at $36,37
 
 ; Get two values < 48, with comma separator
-; 
+;
 ; Called for PLOT X,Y
 ;        and HLIN A,B at Y
 ;        and VLIN A,B at X
@@ -5451,7 +5451,7 @@ PLOTFNS     jsr     GETBYT          ;get first value in X-reg
 GOERR       jmp     IQERR           ;illegal quantity error
 
 ; Get "A,B at C" values for HLIN and VLIN
-; 
+;
 ; Put smaller of (A,B) in FIRST, and larger of (A,B) in H2 and V2.  Return with
 ; X-reg = C-value.
 LINCOOR     jsr     PLOTFNS         ;get A,B values
@@ -5534,7 +5534,7 @@ SPEED       jsr     GETBYT          ;get speed setting in X-reg
 ;* Set sign bit in TRCFLG.                                                      *
 ;********************************************************************************
 TRACE       sec
-            byte    $90             ;bcc    HIMEM+2         ;fake BCC to skip next opcode
+            .byte    $90             ;bcc    HIMEM+2         ;fake BCC to skip next opcode
 ;********************************************************************************
 ;* NOTRACE statement                                                            *
 ;********************************************************************************
@@ -5810,7 +5810,7 @@ LF3FE       lda     HGR_BITS        ;color byte
             rts                     ;yes, return
 
 ; Set the hi-res cursor position.
-; 
+;
 ;   (Y,X) = horizontal coordinate (0-279)
 ;   A-reg = vertical coordinate   (0-191)
 HPOSN       sta     HGR_Y           ;save Y- and X-positions
@@ -5819,19 +5819,19 @@ HPOSN       sta     HGR_Y           ;save Y- and X-positions
             pha                     ;Y-pos also on stack
             and     #$c0            ;calculate base address for Y-pos
             sta     HBASL           ;for Y=ABCDEFGH
-            lsr     A               ;HBASL=ABAB0000
-            lsr     A
+            lsr               ;HBASL=ABAB0000
+            lsr
             ora     HBASL
             sta     HBASL
             pla                     ;     A        HBASH     HBASL
             sta     HBASH           ;?-ABCDEFGH  ABCDEFGH  ABAB0000
-            asl     A               ;A-BCDEFGH0  ABCDEFGH  ABAB0000
-            asl     A               ;B-CDEFGH00  ABCDEFGH  ABAB0000
-            asl     A               ;C-DEFGH000  ABCDEFGH  ABAB0000
+            asl               ;A-BCDEFGH0  ABCDEFGH  ABAB0000
+            asl               ;B-CDEFGH00  ABCDEFGH  ABAB0000
+            asl               ;C-DEFGH000  ABCDEFGH  ABAB0000
             rol     HBASH           ;A-DEFGH000  BCDEFGHC  ABAB0000
-            asl     A               ;D-EFGH0000  BCDEFGHC  ABAB0000
+            asl               ;D-EFGH0000  BCDEFGHC  ABAB0000
             rol     HBASH           ;B-EFGH0000  CDEFGHCD  ABAB0000
-            asl     A               ;E-FGH00000  CDEFGHCD  ABAB0000
+            asl               ;E-FGH00000  CDEFGHCD  ABAB0000
             ror     HBASL           ;0-FGH00000  CDEFGHCD  EABAB000
             lda     HBASH           ;0-CDEFGHCD  CDEFGHCD  EABAB000
             and     #$1f            ;0-000FGHCD  CDEFGHCD  EABAB000
@@ -5853,14 +5853,14 @@ LF442       sbc     #$07
             lda     MSKTBL-249,x    ; bit mask (should be MSKTBL-$100+7,X)
             sta     HMASK
             tya                     ;quotient gives byte index
-            lsr     A               ;odd or even column?
+            lsr               ;odd or even column?
             lda     HGR_COLOR       ;if on odd byte (carry set)
             sta     HGR_BITS        ; then rotate bits
             bcs     COLOR_SHIFT     ;odd column
             rts                     ;even column
 
 ; Plot a dot
-; 
+;
 ;   (Y,X) = horizontal position
 ;   A-reg = vertical position
 HPLOT0      jsr     HPOSN
@@ -5872,17 +5872,17 @@ HPLOT0      jsr     HPOSN
             rts                     ; corresponding bit of HGR_BITS
 
 ; Move left or right one pixel.
-; 
+;
 ; If status is +, move right; if -, move left
 ; If already at left or right edge, wrap around
-; 
+;
 ; Remember bits in hi-res byte are backwards order:
 ;   byte N  byte N+1
 ; S7654321  SEDCBA98
 MOVE_LEFT_OR_RIGHT
             bpl     MOVE_RIGHT      ;+ move right, - move left
             lda     HMASK           ;move left one pixel
-            lsr     A               ;shift mask right, moves dot left
+            lsr               ;shift mask right, moves dot left
             bcs     LR_2            ;...dot moved to next byte
             eor     #$c0            ;move sign bit back where it was
 LR_1        sta     HMASK           ;new mask value
@@ -5895,8 +5895,8 @@ LR_3        lda     #$c0            ;new HMASK, rightmost bit on screen
 LR_4        sta     HMASK           ;new mask and index
             sty     HGR_HORIZ
             lda     HGR_BITS        ;also need to rotate color
-; 
-COLOR_SHIFT asl     A               ;rotate low-order 7 bits
+;
+COLOR_SHIFT asl               ;rotate low-order 7 bits
             cmp     #$c0            ; of HGR_BITS one bit posn
             bpl     LF489
             lda     HGR_BITS
@@ -5905,10 +5905,10 @@ COLOR_SHIFT asl     A               ;rotate low-order 7 bits
 LF489       rts
 
 ; Move right one pixel.
-; 
+;
 ; If already at right edge, wrap around.
 MOVE_RIGHT  lda     HMASK
-            asl     A               ;shifting byte left moves pixel right
+            asl               ;shifting byte left moves pixel right
             eor     #$80
 ; Original:  C0 A0 90 88 84 82 81
 ; Shifted:   80 40 20 10 08 02 01
@@ -5949,7 +5949,7 @@ LRUD2       lda     HGR_DX+1        ;C=1 means rotate
 LRUD3       eor     (HBASL),y
             sta     (HBASL),y
 ; Determine where next point will be, and move there.
-; 
+;
 ;   C=0 if no 90 degree rotation
 ;   C=1 rotates 90 degrees
 LRUD4       lda     HGR_DX+1        ;calculate the direction to move
@@ -5960,15 +5960,15 @@ CON_03      and     #$03            ;wrap around the circle
 ;   10 - right
 ;   11 - left
             cmp     #$02            ;C=0 if 0 or 1, C=1 if 2 or 3
-            ror     A               ;put C into sign, odd/even into C
+            ror               ;put C into sign, odd/even into C
             bcs     MOVE_LEFT_OR_RIGHT
-; 
+;
 MOVE_UP_OR_DOWN
             bmi     MOVE_DOWN       ;sign for up/down select
 ; Move up one pixel
-; 
+;
 ; If already at top, go to bottom.
-; 
+;
 ; Remember:  Y-coord   HBASH     HBASL
 ;           ABCDEFGH  PPPFGHCD  EABAB000
             clc                     ;move up
@@ -6002,12 +6002,12 @@ LF4FF       adc     #$fc            ;finish HBASH mods
 UD_1        sta     HBASH
             rts
 
-            byte    $18             ;<<< never used >>>
+            .byte    $18             ;<<< never used >>>
 
 ; Move down one pixel
-; 
+;
 ; If already at bottom, go to top.
-; 
+;
 ; Remember:  Y-coord   HBASH     HBASL
 ;           ABCDEFGH  PPPFGHCD  EABAB000
 MOVE_DOWN   lda     HBASH           ;try it first, by FGH=FGH+1
@@ -6038,7 +6038,7 @@ LF52C       ror     HBASL
 
 ; HLINRL
 ; (never called by Applesoft)
-; 
+;
 ; Enter with: (A,X) = DX from current point
 ;             Y-reg = DY from current point
             pha                     ;save A-reg
@@ -6048,7 +6048,7 @@ LF52C       ror     HBASL
             sta     HGR_Y
             pla                     ;restore A-reg
 ; Draw line from last plotted point to (A,X),Y
-; 
+;
 ; Enter with: (A,X) = X of target point
 ;             Y-reg = Y of target point
 HGLIN       pha                     ;compute DX = X - X0
@@ -6092,7 +6092,7 @@ LF568       sta     HGR_DY
             bcs     MOVEX2          ;...always
 
 ; Move left or right one pixel.  A-reg bit 6 has direction.
-MOVEX       asl     A               ;put bit 6 into sign position
+MOVEX       asl               ;put bit 6 into sign position
             jsr     MOVE_LEFT_OR_RIGHT
             sec
 ; Draw line now.
@@ -6122,43 +6122,43 @@ LF59E       lda     HGR_QUAD        ;test direction
             adc     HGR_DX+1
             bvc     LF58B           ;...always
 
-MSKTBL      byte   $81,$82,$84,$88,$90,$a0,$c0
-CON_1C      byte   $1c             ;mask for "FGH" bits
+MSKTBL      .byte   $81,$82,$84,$88,$90,$a0,$c0
+CON_1C      .byte   $1c             ;mask for "FGH" bits
 ; Table of COS(90*x/16 degrees)*$100 - 1, with one-byte precision, X=0 to 16
 COSINE_TABLE
-            byte   $ff,$fe,$fa,$f4,$ec,$e1,$d4,$c5,$b4,$a1,$8d,$78,$61,$49,$31,$18,$ff
+            .byte   $ff,$fe,$fa,$f4,$ec,$e1,$d4,$c5,$b4,$a1,$8d,$78,$61,$49,$31,$18,$ff
 
 ; HFIND - calculates current position of hi-res cursor
 ; (not called by any Applesoft routine)
-; 
+;
 ; Calculate Y-coord from HBASH,L
 ;       and X-coord from HORIZ and HMASK
             lda     HBASL           ;HBASL = EABAB000
-            asl     A               ;E into carry
+            asl               ;E into carry
             lda     HBASH           ;HBASH = PPPFGHCD
             and     #$03            ;000000CD
-            rol     A               ;00000CDE
+            rol               ;00000CDE
             ora     HBASL           ;EABABCDE
-            asl     A               ;ABABCDE0
-            asl     A               ;BABCDE00
-            asl     A               ;ABCDE000
+            asl               ;ABABCDE0
+            asl               ;BABCDE00
+            asl               ;ABCDE000
             sta     HGR_Y           ;all but FGH
             lda     HBASH           ;PPPFGHCD
-            lsr     A               ;0PPPFGHC
-            lsr     A               ;00PPPFGH
+            lsr               ;0PPPFGHC
+            lsr               ;00PPPFGH
             and     #$07            ;00000FGH
             ora     HGR_Y           ;ABCDEFGH
             sta     HGR_Y           ;that takes care of Y-coordinate
             lda     HGR_HORIZ       ;X = 7*HORIZ + bit pos in HMASK
-            asl     A               ;multiply by 7
+            asl               ;multiply by 7
             adc     HGR_HORIZ       ;3* so far
-            asl     A               ;6*
+            asl               ;6*
             tax                     ;since 7* might not fit in 1 byte,
             dex                     ; wait till later for last add
             lda     HMASK           ;now find bit position in HMASK
             and     #$7f            ;only look at low seven
 LF5F0       inx                     ;count a shift
-            lsr     A
+            lsr
             bne     LF5F0           ;still in there
             sta     HGR_X+1         ;zero to hi byte
             txa                     ;6*HORIZ + log2(HMASK)
@@ -6174,14 +6174,14 @@ RTS_22      rts
             stx     HGR_SHAPE       ;save shape address
             sty     HGR_SHAPE+1
 ; Draw a shape
-; 
+;
 ;   (Y,X) = shape starting address
 ;   A-reg = rotation ($00-3F)
 DRAW1       tax                     ;save rotation ($00-3F)
-            lsr     A               ;divide rotation by 16 to get
-            lsr     A               ; quadrant (0=up, 1=rt, 2=dwn, 3=lft)
-            lsr     A
-            lsr     A
+            lsr               ;divide rotation by 16 to get
+            lsr               ; quadrant (0=up, 1=rt, 2=dwn, 3=lft)
+            lsr
+            lsr
             sta     HGR_QUAD
             txa                     ;use low 4 bits of rotation to index
             and     #$0f            ; the trig table
@@ -6217,9 +6217,9 @@ LF63D       lda     HGR_E+1         ;add sine value to Y-value
 LF648       dex                     ;loop on scale factor
             bne     LF630           ;still on same shape item
             lda     HGR_DX+1        ;get next shape item
-            lsr     A               ;next 3-bit vector
-            lsr     A
-            lsr     A
+            lsr               ;next 3-bit vector
+            lsr
+            lsr
             bne     LF626           ;more in this shape byte
             inc     HGR_SHAPE       ;go to next shape byte
             bne     LF658
@@ -6233,14 +6233,14 @@ LF658       lda     (HGR_SHAPE,x)   ;next byte of shape definition
             stx     HGR_SHAPE       ;save shape address
             sty     HGR_SHAPE+1
 ; XDRAW a shape (same as DRAW, except toggles screen)
-; 
+;
 ;   (Y,X) = shape starting address
 ;   A-reg = rotation ($00-3F)
 XDRAW1      tax                     ;save rotation ($00-3F)
-            lsr     A               ;divide rotation by 16 to get
-            lsr     A               ; quadrant (0=up, 1=rt, 2=dwn, 3=lft)
-            lsr     A
-            lsr     A
+            lsr               ;divide rotation by 16 to get
+            lsr               ; quadrant (0=up, 1=rt, 2=dwn, 3=lft)
+            lsr
+            lsr
             sta     HGR_QUAD
             txa                     ;use lwo 4 bits of rotation to index
             and     #$0f            ; the trig table
@@ -6276,9 +6276,9 @@ LF699       lda     HGR_E+1         ;add sine value to Y-value
 LF6A4       dex                     ;loop on scale factor
             bne     LF68C           ;still on same shape item
             lda     HGR_DX+1        ;get next shape item
-            lsr     A               ;next 3-bit vector
-            lsr     A
-            lsr     A
+            lsr               ;next 3-bit vector
+            lsr
+            lsr
             bne     LF682           ;more in this shape byte
             inc     HGR_SHAPE       ;go to next shape byte
             bne     LF6B4
@@ -6289,7 +6289,7 @@ LF6B4       lda     (HGR_SHAPE,x)   ;next byte of shape definition
 
 ; Get hi-res plotting coordinates (0-279,0-191) from TXTPTR.  Leave registers
 ; set up for HPOSN:
-; 
+;
 ;   (Y,X) = X-coord
 ;   A-reg = Y-coord
 HFNS        jsr     FRMNUM          ;evaluate expression, must be numeric
@@ -6330,7 +6330,7 @@ HCOLOR      jsr     GETBYT          ;eval exp to single byte in X
             sta     HGR_COLOR
 RTS_23      rts
 
-COLORTBL    byte   $00,$2a,$55,$7f,$80,$aa,$d5,$ff
+COLORTBL    .byte   $00,$2a,$55,$7f,$80,$aa,$d5,$ff
 
 ;********************************************************************************
 ;* HPLOT statement                                                              *
@@ -6383,7 +6383,7 @@ DRWPNT      jsr     GETBYT          ;get shape number in X-reg
             cmp     (HGR_SHAPE,x)   ;compare to # of shapes in table
             beq     LF741           ;last shape in table
             bcs     GGERR           ;shape # too large
-LF741       asl     A               ;double shape# to make an index
+LF741       asl               ;double shape# to make an index
             bcc     LF747           ;add 256 if shape # > 127
             inc     HGR_SHAPE+1
             clc
@@ -6508,5 +6508,5 @@ LF7EC       cmp     #40
 LF7FA       sta     MON_CH
             rts
 
-            byte    "K"+$80
-            byte    "R"+$80,"W"+$80            ;Richard Weiland?
+            .byte    "K"+$80
+            .byte    "R"+$80,"W"+$80            ;Richard Weiland?
