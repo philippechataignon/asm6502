@@ -39,6 +39,8 @@ KBD         equ $c000    ; key code when MSB set
 KBDSTRB     equ $c010    ; clear keyboard buffer
 TXTCLR      equ $c050    ; graphics mode
 TXTSET      equ $c051    ; text mode
+MIXEDOFF    equ $c052    ; Use full screen for graphics
+MIXEDON     equ $c053    ; Use graphics with 4 lines of text
 LOWSCR      equ $c054    ; page 1
 HIRES       equ $c057    ; hires mode
 
@@ -239,6 +241,7 @@ hclr1       sta (GBASL),y
 
             bit HIRES    ; Switch to hires mode
             bit TXTCLR
+            bit MIXEDOFF
             rts
 
         ; Draw or erase a ball
