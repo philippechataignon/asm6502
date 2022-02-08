@@ -1,10 +1,8 @@
-            ifndef ORG
-ORG         = $9000
-            endif
+ORG :?= $9000
 
-            if ORG > 0
+            .if ORG > 0
 *           = ORG
-            fi
+            .fi
 
 load8000    = $280
 
@@ -93,10 +91,10 @@ setupiob:
             sta pointer+1
 
             ldy #3               ; offset in RWTS
-.L1:        lda rwts_param,y
+_L1:        lda rwts_param,y
             sta (pointer),y      ; write it to RWTS
             dey
-            bpl .L1
+            bpl _L1
 
 
 format:                          ; format the diskette
@@ -267,71 +265,74 @@ draw:
             rts
 line:
             lda #'-' | $80
-.L1         jsr cout
+_L1         jsr cout
             dex
-            bne .L1
+            bne _L1
             jsr crout
 rts:        rts
 print:
             sta prtptr+1         ; store A=MSB
             sty prtptr           ; store Y=LSB
             ldy #0
-.L1         lda (prtptr),y       ;
+_L1         lda (prtptr),y       ;
             beq rts              ; return if 0 = end of string
             jsr cout
             iny
-            jmp .L1
+            jmp _L1
 
 rwts:
             clc
             lda #1
             sta NDELAY
 delay:
-            include "delay.S"
+            .include "delay.s"
 
 title:
-            abyte -$40,"DISKLOAD" ; inverse
-            byte  0
-diskerrorm:
-            abyte +$80,"DISK ERROR"
-            byte  0
-donem:
-            abyte +$80,"DONE. PRESS ANY KEY TO REBOOT"
-            byte  0
-loadm:
-            abyte +$80,"LOADING"
-            byte  0
-formatm:
-            abyte +$80,"FORMATTING"
-            byte  0
-writem:
-            abyte +$80,"WRITING"
-            byte  0
-track:
-            abyte +$80,"TRACK",$0D
-            byte  0
-header:
-            abyte +$80,"    00000000001111111111222222222233333",$0D
-            abyte +$80,"    01234567890123456789012345678901234",$0D
-            abyte +$80,"    "
-            byte  0
-left:
-            abyte +$80,"  0:",$0D
-            abyte +$80,"  1:",$0D
-            abyte +$80,"  2:",$0D
-            abyte +$80,"  3:",$0D
-            abyte +$80,"  4:",$0D
-            abyte +$80,"S 5:",$0D
-            abyte +$80,"E 6:",$0D
-            abyte +$80,"C 7:",$0D
-            abyte +$80,"T 8:",$0D
-            abyte +$80,"O 9:",$0D
-            abyte +$80,"R A:",$0D
-            abyte +$80,"  B:",$0D
-            abyte +$80,"  C:",$0D
-            abyte +$80,"  D:",$0D
-            abyte +$80,"  E:",$0D
-            abyte +$80,"  F:",$0D
-            byte  0
 
-rwts_param  byte  1,slot,1,0             ; table type,slot,drive,volume
+inv         .macro
+                .for c in \1
+                .text c - $40
+                .next
+                .byte 0
+            .endm
+
+            inv "DISKLOAD" ; inverse
+
+            .enc "apple"
+            .cdef " _",$A0
+            .edef "\n",$8d
+diskerrorm:
+            .null "DISK ERROR"
+donem:
+            .null "DONE. PRESS ANY KEY TO REBOOT"
+loadm:
+            .null "LOADING"
+formatm:
+            .null "FORMATTING"
+writem:
+            .null "WRITING"
+track:
+            .null "TRACK\n"
+header:
+            .text "    00000000001111111111222222222233333\n"
+            .text "    01234567890123456789012345678901234\n"
+            .null "    "
+left:
+            .text "  0:\n"
+            .text "  1:\n"
+            .text "  2:\n"
+            .text "  3:\n"
+            .text "  4:\n"
+            .text "S 5:\n"
+            .text "E 6:\n"
+            .text "C 7:\n"
+            .text "T 8:\n"
+            .text "O 9:\n"
+            .text "R A:\n"
+            .text "  B:\n"
+            .text "  C:\n"
+            .text "  D:\n"
+            .text "  E:\n"
+            .null "  F:\n"
+
+rwts_param  .byte  1,slot,1,0             ; table type,slot,drive,volume

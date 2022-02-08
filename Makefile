@@ -1,4 +1,4 @@
-TOPT=--intel-hex -B -q 
+TOPT=--intel-hex -B -q -m --tab-size=4 --line-numbers
 VOPT=-maxerrors=50 -esc -quiet
 #VOPT=-maxerrors=50 -ast -esc -quiet
 
@@ -28,7 +28,7 @@ apple2plus.rom: applesoft.bin mon2.bin
 apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin
 	cat intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin> apple2.rom
 
-diskload.hex: delay.S
+diskload.hex: delay.s
 
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s)) *.bin *.hex *.lst
