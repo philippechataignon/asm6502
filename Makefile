@@ -1,10 +1,12 @@
-OPT=
+OPT=--intel-hex
 
 %.bin: %.s
-	vasm6502_oldstyle $(OPT) -maxerrors=50 -esc -quiet -L $(<:.s=.lst) -Fbin  -o "$@" "$<"
+	# vasm6502_oldstyle $(OPT) -maxerrors=50 -ast -esc -quiet -L $(<:.s=.lst) -Fbin  -o "$@" "$<"
+	64tass $(OPT) -o "$@" "$<"
 
 %.hex: %.s
-	vasm6502_oldstyle $(OPT) -maxerrors=50 -esc -quiet -L $(<:.s=.lst) -Fihex -o "$@" "$<"
+	# vasm6502_oldstyle $(OPT) -maxerrors=50 -esc -quiet -L $(<:.s=.lst) -Fihex -o "$@" "$<"
+	64tass $(OPT) -L $(<:.s=.lst) -o "$@" "$<"
 
 %.bin: %.S
 	vasm6502_oldstyle $(OPT) -maxerrors=50 -esc -quiet -L $(<:.s=.lst) -Fbin  -dotdir -o "$@" "$<"

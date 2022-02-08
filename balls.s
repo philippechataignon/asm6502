@@ -7,42 +7,42 @@
 ;
 ;***************************************
 
-    org $8000
+* = $8000
 
 ; Numeric constants
 
-NBALLS      equ 30        ; Number of balls to bounce
+NBALLS      = 30        ; Number of balls to bounce
 
-COLUMNS     equ 40        ; Number of columns/bytes per row
+COLUMNS     = 40        ; Number of columns/bytes per row
 
-WHITE       equ $7F        ; White hires byte
+WHITE       = $7F        ; White hires byte
 
-RKEY        equ $D2        ; Code for when "R" is pressed
+RKEY        = $D2        ; Code for when "R" is pressed
 
-RWALL       equ $f700
-LWALL       equ $0400
-BOTTOM      equ $B700
-BOTTOM2     equ $6E00    ; Bottom * 2, for bouncing
+RWALL       = $f700
+LWALL       = $0400
+BOTTOM      = $B700
+BOTTOM2     = $6E00    ; Bottom * 2, for bouncing
 
 ; Addresses
 
-BALL        equ $6        ; Current ball number
-GBASL       equ $26        ; Graphics base address
-GBASH       equ $27
-HCOLOR1     equ $1c        ; Color value
-HGRX        equ $e0        ; two-byte value
-HGRY        equ $e2
+BALL        = $6        ; Current ball number
+GBASL       = $26        ; Graphics base address
+GBASH       = $27
+HCOLOR1     = $1c        ; Color value
+HGRX        = $e0        ; two-byte value
+HGRY        = $e2
 
-HGR1SCRN equ $2000    ; Start of hires page 1
+HGR1SCRN = $2000    ; Start of hires page 1
 
-KBD         equ $c000    ; key code when MSB set
-KBDSTRB     equ $c010    ; clear keyboard buffer
-TXTCLR      equ $c050    ; graphics mode
-TXTSET      equ $c051    ; text mode
-MIXEDOFF    equ $c052    ; Use full screen for graphics
-MIXEDON     equ $c053    ; Use graphics with 4 lines of text
-LOWSCR      equ $c054    ; page 1
-HIRES       equ $c057    ; hires mode
+KBD         = $c000    ; key code when MSB set
+KBDSTRB     = $c010    ; clear keyboard buffer
+TXTCLR      = $c050    ; graphics mode
+TXTSET      = $c051    ; text mode
+MIXEDOFF    = $c052    ; Use full screen for graphics
+MIXEDON     = $c053    ; Use graphics with 4 lines of text
+LOWSCR      = $c054    ; page 1
+HIRES       = $c057    ; hires mode
 
             ; entry point
 
@@ -67,7 +67,13 @@ balls       jsr hclear
 
             ldx #NBALLS * 4 - 1
             lda #0
-init0       sta BALLXL,x
+init0       sta BALLXL,X
+            sta BALLXH,X
+            sta BALLYL,X
+            sta BALLYH,X
+            sta BALLDX,X
+            sta BALLDYL,X
+            sta BALLDYH,X
             dex
             bpl init0
 
@@ -95,7 +101,7 @@ skip        tay
 
 drawall     lda #NBALLS-1
             sta BALL
-da1            jsr xorball
+da1         jsr xorball
             dec BALL
             bpl da1
 
@@ -292,170 +298,169 @@ xsplot        ldy HGRY        ; Get the row address
         ; Hires row address lookup tables, after Pelczarski, Graphically Speaking
 
 LKHI
-            byte $20,$24,$28,$2c,$30,$34,$38,$3c,$20,$24,$28,$2c,$30,$34,$38,$3c
-            byte $21,$25,$29,$2d,$31,$35,$39,$3d,$21,$25,$29,$2d,$31,$35,$39,$3d
-            byte $22,$26,$2a,$2e,$32,$36,$3a,$3e,$22,$26,$2a,$2e,$32,$36,$3a,$3e
-            byte $23,$27,$2b,$2f,$33,$37,$3b,$3f,$23,$27,$2b,$2f,$33,$37,$3b,$3f
-            byte $20,$24,$28,$2c,$30,$34,$38,$3c,$20,$24,$28,$2c,$30,$34,$38,$3c
-            byte $21,$25,$29,$2d,$31,$35,$39,$3d,$21,$25,$29,$2d,$31,$35,$39,$3d
-            byte $22,$26,$2a,$2e,$32,$36,$3a,$3e,$22,$26,$2a,$2e,$32,$36,$3a,$3e
-            byte $23,$27,$2b,$2f,$33,$37,$3b,$3f,$23,$27,$2b,$2f,$33,$37,$3b,$3f
-            byte $20,$24,$28,$2c,$30,$34,$38,$3c,$20,$24,$28,$2c,$30,$34,$38,$3c
-            byte $21,$25,$29,$2d,$31,$35,$39,$3d,$21,$25,$29,$2d,$31,$35,$39,$3d
-            byte $22,$26,$2a,$2e,$32,$36,$3a,$3e,$22,$26,$2a,$2e,$32,$36,$3a,$3e
-            byte $23,$27,$2b,$2f,$33,$37,$3b,$3f,$23,$27,$2b,$2f,$33,$37,$3b,$3f
+            .byte $20,$24,$28,$2c,$30,$34,$38,$3c,$20,$24,$28,$2c,$30,$34,$38,$3c
+            .byte $21,$25,$29,$2d,$31,$35,$39,$3d,$21,$25,$29,$2d,$31,$35,$39,$3d
+            .byte $22,$26,$2a,$2e,$32,$36,$3a,$3e,$22,$26,$2a,$2e,$32,$36,$3a,$3e
+            .byte $23,$27,$2b,$2f,$33,$37,$3b,$3f,$23,$27,$2b,$2f,$33,$37,$3b,$3f
+            .byte $20,$24,$28,$2c,$30,$34,$38,$3c,$20,$24,$28,$2c,$30,$34,$38,$3c
+            .byte $21,$25,$29,$2d,$31,$35,$39,$3d,$21,$25,$29,$2d,$31,$35,$39,$3d
+            .byte $22,$26,$2a,$2e,$32,$36,$3a,$3e,$22,$26,$2a,$2e,$32,$36,$3a,$3e
+            .byte $23,$27,$2b,$2f,$33,$37,$3b,$3f,$23,$27,$2b,$2f,$33,$37,$3b,$3f
+            .byte $20,$24,$28,$2c,$30,$34,$38,$3c,$20,$24,$28,$2c,$30,$34,$38,$3c
+            .byte $21,$25,$29,$2d,$31,$35,$39,$3d,$21,$25,$29,$2d,$31,$35,$39,$3d
+            .byte $22,$26,$2a,$2e,$32,$36,$3a,$3e,$22,$26,$2a,$2e,$32,$36,$3a,$3e
+            .byte $23,$27,$2b,$2f,$33,$37,$3b,$3f,$23,$27,$2b,$2f,$33,$37,$3b,$3f
 
 LKLO
-            byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
-            byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
-            byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
-            byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
-            byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
-            byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
-            byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
-            byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
-            byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
-            byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
-            byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
-            byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
+            .byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
+            .byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
+            .byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
+            .byte $00,$00,$00,$00,$00,$00,$00,$00,$80,$80,$80,$80,$80,$80,$80,$80
+            .byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
+            .byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
+            .byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
+            .byte $28,$28,$28,$28,$28,$28,$28,$28,$a8,$a8,$a8,$a8,$a8,$a8,$a8,$a8
+            .byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
+            .byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
+            .byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
+            .byte $50,$50,$50,$50,$50,$50,$50,$50,$d0,$d0,$d0,$d0,$d0,$d0,$d0,$d0
 
         ; Eight bytes per sprite, first bytes
 
-BALL0    db %00111100
-            db %01111111
-            db %01111111
-            db %01111111
-            db %01111111
-            db %01111111
-            db %01111111
-            db %00111100
+BALL0    .byte %00111100
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %00111100
 
-            db %01111000
-            db %01111110
-            db %01111110
-            db %01111110
-            db %01111110
-            db %01111110
-            db %01111110
-            db %01111000
+            .byte %01111000
+            .byte %01111110
+            .byte %01111110
+            .byte %01111110
+            .byte %01111110
+            .byte %01111110
+            .byte %01111110
+            .byte %01111000
 
-            db %01110000
-            db %01111100
-            db %01111100
-            db %01111100
-            db %01111100
-            db %01111100
-            db %01111100
-            db %01110000
+            .byte %01110000
+            .byte %01111100
+            .byte %01111100
+            .byte %01111100
+            .byte %01111100
+            .byte %01111100
+            .byte %01111100
+            .byte %01110000
 
-            db %01100000
-            db %01111000
-            db %01111000
-            db %01111000
-            db %01111000
-            db %01111000
-            db %01111000
-            db %01100000
+            .byte %01100000
+            .byte %01111000
+            .byte %01111000
+            .byte %01111000
+            .byte %01111000
+            .byte %01111000
+            .byte %01111000
+            .byte %01100000
 
-            db %01000000
-            db %01110000
-            db %01110000
-            db %01110000
-            db %01110000
-            db %01110000
-            db %01110000
-            db %01000000
+            .byte %01000000
+            .byte %01110000
+            .byte %01110000
+            .byte %01110000
+            .byte %01110000
+            .byte %01110000
+            .byte %01110000
+            .byte %01000000
 
-            db %00000000
-            db %01100000
-            db %01100000
-            db %01100000
-            db %01100000
-            db %01100000
-            db %01100000
-            db %00000000
+            .byte %00000000
+            .byte %01100000
+            .byte %01100000
+            .byte %01100000
+            .byte %01100000
+            .byte %01100000
+            .byte %01100000
+            .byte %00000000
 
-            db %00000000
-            db %01000000
-            db %01000000
-            db %01000000
-            db %01000000
-            db %01000000
-            db %01000000
-            db %00000000
+            .byte %00000000
+            .byte %01000000
+            .byte %01000000
+            .byte %01000000
+            .byte %01000000
+            .byte %01000000
+            .byte %01000000
+            .byte %00000000
 
         ; Second byte
 
-BALL1    db %00000000
-            db %00000001
-            db %00000001
-            db %00000001
-            db %00000001
-            db %00000001
-            db %00000001
-            db %00000000
+BALL1    .byte %00000000
+            .byte %00000001
+            .byte %00000001
+            .byte %00000001
+            .byte %00000001
+            .byte %00000001
+            .byte %00000001
+            .byte %00000000
 
-            db %00000000
-            db %00000011
-            db %00000011
-            db %00000011
-            db %00000011
-            db %00000011
-            db %00000011
-            db %00000000
+            .byte %00000000
+            .byte %00000011
+            .byte %00000011
+            .byte %00000011
+            .byte %00000011
+            .byte %00000011
+            .byte %00000011
+            .byte %00000000
 
-            db %00000001
-            db %00000111
-            db %00000111
-            db %00000111
-            db %00000111
-            db %00000111
-            db %00000111
-            db %00000001
+            .byte %00000001
+            .byte %00000111
+            .byte %00000111
+            .byte %00000111
+            .byte %00000111
+            .byte %00000111
+            .byte %00000111
+            .byte %00000001
 
-            db %00000011
-            db %00001111
-            db %00001111
-            db %00001111
-            db %00001111
-            db %00001111
-            db %00001111
-            db %00000011
+            .byte %00000011
+            .byte %00001111
+            .byte %00001111
+            .byte %00001111
+            .byte %00001111
+            .byte %00001111
+            .byte %00001111
+            .byte %00000011
 
-            db %00000111
-            db %00011111
-            db %00011111
-            db %00011111
-            db %00011111
-            db %00011111
-            db %00011111
-            db %00000111
+            .byte %00000111
+            .byte %00011111
+            .byte %00011111
+            .byte %00011111
+            .byte %00011111
+            .byte %00011111
+            .byte %00011111
+            .byte %00000111
 
-            db %00001111
-            db %00111111
-            db %00111111
-            db %00111111
-            db %00111111
-            db %00111111
-            db %00111111
-            db %00001111
+            .byte %00001111
+            .byte %00111111
+            .byte %00111111
+            .byte %00111111
+            .byte %00111111
+            .byte %00111111
+            .byte %00111111
+            .byte %00001111
 
-            db %00011110
-            db %01111111
-            db %01111111
-            db %01111111
-            db %01111111
-            db %01111111
-            db %01111111
-            db %00011110
+            .byte %00011110
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %01111111
+            .byte %00011110
 
 ; Position and velocity information for each ball
 
-BALLXL      ds NBALLS    ; 0,8,...,48 = horizontal shift
-BALLYL      ds NBALLS
-BALLDYL     ds NBALLS
-BALLDYH     ds NBALLS
-
-BALLDX      ds NBALLS    ; 8 = one pixel horizontal
-BALLXH      ds NBALLS    ; column/byte
-BALLYH      ds NBALLS    ; row
+BALLXL      .fill NBALLS    ; 0,8,...,48 = horizontal shift
+BALLXH      .fill NBALLS    ; column/byte
+BALLYL      .fill NBALLS
+BALLYH      .fill NBALLS    ; row
+BALLDX      .fill NBALLS    ; 8 = one pixel horizontal
+BALLDYL     .fill NBALLS
+BALLDYH     .fill NBALLS
