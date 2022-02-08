@@ -1,11 +1,8 @@
-ORG :?= $9000
-
-            .if ORG > 0
-*           = ORG
-            .fi
+INCLUDE = 1
 
 load8000    = $280
 
+*           = $9000
 ; apple vectors
 
 dos         = $9D84
