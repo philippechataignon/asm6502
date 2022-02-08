@@ -1,18 +1,18 @@
-OPT=--intel-hex
+TOPT=--intel-hex
+VOPT=-maxerrors=50 -esc -quiet
+#VOPT=-maxerrors=50 -ast -esc -quiet
 
 %.bin: %.s
-	# vasm6502_oldstyle $(OPT) -maxerrors=50 -ast -esc -quiet -L $(<:.s=.lst) -Fbin  -o "$@" "$<"
-	64tass $(OPT) -o "$@" "$<"
+	64tass $(TOPT) -L $(<:.s=.lst) -o "$@" "$<"
 
 %.hex: %.s
-	# vasm6502_oldstyle $(OPT) -maxerrors=50 -esc -quiet -L $(<:.s=.lst) -Fihex -o "$@" "$<"
-	64tass $(OPT) -L $(<:.s=.lst) -o "$@" "$<"
+	64tass $(TOPT) -L $(<:.s=.lst) -o "$@" "$<"
 
 %.bin: %.S
-	vasm6502_oldstyle $(OPT) -maxerrors=50 -esc -quiet -L $(<:.s=.lst) -Fbin  -dotdir -o "$@" "$<"
+	vasm6502_oldstyle $(VOPT) -L $(<:.S=.lst) -Fbin  -o "$@" "$<"
 
 %.hex: %.S
-	vasm6502_oldstyle $(OPT) -maxerrors=50 -esc -quiet -L $(<:.s=.lst) -Fihex -dotdir -o "$@" "$<"
+	vasm6502_oldstyle $(VOPT) -L $(<:.S=.lst) -Fihex -o "$@" "$<"
 
 
 target_hex = $(patsubst %.s,%.hex,$(wildcard *.s)) $(patsubst %.S,%.hex,$(wildcard *.S))
@@ -28,7 +28,7 @@ apple2plus.rom: applesoft.bin mon2.bin
 apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin
 	cat intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin> apple2.rom
 
-diskload.hex: delay.s
+diskload.hex: delay.S
 
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s))

@@ -287,7 +287,7 @@ rwts:
             lda #1
             sta NDELAY
 delay:
-            include "delay.s"
+            include "delay.S"
 
 title:
             abyte -$40,"DISKLOAD" ; inverse

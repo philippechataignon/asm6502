@@ -17,7 +17,7 @@ print   macro
         print MSG4
         rts
 
-        include "printstr.s"
+        include "printstr.S"
 
 MSG     defstr "HELLO WORLD!"
 MSG2    defstr "HELLO WORLD2!\r"
