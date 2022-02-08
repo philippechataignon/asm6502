@@ -1,15 +1,15 @@
-CRC         equ     $EB
-STARTL      equ     $FA
-STARTH      equ     $FB
-ENDL        equ     $FC
-ENDH        equ     $FD
-CURL        equ     $FE
-CURH        equ     $FF
-COUT1       equ     $FDF0
-TBLCRCL     equ     $2000       ; Two 256-byte tables for quick lookup
-TBLCRCH     equ     $2100       ; (should be page-aligned for speed)
+CRC         =     $EB
+STARTL      =     $FA
+STARTH      =     $FB
+ENDL        =     $FC
+ENDH        =     $FD
+CURL        =     $FE
+CURH        =     $FF
+COUT1       =     $FDF0
+TBLCRCL     =     $2000       ; Two 256-byte tables for quick lookup
+TBLCRCH     =     $2100       ; (should be page-aligned for speed)
 
-            org     $280
+            * = $280
 INIT
             jsr     MAKECRCTABLE
             ldy     STARTH      ; init CUR with START
@@ -45,10 +45,9 @@ EXIT
 COUT4
             ora     #$B0        ; convert to ASCII for number
             cmp     #$BA        ; > BA (3A|80) -> not number but [A-F], need to add 6
-            bcc     .L1
-            adc     #$06
-.L1
-            jsr     COUT1
+            bcc     +
+            adc     #6
++           jsr     COUT1
             rts
 COUTBYTE
             pha                 ; push A for low nibble

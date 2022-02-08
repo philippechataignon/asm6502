@@ -3,18 +3,18 @@
 ; FA: A0 02 E5 02
 ;
 
-STARTL      equ     $FA
-STARTH      equ     $FB
-ENDL        equ     $FC
-ENDH        equ     $FD
-CURL        equ     $FE
-CURH        equ     $FF
-CRCL        equ     $EC
-CRCH        equ     $ED
-COUT1       equ     $FDF0
+STARTL      =     $FA
+STARTH      =     $FB
+ENDL        =     $FC
+ENDH        =     $FD
+CURL        =     $FE
+CURH        =     $FF
+CRCL        =     $EC
+CRCH        =     $ED
+COUT1       =     $FDF0
 
 
-            org     $280
+*           = $280
 INIT
             ldy     STARTH      ; init CUR with START
             sty     CURH
@@ -49,10 +49,9 @@ EXIT
 COUT4
             ora     #$B0        ; convert to ASCII for number
             cmp     #$BA        ; > BA (3A|80) -> not number but [A-F], need to add 6
-            bcc     .L1
+            bcc     +
             adc     #$06
-.L1
-            jsr     COUT1
++           jsr     COUT1
             rts
 COUTBYTE
             pha                 ; push A for low nibble

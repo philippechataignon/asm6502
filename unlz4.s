@@ -3,13 +3,13 @@
 ;assemble using ACME
 ;src<dst
 
-    org $280
+* = $280
 
 ;unpacker variables, no need to change these
-src	    equ	$FA
-dst	    equ	$FC
-count	equ	$FE
-delta	equ	$EB
+src	    =	$FA
+dst	    =	$FC
+count	=	$FE
+delta	=	$EB
 
 unpack ;unpacker entrypoint
 	ldy	#0
@@ -42,9 +42,9 @@ copymatches
 	clc
 	adc	#4
 	tax
-	bcc	.L0
+	bcc	+
 	inc	count+1
-.L0	lda	src+1
++ 	lda	src+1
 	pha
 	lda	src
 	pha
@@ -78,34 +78,34 @@ buildcount
 	ldx	#1
 	stx	count+1
 	cmp	#$0f
-	bne	.L2
-.L0 sta	count
+	bne	_L2
+_L0 sta	count
 	jsr	getsrc
 	tax
 	clc
 	adc	count
-	bcc	.L1
+	bcc	_L1
 	inc	count+1
-.L1	inx
-	beq	.L0
-.L2	rts
+_L1	inx
+	beq	_L0
+_L2	rts
 
 getput
 	jsr	getsrc
 
 putdst
 	cpy	dst
-	bne	.L0
+	bne	+
 	dec	dst+1
-.L0	dec	dst
++	dec	dst
 	sta	(dst), y
 	rts
 
 getsrc
 	lda	src
-	bne	.L0
+	bne	+
 	dec	src+1
-.L0	dec	src
++	dec	src
 	lda	(src), y
 	rts
 

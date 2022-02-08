@@ -1,10 +1,6 @@
-            ifndef ORG
-ORG         =     $280
-            endif
-
-            if ORG > 0
-*           = ORG
-            fi
+*           = $280
+entry       = $2A0
+end         = $300
 
 cout        = $FDED           ; character out sub
 prbyte      = $FDDA           ; print byte in hex
@@ -29,7 +25,7 @@ mon_entry:
             sta endload+1
             jmp inline_entry
 
-            align 4
+            .fill entry - *,0
 
 inline_entry:
             ldx #0              ; X is used in ROL instr at store:
@@ -98,5 +94,5 @@ error:
             jsr cout
 exit:
             rts
-endload     word 0              ; end load location LSB/MSB
-            align 8
+endload     .word 0              ; end load location LSB/MSB
+            .fill end - *,0

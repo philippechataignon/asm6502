@@ -1,10 +1,8 @@
-            ifndef ORG
-ORG         = $800
-            endif
+ORG :?= $800
 
-            if ORG > 0
+            .if ORG > 0
 *           = ORG
-            fi
+            .fi
 
             ; Most reference books give the CRC-32 poly
             ; as $04C11DB7. This is actually the same if
@@ -36,37 +34,37 @@ INIT:
             iny                 ; Y = 0
             sty     CUR         ; CUR = HH00
             ldy     START
-.LOOP1:
+_LOOP1:
             lda     (CUR),y     ; CUR = HH00 + Y
             jsr     UPDCRC      ; update CRC
             ldx     CUR+1       ; is last page ?
             cpx     END+1       ; >= ?
-            bcs     .LASTPAGE   ; yes -> LASTPAGE
+            bcs     _LASTPAGE   ; yes -> LASTPAGE
             iny                 ; no, increment CURH,Y
-            bne     .LOOP1
+            bne     _LOOP1
             inc     CUR+1
-            jmp     .LOOP1
-.LASTPAGE:
+            jmp     _LOOP1
+_LASTPAGE:
             iny
             beq     EXIT       ; last iter when CUR ends with $FF gives 0 -> EXIT
             cpy     END         ; Y <= END ?
-            bcc     .LOOP1      ; <
-            beq     .LOOP1      ; =
+            bcc     _LOOP1      ; <
+            beq     _LOOP1      ; =
 EXIT:
             ldy     #3          ; eor $FFFFFFFF for CRC at the end
-.COMPL:     lda     CRC,Y
+_COMPL:     lda     CRC,Y
             eor     #$FF
             sta     CRC,Y
             jsr     COUTBYTE    ; and display
             dey
-            bpl     .COMPL
+            bpl     _COMPL
             rts
 COUTNIB:                         ; output a nibble (0-F)
             ora     #$B0        ; convert to ASCII for number
             cmp     #$BA        ; >= BA (3A|80) -> not number but [A-F], need to add 6
-            bcc     .DIGIT
+            bcc     _DIGIT
             adc     #$06
-.DIGIT:
+_DIGIT:
             jsr     COUT1
             rts
 COUTBYTE:
@@ -83,16 +81,16 @@ COUTBYTE:
 
 MAKECRCTABLE:
             ldx     #0          ; X counts from 0 to 255
-.BYTELOOP:  lda     #0          ; A contains the high byte of the CRC-32
+_BYTELOOP:  lda     #0          ; A contains the high byte of the CRC-32
             sta     CRC+2       ; The other three bytes are in memory
             sta     CRC+1
             stx     CRC
             ldy     #8          ; Y counts bits in a byte
-.BITLOOP:   lsr                 ; The CRC-32 algorithm is similar to CRC-16
+_BITLOOP:   lsr                 ; The CRC-32 algorithm is similar to CRC-16
             ror     CRC+2       ; except that it is reversed (originally for
             ror     CRC+1       ; hardware reasons). This is why we shift
             ror     CRC         ; right instead of left here.
-            bcc     .NOADD      ; Do nothing if no overflow
+            bcc     _NOADD      ; Do nothing if no overflow
                                 ; else add CRC-32 reverse polynomial POLY
             eor     #POLY >> 24
             pha                 ; Save high byte while we do others
@@ -106,8 +104,8 @@ MAKECRCTABLE:
             eor     #POLY & $ff
             sta     CRC
             pla                 ; Restore high byte
-.NOADD:     dey
-            bne     .BITLOOP    ; Do next bit
+_NOADD:     dey
+            bne     _BITLOOP    ; Do next bit
             sta     CRCT3,X     ; Save CRC into table, high to low bytes
             lda     CRC+2
             sta     CRCT2,X
@@ -116,7 +114,7 @@ MAKECRCTABLE:
             lda     CRC
             sta     CRCT0,X
             inx
-            bne     .BYTELOOP    ; Do next byte
+            bne     _BYTELOOP    ; Do next byte
             rts
 
 UPDCRC:
@@ -133,4 +131,4 @@ UPDCRC:
             sta     CRC+2
             lda     CRCT3,X
             sta     CRC+3
-       rts
+            rts

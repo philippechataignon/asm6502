@@ -9,86 +9,76 @@
 ; will test $0500-$BFFF
 ; note : program location page can't be tested
 
-CHR2SCR     macro
-            ora #$B0        ; normal
-            cmp #$BA        ; if > 9
-            bcc .L1
-            sbc #$39        ; substract $40 in character table
-.L1                         ; = $39 + 1 (C is set)
-            sta SCREEN + \1 ; pos = param
-            endm
+            .include "screen_enc.inc"
+
+CHR2SCR     .macro
+            ora #$B0        ; normal 0-9 -> B0 B9, A -> BA
+            cmp #$BA        ; if > "9"
+            blt +
+            adc #6          ; "9"=B9 BA+C+6=C1="A"
++           sta LINE0 + \1  ; pos = param
+            .endm
+
+PRINTMSG    .macro
+            ldx #size(\1)-1
+-           lda \1,X
+            sta LINE0,X
+            dex
+            bpl -
+            .endm
 
 START       = $FA
 END         = $FB
 CURL        = $FC
 CURH        = $FD
-SCREEN      = $400            ; line 0
+LINE0       = $400            ; line 0
 COUT1       = $FDF0
 CR          = $FC62
 HOME        = $FC58
 
 *           = $280
 
-INIT
-            jsr HOME
+INIT        jsr HOME
             ldy #0
             sty CURL
             lda START
             sta CURH
 
-LOOP1
-            cpy #0
-            bne .NOBYTEOUT
+STORE       cpy #0
+            bne +           ;BYTEOUT if Y=0
             lda CURH
             jsr BYTEOUT
-.NOBYTEOUT
-            tya
++           tya
             sta (CURL),y    ; and store
             iny             ; next byte
-            bne LOOP1
+            bne STORE
             inc CURH        ; next page
             lda CURH
             cmp END         ; last page ?
-            bcc LOOP1      ; no, continue
+            bcc STORE       ; no, continue
 
             lda START
             sta CURH
-
-LOOP2
-            cpy #0
-            bne .NOBYTEOUT
+COMPARE     cpy #0         ;BYTEOUT if Y=0
+            bne +
             lda CURH
             jsr BYTEOUT
-.NOBYTEOUT
-            tya
++           tya
             cmp (CURL),y    ; cmp y and addr
-            bne ERROR
+            bne ERROR       ; if !=, exit with error
             iny             ; next byte
-            bne LOOP2
+            bne COMPARE
             inc CURH        ; next page
             lda CURH
             cmp END         ; last page ?
-            bcc LOOP2      ; no, continue
+            bcc COMPARE     ; no, continue
 
-OK
-            ldx #LEN_PASS
-.MSG
-            lda MSG_PASS-1,X
-            sta SCREEN,X
-            dex
-            bne .MSG
+OK          PRINTMSG MSG_PASS
             rts
-ERROR
-            ldx #LEN_ERR
-.MSG
-            lda MSG_ERR-1,X
-            sta SCREEN,X
-            dex
-            bne .MSG
+ERROR       PRINTMSG MSG_ERR
             rts
 
-BYTEOUT
-            pha             ; push A for processing high nibble
+BYTEOUT     pha             ; push A for processing high nibble
             lsr             ; >> 4
             lsr
             lsr
@@ -99,9 +89,9 @@ CHAR1       CHR2SCR 38      ; output pos 38
 CHAR2       CHR2SCR 39      ; output pos 39
             rts
 
-                    ; inverse
-MSG_PASS    abyte   (0b10000000 | ._),"PASS"  ; set bit 7 = 1
-LEN_PASS    equ     * - MSG_PASS
-                    ; inverse & blink
-MSG_ERR     abyte   (0b01111111 & ._),"ERR"
-LEN_ERR     equ     * - MSG_ERR
+            .enc "apple_n"
+            .cdef $20,$5F,$A0
+MSG_PASS    .text   "PASS"
+            .enc "apple_i"
+            .cdef $20,$5F,-$20
+MSG_ERR     .text   "ERR"
