@@ -61,14 +61,14 @@ STATUS      =     $48
 SPNT        =     $49
 RNDL        =     $4e
 RNDH        =     $4f
-IN          =     $0200  
+IN          =     $0200
 BRKV        =     $03f0  ;new vector for BRK
 SOFTEV      =     $03f2  ;vector for warm start
 PWREDUP     =     $03f4  ;this must = EOR #$A5 of SOFTEV+1
-USRADR      =     $03f8  
-NMI         =     $03fb 
+USRADR      =     $03f8
+NMI         =     $03fb
 IRQLOC      =     $03fe
-LINE1       =     $0400 
+LINE1       =     $0400
 MSLOT       =     $07f8
 KBD         =     $c000           ;R last key pressed + 128
 KBDSTRB     =     $c010           ;RW keyboard strobe
@@ -90,10 +90,27 @@ CLRROM      =     $cfff           ;disable slot C8 ROM
 BASIC       =     $e000
 BASIC2      =     $e003
 
+H2          =    $2c
+V2          =    $2d
+MASK        =    $2e
+
+; Clear variables
+LMNEM       =    $2c
+RMNEM       =    $2d
+FORMAT      =    $2e
+LENGTH      =    $2f
+
+; Clear variables
+LASTIN      =    $2f
+
+; Clear variables
+CHKSUM      =    $2e
+
+
+.include "apple_enc.inc"
+.enc "apple"
+
 *           =     $f800
-H2          =    $2c    
-V2          =    $2d   
-MASK        =    $2e  
 
 PLOT        lsr
             php
@@ -179,11 +196,6 @@ SCRN2       bcc     RTMSKZ
 RTMSKZ      and     #$0f
             rts
 
-; Clear variables
-LMNEM       =    $2c    
-RMNEM       =    $2d   
-FORMAT      =    $2e  
-LENGTH      =    $2f 
 
 INSDS1      ldx     PCL
             ldy     PCH
@@ -229,7 +241,7 @@ MNNDX3      dey
             bne     MNNDX1
             rts
 
-            byte   $ff,$ff,$ff
+            .byte   $ff,$ff,$ff
 
 INSTDSP     jsr     INSDS1
             pha
@@ -311,22 +323,22 @@ PCADJ4      adc     PCL
             iny
 RTS2        rts
 
-FMT1        byte   $04,$20,$54,$30,$0d,$80,$04,$90,$03,$22,$54,$33,$0d,$80,$04,$90
-            byte   $04,$20,$54,$33,$0d,$80,$04,$90,$04,$20,$54,$3b,$0d,$80,$04,$90
-            byte   $00,$22,$44,$33,$0d,$c8,$44,$00,$11,$22,$44,$33,$0d,$c8,$44,$a9
-            byte   $01,$22,$44,$33,$0d,$80,$04,$90,$01,$22,$44,$33,$0d,$80,$04,$90
-            byte   $26,$31,$87,$9a
-FMT2        byte   $00,$21,$81,$82,$00,$00,$59,$4d,$91,$92,$86,$4a,$85,$9d
-CHAR1       byte   $ac,$a9,$ac,$a3,$a8,$a4
-CHAR2       byte   $d9,$00,$d8,$a4,$a4,$00
-MNEML       byte   $1c,$8a,$1c,$23,$5d,$8b,$1b,$a1,$9d,$8a,$1d,$23,$9d,$8b,$1d,$a1
-            byte   $00,$29,$19,$ae,$69,$a8,$19,$23,$24,$53,$1b,$23,$24,$53,$19,$a1
-            byte   $00,$1a,$5b,$5b,$a5,$69,$24,$24,$ae,$ae,$a8,$ad,$29,$00,$7c,$00
-            byte   $15,$9c,$6d,$9c,$a5,$69,$29,$53,$84,$13,$34,$11,$a5,$69,$23,$a0
-MNEMR       byte   $d8,$62,$5a,$48,$26,$62,$94,$88,$54,$44,$c8,$54,$68,$44,$e8,$94
-            byte   $00,$b4,$08,$84,$74,$b4,$28,$6e,$74,$f4,$cc,$4a,$72,$f2,$a4,$8a
-            byte   $00,$aa,$a2,$a2,$74,$74,$74,$72,$44,$68,$b2,$32,$b2,$00,$22,$00
-            byte   $1a,$1a,$26,$26,$72,$72,$88,$c8,$c4,$ca,$26,$48,$44,$44,$a2,$c8
+FMT1        .byte   $04,$20,$54,$30,$0d,$80,$04,$90,$03,$22,$54,$33,$0d,$80,$04,$90
+            .byte   $04,$20,$54,$33,$0d,$80,$04,$90,$04,$20,$54,$3b,$0d,$80,$04,$90
+            .byte   $00,$22,$44,$33,$0d,$c8,$44,$00,$11,$22,$44,$33,$0d,$c8,$44,$a9
+            .byte   $01,$22,$44,$33,$0d,$80,$04,$90,$01,$22,$44,$33,$0d,$80,$04,$90
+            .byte   $26,$31,$87,$9a
+FMT2        .byte   $00,$21,$81,$82,$00,$00,$59,$4d,$91,$92,$86,$4a,$85,$9d
+CHAR1       .byte   $ac,$a9,$ac,$a3,$a8,$a4
+CHAR2       .byte   $d9,$00,$d8,$a4,$a4,$00
+MNEML       .byte   $1c,$8a,$1c,$23,$5d,$8b,$1b,$a1,$9d,$8a,$1d,$23,$9d,$8b,$1d,$a1
+            .byte   $00,$29,$19,$ae,$69,$a8,$19,$23,$24,$53,$1b,$23,$24,$53,$19,$a1
+            .byte   $00,$1a,$5b,$5b,$a5,$69,$24,$24,$ae,$ae,$a8,$ad,$29,$00,$7c,$00
+            .byte   $15,$9c,$6d,$9c,$a5,$69,$29,$53,$84,$13,$34,$11,$a5,$69,$23,$a0
+MNEMR       .byte   $d8,$62,$5a,$48,$26,$62,$94,$88,$54,$44,$c8,$54,$68,$44,$e8,$94
+            .byte   $00,$b4,$08,$84,$74,$b4,$28,$6e,$74,$f4,$cc,$4a,$72,$f2,$a4,$8a
+            .byte   $00,$aa,$a2,$a2,$74,$74,$74,$72,$44,$68,$b2,$32,$b2,$00,$22,$00
+            .byte   $1a,$1a,$26,$26,$72,$72,$88,$c8,$c4,$ca,$26,$48,$44,$44,$a2,$c8
 
 ; 6502 interrupt-service routine ISR garanties stack as:
 ; S = status register (NV0BDIZC), RA = return address
@@ -431,12 +443,12 @@ RDSP1       lda     #$a0
             bmi     RDSP1
             rts
 
-PWRCON      word    OLDBRK
-            byte   $00,$e0,$45
-DISKID      byte   $20,$ff,$00,$ff,$03,$ff,$3c
-TITLE       abyte  +$80,"APPLE ]["
-XLTBL       byte   $c4,$c2,$c1,$ff,$c3,$ff,$ff,$ff
-RTBL        abyte  +$80,"AXYPS"
+PWRCON      .word   OLDBRK
+            .byte   $00,$e0,$45
+DISKID      .byte   $20,$ff,$00,$ff,$03,$ff,$3c
+TITLE       .text   "APPLE ]["
+XLTBL       .byte   $c4,$c2,$c1,$ff,$c3,$ff,$ff,$ff
+RTBL        .text   "AXYPS"
 
 PREAD       lda     PTRIG
             ldy     #$00
@@ -514,7 +526,7 @@ ESCNEW      cmp     #$ce            ;is this an N ?
             beq     ESCOLD          ;do normal
             bne     ESCNOW          ;go do it
 
-            byte   $ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea ;padding
+            .byte   $ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea,$ea ;padding
 
 ; must ORG $FBC1
 BASCALC     pha
@@ -696,9 +708,6 @@ RDBYT2      pha
             dex
             bne     RDBYT2
             rts
-
-; Clear variables
-LASTIN      =    $2f    
 
 RD2BIT      jsr     RDBIT
 RDBIT       dey
@@ -957,7 +966,7 @@ TRACE       rts                     ;TRACE is gone
             nop
 STEPZ       rts                     ;STEP is gone
 
-_REMOVED    nop
+REMOVED    nop
             nop
             nop
             nop
@@ -984,9 +993,6 @@ WRBYT2      asl
             jsr     WRBIT
             bne     WRBYT2
             rts
-
-; Clear variables
-CHKSUM      =    $2e    
 
 CRMON       jsr     BL1
             pla
@@ -1101,52 +1107,52 @@ ZMODE       ldy     #$00
             sty     MODE
             rts
 
-CHRTBL      byte    $bc
-            byte    $b2
-            byte    $be
-            byte    $b2             ;T cmd now like USR
-            byte    $ef
-            byte    $c4
-            byte    $b2             ;S cmd now like USR
-            byte    $a9
-            byte    $bb
-            byte    $a6
-            byte    $a4
-            byte    $06
-            byte    $95
-            byte    $07
-            byte    $02
-            byte    $05
-            byte    $f0
-            byte    $00
-            byte    $eb
-            byte    $93
-            byte    $a7
-            byte    $c6
-            byte    $99
-SUBTBL      byte    <BASCONT-1
-            byte    <USR-1
-            byte    <REGZ-1
-            byte    <TRACE-1
-            byte    <VFY-1
-            byte    <INPRT-1
-            byte    <_REMOVED-1
-            byte    <OUTPRT-1
-            byte    <XBASIC-1
-            byte    <SETMODE-1
-            byte    <SETMODE-1
-            byte    <MOVE-1
-            byte    <LT-1
-            byte    <SETNORM-1
-            byte    <SETINV-1
-            byte    <LIST-1
-            byte    <WRITE-1
-            byte    <GO-1
-            byte    <READ-1
-            byte    <SETMODE-1
-            byte    <SETMODE-1
-            byte    <CRMON-1
-            byte    <BLANK-1
-            word    NMI
-            word    RESET
-            word    IRQ
+CHRTBL      .byte    $bc
+            .byte    $b2
+            .byte    $be
+            .byte    $b2             ;T cmd now like USR
+            .byte    $ef
+            .byte    $c4
+            .byte    $b2             ;S cmd now like USR
+            .byte    $a9
+            .byte    $bb
+            .byte    $a6
+            .byte    $a4
+            .byte    $06
+            .byte    $95
+            .byte    $07
+            .byte    $02
+            .byte    $05
+            .byte    $f0
+            .byte    $00
+            .byte    $eb
+            .byte    $93
+            .byte    $a7
+            .byte    $c6
+            .byte    $99
+SUBTBL      .byte    <BASCONT-1
+            .byte    <USR-1
+            .byte    <REGZ-1
+            .byte    <TRACE-1
+            .byte    <VFY-1
+            .byte    <INPRT-1
+            .byte    <REMOVED-1
+            .byte    <OUTPRT-1
+            .byte    <XBASIC-1
+            .byte    <SETMODE-1
+            .byte    <SETMODE-1
+            .byte    <MOVE-1
+            .byte    <LT-1
+            .byte    <SETNORM-1
+            .byte    <SETINV-1
+            .byte    <LIST-1
+            .byte    <WRITE-1
+            .byte    <GO-1
+            .byte    <READ-1
+            .byte    <SETMODE-1
+            .byte    <SETMODE-1
+            .byte    <CRMON-1
+            .byte    <BLANK-1
+            .word    NMI
+            .word    RESET
+            .word    IRQ
