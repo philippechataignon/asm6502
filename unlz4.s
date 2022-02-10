@@ -2,7 +2,11 @@
 ;use LZ4 legacy format:
 ; lz4 -l file
 
-* = $803
+INCLUDE :?= 0
+
+.if INCLUDE == 0
+* = $300
+.fi
 
 ;unpacker variables, no need to change these
 src =   $FA
@@ -11,22 +15,6 @@ dst =   $FE
 count = $CE
 tmp =   $19
 offset= $D6
-
-DEST =  $6000
-
-init
-        lda #<(pakoff+8)        ; 8 = skip legacy lz4 header
-        sta src
-        lda #>(pakoff+8)
-        sta src+1
-        lda #<(pakoff+paksize)
-        sta end
-        lda #>(pakoff+paksize)
-        sta end+1
-        lda #<DEST
-        sta dst
-        lda #>DEST
-        sta dst+1
 
 unpack
         ldy #0          ; Y is always 0
@@ -60,9 +48,9 @@ copymatches             ; else copymatch phase
         tax             ;
         bcc +           ; if more than $FF, MSB++
         inc count
-+       lda src+1       ; push src on stack
++       lda src         ; push src on stack
         pha
-        lda src
+        lda src+1
         pha
         sec             ; src = dst - offset
         lda dst
@@ -73,9 +61,9 @@ copymatches             ; else copymatch phase
         sta src+1
         jsr docopy      ; copy temporarily from dest - offset to dest
         pla             ; restore src
-        sta src
-        pla
         sta src+1
+        pla
+        sta src
         jmp parsetoken  ; end of block -> next token
 
 docopy  jsr getput      ; copy X + 256 * [count] litterals/
@@ -129,7 +117,3 @@ getsrc  lda (src), y    ; get from (src++)
         bne +
         inc src+1
 +       rts
-
-pakoff
-.binary "integer.s.lz4"
-paksize = * - pakoff - 1
