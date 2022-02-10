@@ -1,50 +1,44 @@
-ORG :?= $BC00
+INCLUDE :?= 0
 
-X = $6          ; X
-Y = $EB         ; Y
-M = $FA         ; R result
+M1 = $6          ; M1
+M2 = $EB         ; M2
+RES = $FA         ; RES result
 T :?= $19         ; T temp
 
-    .if ORG > 0
-* = ORG
-    .fi
+.if INCLUDE != 0
+* = $BC00
+.fi
 
-    lda #0      ; clear result
-    sta M
-    sta M+1
-    sta M+2
-    sta M+3
-    lda Y       ; copy Y to T
-    sta T
-    lda Y+1
-    sta T+1
-    lda Y+2
-    sta T+2
-    lda Y+3
-    sta T+3
-    ldy #32     ; loop 32 times over Y bits
-L1  asl M       ; shift 32 bits R
-    rol M+1
-    rol M+2
-    rol M+3
-    asl T       ; shift 32 bits Y to get high bit
+    ; clear result
+    lda #0      
+.for i in range(4)
+    sta RES+i
+.next
+
+    ; copy M2 to T
+.for i in range(4)
+    lda M2+i
+    sta T+i
+.next
+
+    ; main loop
+    ldy #32     ; loop 32 times over M2 bits
+-   asl RES       ; shift 32 bits RES
+    rol RES+1
+    rol RES+2
+    rol RES+3
+    asl T       ; shift 32 bits T(=M2) to get high bit
     rol T+1
     rol T+2
-    rol T+3     ; get Y high bit in C
-    bcc L2      ; skip if C=0
-    clc         ; else, add X to M
-    lda M
-    adc X
-    sta M
-    lda M+1
-    adc X+1
-    sta M+1
-    lda M+2
-    adc X+2
-    sta M+2
-    lda M+3
-    adc X+3
-    sta M+3
-L2  dey       ; 32 iterations ?
-    bne L1    ; next Y bit
+    rol T+3     ; get M2 high bit in C
+    bcc +       ; skip if C=0
+    clc         ; else, add M1 to RES
+    ; RES <- RES+M1
+.for i in range(4)
+    lda RES+i
+    adc M1+i
+    sta RES+i
+.next
++   dey       ; 32 iterations ?
+    bne -    ; next M2 bit
     rts

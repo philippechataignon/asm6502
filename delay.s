@@ -1,10 +1,10 @@
-        .weak
+.weak
 INCLUDE = 0
-        .endweak
+.endweak
 
-        .if !INCLUDE
+.if INCLUDE > 0
 * = $300
-        .fi
+.fi
 
 NDELAY      = $ef
 
