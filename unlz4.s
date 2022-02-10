@@ -77,33 +77,43 @@ copymatches             ; else copymatch phase
         sta src+1
         jmp parsetoken  ; end of block -> next token
 
-done
-        pla             ; restore stack (parsetoken pha)
-        rts
-
-docopy                  ; copy X + 256 *  [count+1] litterals
+docopy                  ; copy X + 256 * [count+1] litterals
         jsr getput      ; get value
         dex
         bne docopy
         dec count+1
-        bne docopy
+        bpl docopy
         rts
 
+; example1: 4x
+; at enter, A = $04, at exit A = 4 and count MSB = 0, LSB untouched
+; example2: Fx FF F3 for #litterals
+; at enter, A = $0F
+; count = |0F|0|, then get next A = X = $FF
+; $FF + $F > 1 -> count = |0F|1|, A = $0E
+; count = |0E|1|, then get next A = X = $F3
+; F3+E=101, count=|0E|2| and A = $01
+; # = 256 * [count+1] + A (count is useless)
+
 buildcount              ; build count from token nibble
-        ldx #1          ;
+        ldx #0          ;
         stx count+1
-        cmp #$0f        ; if == $f
-        bne _no_f
--       sta count       ; store last count in LSB count
-        jsr getsrc      ; get next byte
+        cmp #$0f        ; if nibble == $f, read next else no_f
+        bne no_f
+-       sta count       ; store $0F in LSB count
+        jsr getsrc      ; get next byte in A
         tax
-        clc
-        adc count       ; add it to count
+        clc             ; update count+1
+        adc count       ; if A + $F > $FF
         bcc +
-        inc count+1
+        inc count+1     ; if carry, incr count MSB
 +       inx             ; if $FF read, tax and inx => X=0 -> continue
         beq -
-_no_f   rts
+no_f    rts             ; A contains nibble if < $0f, else last byte
+
+done
+        pla             ; restore stack (parsetoken pha)
+        rts
 
 getput
         jsr getsrc      ; (dst) <-  (src)
