@@ -1,18 +1,46 @@
 ;LZ4 data decompressor for Apple II
 ;Peter Ferrie (peter.ferrie@gmail.com)
-;assemble using ACME
-;src<dst
+;dst<src
 
-* = $280
+*=$803
 
 ;unpacker variables, no need to change these
-src	    =	$FA
-dst	    =	$FC
-count	=	$FE
-delta	=	$EB
+src	=	$0
+dst	=	$2
+end	=	$4
+count	=	$6
+delta	=	$8
+A1L	=	$3c
+A1H	=	$3d
+A2L	=	$3e
+A2H	=	$3f
+A4L	=	$42
+A4H	=	$43
+
+DEST = $6000
+
+init
+    lda #<(pakoff+8)        ; 8 = skip lz4 header
+    sta src
+    lda #>(pakoff+8)
+    sta src+1
+    lda #<(pakoff+paksize)
+    sta end
+    lda #>(pakoff+paksize)
+    sta end+1
+    lda #<DEST
+    sta dst
+    lda #>DEST
+    sta dst+1
 
 unpack ;unpacker entrypoint
 	ldy	#0
+	jmp	parsetoken
+
+pakoff
+;place packed data here for low memory unpacking
+.binary "integer.s.lz4"
+paksize = * - pakoff - 1
 
 parsetoken
 	jsr	getsrc
@@ -26,10 +54,10 @@ parsetoken
 	tax
 	jsr	docopy
 	lda	src
-	cmp	#<(pakoff+1)
+	cmp	end
 	lda	src+1
-	sbc	#>(pakoff+1)
-	bcc	done
+	sbc	end+1
+	bcs	done
 
 copymatches
 	jsr	getsrc
@@ -44,16 +72,16 @@ copymatches
 	tax
 	bcc	+
 	inc	count+1
-+ 	lda	src+1
++	lda	src+1
 	pha
 	lda	src
 	pha
-	clc
+	sec
 	lda	dst
-	adc	delta
+	sbc	delta
 	sta	src
 	lda	dst+1
-	adc	delta+1
+	sbc	delta+1
 	sta	src+1
 	jsr	docopy
 	pla
@@ -78,36 +106,31 @@ buildcount
 	ldx	#1
 	stx	count+1
 	cmp	#$0f
-	bne	_L2
-_L0 sta	count
+	bne	++
+-	sta	count
 	jsr	getsrc
 	tax
 	clc
 	adc	count
-	bcc	_L1
+	bcc	+
 	inc	count+1
-_L1	inx
-	beq	_L0
-_L2	rts
++	inx
+	beq	-
++	rts
 
 getput
 	jsr	getsrc
 
 putdst
-	cpy	dst
+	sta 	(dst), y
+	inc	dst
 	bne	+
-	dec	dst+1
-+	dec	dst
-	sta	(dst), y
-	rts
+	inc	dst+1
++	rts
 
 getsrc
-	lda	src
+	lda 	(src), y
+	inc	src
 	bne	+
-	dec	src+1
-+	dec	src
-	lda	(src), y
-	rts
-
-pakoff
-	;place packed data here
+	inc	src+1
++	rts

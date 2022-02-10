@@ -34,9 +34,9 @@ _L2         bit IOADR           ; key down?
             inx
             jmp _L2
 _L3         cmp #'0'+$80        ; test if num else pass
-            bcc _L2             ; if < '0', pass
+            blt _L2             ; if < '0', pass
             cmp #'9'+$80+1
-            bcs _L2             ; if > '9', pass
+            bge _L2             ; if > '9', pass
             sta BUFF,X          ; else store in BUFF
             jsr COUT1
             jmp _L1
