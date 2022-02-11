@@ -9,9 +9,9 @@ INCLUDE := true
 DEST =  $6000
 
 init
-        lda #<(pakoff+8)        ; 8 = skip legacy lz4 header
+        lda #<(pakoff)
         sta src
-        lda #>(pakoff+8)
+        lda #>(pakoff)
         sta src+1
         lda #<(pakoff+paksize)
         sta end
