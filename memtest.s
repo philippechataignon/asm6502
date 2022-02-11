@@ -29,8 +29,7 @@ PRINTMSG    .macro
 
 START       = $FA
 END         = $FB
-CURL        = $FC
-CURH        = $FD
+CUR         = $FC
 LINE0       = $400            ; line 0
 COUT1       = $FDF0
 CR          = $FC62
@@ -40,36 +39,36 @@ HOME        = $FC58
 
 INIT        jsr HOME
             ldy #0
-            sty CURL
+            sty CUR
             lda START
-            sta CURH
+            sta CUR+1
 
 STORE       cpy #0
             bne +           ;BYTEOUT if Y=0
-            lda CURH
+            lda CUR+1
             jsr BYTEOUT
 +           tya
-            sta (CURL),y    ; and store
+            sta (CUR),y     ; and store
             iny             ; next byte
             bne STORE
-            inc CURH        ; next page
-            lda CURH
+            inc CUR+1       ; next page
+            lda CUR+1
             cmp END         ; last page ?
             bcc STORE       ; no, continue
 
             lda START
-            sta CURH
-COMPARE     cpy #0         ;BYTEOUT if Y=0
+            sta CUR+1
+COMPARE     cpy #0          ;BYTEOUT if Y=0
             bne +
-            lda CURH
+            lda CUR+1
             jsr BYTEOUT
 +           tya
-            cmp (CURL),y    ; cmp y and addr
+            cmp (CUR),y     ; cmp y and addr
             bne ERROR       ; if !=, exit with error
             iny             ; next byte
             bne COMPARE
-            inc CURH        ; next page
-            lda CURH
+            inc CUR+1       ; next page
+            lda CUR+1
             cmp END         ; last page ?
             bcc COMPARE     ; no, continue
 
@@ -90,6 +89,6 @@ CHAR2       CHR2SCR 39      ; output pos 39
             rts
 
             .enc "apple"
-MSG_PASS    .text   "PASS123!#$+-/]["
+MSG_PASS    .text   "PASS"
             .enc "apple_inv"
-MSG_ERR     .text   "ERR123!#$+-/]["
+MSG_ERR     .text   "ERR"
