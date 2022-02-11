@@ -18,6 +18,7 @@ $(target_hex): apple_enc.inc
 diskload.hex: delay.s
 libint.hex: mult32.s div32.s integer.s
 print_hello.s: printstr.s
+loadlz.hex: load8000.s unlz4.s
 
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s)) *.bin *.hex *.lst

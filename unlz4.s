@@ -2,9 +2,9 @@
 ;use LZ4 legacy format:
 ; lz4 -l file
 
-INCLUDE :?= 0
+INCLUDE :?= false
 
-.if INCLUDE == 0
+.if !INCLUDE
 * = $300
 .fi
 

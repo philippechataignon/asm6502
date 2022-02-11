@@ -1,6 +1,5 @@
-*           = $280
 entry       = $2A0
-end         = $300
+endaddr     = $300
 
 cout        = $FDED           ; character out sub
 prbyte      = $FDDA           ; print byte in hex
@@ -12,6 +11,14 @@ begload     = $FA             ; begin load location LSB/MSB
 endload0    = $FC             ; end load location LSB/MSB
 pointer     = $EB             ; LSB/MSB pointer
 
+INCLUDE :?= false
+INIT_LOAD :?= true
+
+.if !INCLUDE
+*           = $280
+.fi
+
+.if INIT_LOAD
 mon_entry:
             lda begload         ; load begin LSB location
             sta store+1         ; store it for automodified location
@@ -24,8 +31,8 @@ mon_entry:
             lda endload0+1
             sta endload+1
             jmp inline_entry
-
             .fill entry - *,0
+.fi
 
 inline_entry:
             ldx #0              ; X is used in ROL instr at store:
@@ -95,4 +102,6 @@ error:
 exit:
             rts
 endload     .word 0              ; end load location LSB/MSB
-            .fill end - *,0
+.if INIT_LOAD
+            .fill endaddr - *,0
+.fi
