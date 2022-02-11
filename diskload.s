@@ -36,9 +36,9 @@ endload     = $D2          ; end load location LSB/MSB
 chksum      = $D4          ; checksum location
 secnum      = $D5          ; loop var
 trknum      = $D6          ; loop var
-segcnt      = $D7          ; loop var
+segcnt      = $D7          ; sgement 0-9
 buffer      = $D8          ; MSB of RWTS buffer
-trkcnt      = $D9          ; track counter (0-6)
+seccnt      = $D9          ; sector count 0-55
 pointer     = $DA          ; pointer LSB/MSB
 prtptr      = $DC          ; pointer LSB/MSB
 fmptr       = $DE          ; file manager pointer
@@ -58,173 +58,172 @@ data        = $1000        ; 7 track loaded in $1000-$8000
 enddata     = $8000        ;
 slot        = $60          ; slot 6 * 16
 
+MULT = 5                        ; delay multiplier
+
 .include "apple_enc.inc"
 
 start:
-            jsr clear            ; clear screen
-            lda #>title          ; print title
+            jsr clear           ; clear screen
+            lda #>title         ; print title
             ldy #<title
             jsr print
-                                 ; TRACK
-            lda #19              ; col 20
+                                ; TRACK
+            lda #19             ; col 20
             sta ch
-            lda #0               ; row 0
+            lda #0              ; row 0
             jsr tabv
-            lda #>track          ; print track
+            lda #>track         ; print track
             ldy #<track
             jsr print
 
-            lda #>header         ; print header
+            lda #>header        ; print header
             ldy #<header
             jsr print
-            ldx #35              ; length of line
-            jsr line
+            ldx #35             ; length of line
+            lda #'-' | $80
+-           jsr cout
+            dex
+            bne -
+            jsr crout
 
-            lda #>left           ; print left side of grid
+            lda #>left          ; print left side of grid
             ldy #<left
             jsr print
 
 setupiob:
-            ;jsr locrpl           ; locate rwts paramlist
-            sty pointer          ; and save pointer
+            ;jsr locrpl         ; locate rwts paramlist
+            sty pointer         ; and save pointer
             sta pointer+1
 
-            ldy #3               ; offset in RWTS
-_L1:        lda rwts_param,y
-            sta (pointer),y      ; write it to RWTS
+            ldy #3              ; offset in RWTS
+-           lda rwts_param,y
+            sta (pointer),y     ; write it to RWTS
             dey
-            bpl _L1
+            bpl -
 
-
-format:                          ; format the diskette
+format:                         ; format the diskette
             lda flag
-            bmi endformat        ; if bit7=1, no format
+            bmi endformat       ; if bit7=1, no format
 
             jsr clrstatus
-            lda #>formatm        ; print formatting
+            lda #>formatm       ; print formatting
             ldy #<formatm
             jsr print
-            lda #4               ; read(1)/write(2) command
-            ldy #$c              ; offset in RWTS
-            sta (pointer),y      ; write it to RWTS
+            lda #4              ; read(1)/write(2) command
+            ldy #$c             ; offset in RWTS
+            sta (pointer),y     ; write it to RWTS
 
-            ;jsr locrpl           ; locate rwts paramlist
-            jsr rwts             ; do it!
-            lda #5
+            ;jsr locrpl         ; locate rwts paramlist
+            jsr rwts            ; do it!
+            lda #MULT
             sta NDELAY
             jsr delay
             bcc endformat
             jmp diskerror
 
 endformat:
-                                 ;;;begin segment loop (5)
-            lda #0               ; 256 bytes/sector
+            lda #0              ; 256 bytes/sector
             ldy #$b             ; offset in RWTS
-            sta (pointer),y      ; write it to RWTS
+            sta (pointer),y     ; write it to RWTS
 
-            ;lda #0               ; buffer LSB
-            ldy #8               ; offset in RWTS
-            sta (pointer),y      ; write it to RWTS
+            ;lda #0             ; buffer LSB
+            ldy #8              ; offset in RWTS
+            sta (pointer),y     ; write it to RWTS
 
             ;lda #0
-            sta trknum           ; start with track 0
-            lda #5
+            sta trknum          ; start with track 0
+            lda #10
             sta segcnt
-segloop:
-            lda #$0
+            lda #0
             sta secnum
 
-
-load:
+            ; main loop
+segloop:
             ldx #'R'-$40
             jsr draw
             jsr clrstatus
-            lda #>loadm          ; print loading data
+            lda #>loadm
             ldy #<loadm
-            jsr print            ; flash
+            jsr print
 
-            lda #$00             ; prepare loading data.enddata
+            lda #0              ; prepare loading data.enddata
             sta begload
             sta endload
-            lda #>data            ; store start loc MSB
+            lda #>data          ; store start loc MSB
             sta begload+1
-            lda #>enddata         ; store end location MSB
+            lda #>enddata       ; store end location MSB
             sta endload+1
-
-            lda #5
+            ; jsr load8000
+            lda #MULT
             sta NDELAY
             jsr delay
-            ;jsr load8000        ; get 7 tracks data in $1000-$8000
-                                 ; turn motor on to save 1-2 sec
-            ldx #slot            ; slot #6
-            lda motoron,x        ; turn it on
 
-                                 ;;;begin track loop (7)
-            ldx #$80+" "
-            jsr draw             ; write dot
             jsr clrstatus
-            lda #>writem         ; print writing
+            lda #>inflatem
+            ldy #<inflatem
+            jsr print
+            ; jsr inflate
+            ldx #'I'-$40
+            jsr draw
+            ;jsr load8000
+            lda #MULT
+            sta NDELAY
+            jsr delay
+
+            ldx #slot           ; slot #6
+            lda motoron,x       ; turn it on
+
+            ldx #$80+" "
+            jsr draw            ; write dot
+            jsr clrstatus
+            lda #>writem        ; print writing
             ldy #<writem
             jsr print
 
             lda #>data
             sta buffer
-            lda #7
-            sta trkcnt           ; do 7 tracks/segment
+            lda #56
+            sta seccnt          ; do 7 tracks/segment
 trkloop:
-            lda trknum           ; track number
-            ldy #4               ; offset in RWTS
-            sta (pointer),y      ; write it to RWTS
-
-                                 ;;;begin sector loop (16), backwards is faster, much faster
-            lda #$F
-            sta secnum
-secloop:
+            lda trknum          ; track number
+            ldy #4              ; offset in RWTS
+            sta (pointer),y     ; write it to RWTS
             ldx #'W'-$40
             jsr draw
-            lda secnum           ; sector number
-            ldy #5               ; offset in RWTS
-            sta (pointer),y      ; write it to RWTS
+            lda secnum          ; sector number
+            ldy #5              ; offset in RWTS
+            sta (pointer),y     ; write it to RWTS
+            lda buffer          ; buffer MSB
+            ldy #9              ; offset in RWTS
+            sta (pointer),y     ; write it to RWTS
+            lda #2              ; read(1)/write(2) command
+            ldy #$c             ; offset in RWTS
+            sta (pointer),y     ; write it to RWTS
 
-            lda buffer           ; buffer MSB
-            clc
-            adc secnum
-            ldy #9               ; offset in RWTS
-            sta (pointer),y      ; write it to RWTS
-
-            lda #2               ; read(1)/write(2) command
-            ldy #$c              ; offset in RWTS
-            sta (pointer),y      ; write it to RWTS
-
-            ;jsr locrpl           ; locate rwts paramlist
-            jsr rwts             ; do it!
+            ;jsr locrpl          ; locate rwts paramlist
+            jsr rwts            ; do it!
             bcs diskerror
             ldx #$80+"."
-            jsr draw             ; write dot
+            jsr draw            ; write dot
             lda #0
-            sta preg             ; fix p reg so mon is happy
+            sta preg            ; fix p reg so mon is happy
 
-            dec secnum
-            bpl secloop
-
-            lda buffer           ; buffer += $10
-            clc                  ; next page to write
-            adc #10
-            sta buffer
-
-            inc trknum           ; next track
-            dec trkcnt           ;
-            bne trkloop          ; 0, all done with 7 tracks
-                                         ;;;end track loop
-
+            inc secnum
+            lda secnum
+            cmp #$0F+1          ; more than sector F ?
+            blt +               ; yes, next track
+            inc trknum
+            lda #0              ; init sector number
+            sta secnum
+            inc buffer          ; next page to write
++           dec seccnt          ; decr sector number
+            bne trkloop         ; if >= 0, next sector
             dec segcnt
-            beq done             ; 0, all done with 5 segments
+            beq done            ; 0, all done with segments
             jmp segloop
-                                ;;;end segment loop
-                                ;;; prompt for data only load?
 done:
             jsr clrstatus
-            lda #>donem          ; print done
+            lda #>donem         ; print done
             ldy #<donem
             jsr print
             jsr rdkey
@@ -261,13 +260,6 @@ draw:
             iny
             txa
             sta (basl),y        ; store char in screen ram
-            rts
-line:
-            lda #'-' | $80
-_L1         jsr cout
-            dex
-            bne _L1
-            jsr crout
 rts:        rts
 print:
             sta prtptr+1         ; store A=MSB
@@ -295,13 +287,15 @@ diskerrorm:
 
             .enc "apple"
 donem:
-            .null "DONE. PRESS ANY KEY TO REBOOT"
+            .null "DONE"
 loadm:
-            .null "LOADING"
+            .null "LOAD"
+inflatem:
+            .null "INFLATE"
 formatm:
-            .null "FORMATTING"
+            .null "FORMAT"
 writem:
-            .null "WRITING"
+            .null "WRITE"
 track:
             .null "TRACK\n"
 header:
