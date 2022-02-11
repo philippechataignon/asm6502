@@ -1,8 +1,8 @@
 .weak
-INCLUDE = 0
+INCLUDE = false
 .endweak
 
-.if INCLUDE > 0
+.if !INCLUDE
 * = $300
 .fi
 

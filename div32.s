@@ -1,6 +1,3 @@
-ORG     :?= $BC80
-BYTE    = 4
-
 ; N and R must be adjacent
 ; Zero-Page   ; INPUT   ; OUPUT
 T       :?= $19
@@ -8,10 +5,12 @@ D       :?= $EB ; / d     ;
 N       :?= $F8 ; n       ; q = n/d
 R       :?= $FC ; 0       ; r = q - (n/d)*d
 
-        .if ORG > 0
-*       = ORG
-        .fi
+BYTE    = 4
 
+INCLUDE :?= false
+.if !INCLUDE
+* = $BC80
+.fi
         ; init R = 0
         ldy #0
 .for i in range(BYTE)

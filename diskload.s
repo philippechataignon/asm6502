@@ -1,4 +1,4 @@
-INCLUDE = 1
+INCLUDE = true
 
 load8000    = $280
 

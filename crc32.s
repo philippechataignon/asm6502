@@ -1,9 +1,7 @@
-ORG :?= $800
-
-            .if ORG > 0
-*           = ORG
-            .fi
-
+INCLUDE :?= false
+.if !INCLUDE
+* = $803
+.fi
             ; Most reference books give the CRC-32 poly
             ; as $04C11DB7. This is actually the same if
             ; you write it in binary and read it right-

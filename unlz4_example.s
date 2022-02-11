@@ -2,7 +2,7 @@
 ;use LZ4 legacy format:
 ; lz4 -l file
 
-INCLUDE := 1
+INCLUDE := true
 
 * = $803
 

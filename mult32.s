@@ -1,11 +1,11 @@
-INCLUDE :?= 0
+INCLUDE :?= false
 
 M1 = $6          ; M1
 M2 = $EB         ; M2
 RES = $FA         ; RES result
 T :?= $19         ; T temp
 
-.if INCLUDE != 0
+.if !INCLUDE
 * = $BC00
 .fi
 
