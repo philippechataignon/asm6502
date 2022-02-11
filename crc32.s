@@ -14,11 +14,12 @@ CRC         = $EB
 START       = $FA         ; 2 bytes
 END         = $FC         ; 2 bytes
 CUR         = $FE         ; 2 bytes
+TMP         = $19         ; 1 byte
 COUT1       = $FDF0
-CRCT0       = $BC00       ; Four 256-byte tables
-CRCT1       = $BD00       ; (should be page-aligned for speed)
-CRCT2       = $BE00
-CRCT3       = $BF00
+CRCT0       = $8C00       ; Four 256-byte tables
+CRCT1       = $8D00       ; (should be page-aligned for speed)
+CRCT2       = $8E00
+CRCT3       = $8F00
 
 INIT:
             jsr     MAKECRCTABLE
@@ -32,38 +33,32 @@ INIT:
             iny                 ; Y = 0
             sty     CUR         ; CUR = HH00
             ldy     START
-_LOOP1:
-            lda     (CUR),y     ; CUR = HH00 + Y
+MAINLOOP    lda     (CUR),Y     ; current = HH00 + Y
             jsr     UPDCRC      ; update CRC
-            ldx     CUR+1       ; is last page ?
-            cpx     END+1       ; >= ?
-            bcs     _LASTPAGE   ; yes -> LASTPAGE
-            iny                 ; no, increment CURH,Y
-            bne     _LOOP1
+            iny                 ; increment (CUR),Y
+            bne     +
             inc     CUR+1
-            jmp     _LOOP1
-_LASTPAGE:
-            iny
-            beq     EXIT       ; last iter when CUR ends with $FF gives 0 -> EXIT
-            cpy     END         ; Y <= END ?
-            bcc     _LOOP1      ; <
-            beq     _LOOP1      ; =
-EXIT:
-            ldy     #3          ; eor $FFFFFFFF for CRC at the end
-_COMPL:     lda     CRC,Y
+            beq     EXIT        ; if $0000, exit
++           sty     TMP         ; END>=CUR,Y=TMP
+            lda     END
+            cmp     TMP
+            lda     END+1
+            sbc     CUR+1
+            bge     MAINLOOP    ; yes, continue
+EXIT        ldy     #3          ; eor $FFFFFFFF for CRC at the end
+-           lda     CRC,Y
             eor     #$FF
             sta     CRC,Y
             jsr     COUTBYTE    ; and display
             dey
-            bpl     _COMPL
+            bpl     -
             rts
 COUTNIB:                         ; output a nibble (0-F)
             ora     #$B0        ; convert to ASCII for number
-            cmp     #$BA        ; >= BA (3A|80) -> not number but [A-F], need to add 6
-            bcc     _DIGIT
-            adc     #$06
-_DIGIT:
-            jsr     COUT1
+            cmp     #$BA        ; >= BA (3A|80) -> not number but [A-F]
+            blt     +
+            adc     #6          ; need to add 6 : BA + C + 6 = C1 = 'A'
++           jsr     COUT1
             rts
 COUTBYTE:
             pha                 ; push A for low nibble
@@ -82,7 +77,7 @@ MAKECRCTABLE:
 _BYTELOOP:  lda     #0          ; A contains the high byte of the CRC-32
             sta     CRC+2       ; The other three bytes are in memory
             sta     CRC+1
-            stx     CRC
+            stx     CRC         ; X ($00-$FF) in CRC LSB
             ldy     #8          ; Y counts bits in a byte
 _BITLOOP:   lsr                 ; The CRC-32 algorithm is similar to CRC-16
             ror     CRC+2       ; except that it is reversed (originally for
