@@ -50,7 +50,6 @@ ch          = $24          ; cursor horizontal
 basl        = $28          ; line addr form bascalc L
 bash        = $29          ; line addr form bascalc H
 preg        = $48          ; mon p reg
-line3       = $580
 
 ;            other vars
 
@@ -58,9 +57,12 @@ data        = $1000        ; 7 track loaded in $1000-$8000
 enddata     = $8000        ;
 slot        = $60          ; slot 6 * 16
 
+line21      = $6D0
+
 MULT = 5                        ; delay multiplier
 
 .include "apple_enc.inc"
+.enc "apple"
 
 start:
             jsr clear           ; clear screen
@@ -80,7 +82,7 @@ start:
             ldy #<header
             jsr print
             ldx #35             ; length of line
-            lda #'-' | $80
+            lda #'-'
 -           jsr cout
             dex
             bne -
@@ -138,8 +140,9 @@ endformat:
             sta secnum
 
             ; main loop
+
 segloop:
-            ldx #'R'-$40
+            ldx #'R'-$C0
             jsr draw
             jsr clrstatus
             lda #>loadm
@@ -163,7 +166,7 @@ segloop:
             ldy #<inflatem
             jsr print
             ; jsr inflate
-            ldx #'I'-$40
+            ldx #'I'-$C0
             jsr draw
             ;jsr load8000
             lda #MULT
@@ -173,8 +176,6 @@ segloop:
             ldx #slot           ; slot #6
             lda motoron,x       ; turn it on
 
-            ldx #$80+" "
-            jsr draw            ; write dot
             jsr clrstatus
             lda #>writem        ; print writing
             ldy #<writem
@@ -188,7 +189,7 @@ trkloop:
             lda trknum          ; track number
             ldy #4              ; offset in RWTS
             sta (pointer),y     ; write it to RWTS
-            ldx #'W'-$40
+            ldx #'W'-$C0
             jsr draw
             lda secnum          ; sector number
             ldy #5              ; offset in RWTS
@@ -203,7 +204,7 @@ trkloop:
             ;jsr locrpl          ; locate rwts paramlist
             jsr rwts            ; do it!
             bcs diskerror
-            ldx #$80+"."
+            ldx #"."
             jsr draw            ; write dot
             lda #0
             sta preg            ; fix p reg so mon is happy
@@ -243,11 +244,16 @@ diskerror:
             rts
 
 clrstatus:
+            lda #" "            ; space
+            ldx #16             ; clear 16 spaces
+-           sta line21,X
+            dex
+            bpl -
+            lda #21              ; vert
+            jsr bascalc          ; move cursor to status line
             lda #0
-            sta $24              ; horiz
-            lda #22              ; vert
-            jsr tabv             ; move cursor to $24,a; 0 base
-            jmp cleos
+            sta ch               ; horiz
+            rts
 draw:
             clc
             lda #4
