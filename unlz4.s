@@ -1,21 +1,16 @@
 ;LZ4 data decompressor for Apple II
-;use LZ4 legacy format:
-; lz4 -l file
+;
+
+src = $06
+dst = $08
 
 .if DIRECT
 * = $300
 .fi
 
-;unpacker variables, no need to change these
-src =   $FA
-end =   $FC
-dst =   $FE
-count = $CE
-tmp =   $19
-offset= $D6
-
-unpack
+inflate
         ldy #0          ; Y is always 0
+
 parsetoken
         jsr getsrc      ; get token
         pha             ; push it
@@ -115,3 +110,8 @@ getsrc  lda (src), y    ; get from (src++)
         bne +
         inc src+1
 +       rts
+
+end     .word ?
+offset  .word ?
+count   .byte ?
+tmp     .byte ?

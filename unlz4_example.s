@@ -3,26 +3,24 @@
 ; lz4 -l file
 
 * = $803
-
-DEST =  $6000
+buffer_dest =  $6000
 
 init
-        lda #<(pakoff)
-        sta src
-        lda #>(pakoff)
-        sta src+1
-        lda #<(pakoff+paksize)
-        sta end
-        lda #>(pakoff+paksize)
-        sta end+1
-        lda #<DEST
-        sta dst
-        lda #>DEST
-        sta dst+1
+        lda #<(buffer)
+        sta unlz4.src
+        lda #>(buffer)
+        sta unlz4.src+1
+        lda #<(buffer+size(buffer))
+        sta unlz4.end
+        lda #>(buffer+size(buffer))
+        sta unlz4.end+1
+        lda #<buffer_dest
+        sta unlz4.dst
+        lda #>buffer_dest
+        sta unlz4.dst+1
 
 DIRECT := false
-.include "unlz4.s"
+unlz4  .binclude "unlz4.s"
 
-pakoff
-.binary "integer.s.lz4"
-paksize = * - pakoff - 1
+.align $100
+buffer .binary "integer.s.lz4"
