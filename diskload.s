@@ -1,7 +1,6 @@
-
-load8000    = $280
-
 *           = $9000
+DIRECT := false
+
 ; apple vectors
 
 dos         = $9D84
@@ -24,15 +23,12 @@ warm        = $FF69        ; back to monitor
 ;            dos routines
 
 fm          = $3D6         ; file manager entry
-;rwts       = $3D9         ; RWTS jsr
+;rwts        = $3D9         ; RWTS jsr (tmp = delay)
 locfpl      = $3DC         ; locate file manager paramlist jsr
 locrpl      = $3E3         ; locate RWTS paramlist jsr
 
 ;            zero page parameters
 
-begload     = $D0          ; begin load location LSB/MSB
-endload     = $D2          ; end load location LSB/MSB
-chksum      = $D4          ; checksum location
 secnum      = $D5          ; loop var
 trknum      = $D6          ; loop var
 segcnt      = $D7          ; sgement 0-9
@@ -40,20 +36,18 @@ buffer      = $D8          ; MSB of RWTS buffer
 seccnt      = $D9          ; sector count 0-55
 pointer     = $DA          ; pointer LSB/MSB
 prtptr      = $DC          ; pointer LSB/MSB
-fmptr       = $DE          ; file manager pointer
-flag        = $E1          ; 0 = format, $80 = no format
 
 ;             monitor vars
 
 ch          = $24          ; cursor horizontal
 basl        = $28          ; line addr form bascalc L
 bash        = $29          ; line addr form bascalc H
-preg        = $48          ; mon p reg
 
 ;            other vars
 
 data        = $1000        ; 7 track loaded in $1000-$8000
-enddata     = $8000        ;
+enddata     = $37FF        ; false end
+zdata       = $3800        ; unlz buffer
 slot        = $60          ; slot 6 * 16
 
 line21      = $6D0
@@ -63,22 +57,29 @@ MULT = 5                        ; delay multiplier
 .include "apple_enc.inc"
 .enc "apple"
 
-start:
+status      .macro
+            jsr clrstatus
+            ldy #<\1
+            lda #>\1
+            jsr print
+            .endm
+
+start
             jsr clear           ; clear screen
-            lda #>title         ; print title
             ldy #<title
+            lda #>title         ; print title
             jsr print
                                 ; TRACK
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
-            jsr tabv
-            lda #>track         ; print track
+            jsr bascalc
             ldy #<track
+            lda #>track         ; print track
             jsr print
 
-            lda #>header        ; print header
             ldy #<header
+            lda #>header        ; print header
             jsr print
             ldx #35             ; length of line
             lda #'-'
@@ -87,11 +88,11 @@ start:
             bne -
             jsr crout
 
-            lda #>left          ; print left side of grid
             ldy #<left
+            lda #>left          ; print left side of grid
             jsr print
 
-setupiob:
+setupiob
             ;jsr locrpl         ; locate rwts paramlist
             sty pointer         ; and save pointer
             sta pointer+1
@@ -102,14 +103,8 @@ setupiob:
             dey
             bpl -
 
-format:                         ; format the diskette
-            lda flag
-            bmi endformat       ; if bit7=1, no format
-
-            jsr clrstatus
-            lda #>formatm       ; print formatting
-            ldy #<formatm
-            jsr print
+format                         ; format the diskette
+            status formatm
             lda #4              ; read(1)/write(2) command
             ldy #$c             ; offset in RWTS
             sta (pointer),y     ; write it to RWTS
@@ -121,7 +116,7 @@ format:                         ; format the diskette
             bcc endformat
             jmp diskerror
 
-endformat:
+endformat
             lda #0              ; 256 bytes/sector
             ldy #$b             ; offset in RWTS
             sta (pointer),y     ; write it to RWTS
@@ -139,49 +134,43 @@ endformat:
 
             ; main loop
 
-segloop:
+segloop
             ldx #'R'-$C0
             jsr draw
-            jsr clrstatus
-            lda #>loadm
-            ldy #<loadm
-            jsr print
+            status loadm
 
-            lda #0              ; prepare loading data.enddata
-            sta begload
-            sta endload
+            lda #0              ; prepare loading
+            sta load8000.begload
+            sta load8000.endload
+            sta inflate.src
+            sta inflate.dst
             lda #>data          ; store start loc MSB
-            sta begload+1
+            sta load8000.begload+1
+            sta inflate.src+1
             lda #>enddata       ; store end location MSB
-            sta endload+1
-            ; jsr load8000
-            lda #MULT
-            jsr delay
-
-            jsr clrstatus
-            lda #>inflatem
-            ldy #<inflatem
-            jsr print
-            ; jsr inflate
-            ldx #'I'-$C0
-            jsr draw
+            sta load8000.endload+1
+            sta inflate.end+1
             ;jsr load8000
             lda #MULT
             jsr delay
 
+            ldx #'I'-$C0
+            jsr draw
+            status inflatem
+            lda #>data
+            sta inflate.dst+1
+            ;jsr inflate
+
             ldx #slot           ; slot #6
             lda motoron,x       ; turn it on
 
-            jsr clrstatus
-            lda #>writem        ; print writing
-            ldy #<writem
-            jsr print
+            status writem
 
             lda #>data
             sta buffer
             lda #56
             sta seccnt          ; do 7 tracks/segment
-trkloop:
+trkloop
             lda trknum          ; track number
             ldy #4              ; offset in RWTS
             sta (pointer),y     ; write it to RWTS
@@ -202,9 +191,6 @@ trkloop:
             bcs diskerror
             ldx #"."
             jsr draw            ; write dot
-            lda #0
-            sta preg            ; fix p reg so mon is happy
-
             inc secnum
             lda secnum
             cmp #$0F+1          ; more than sector F ?
@@ -218,28 +204,19 @@ trkloop:
             dec segcnt
             beq done            ; 0, all done with segments
             jmp segloop
-done:
-            jsr clrstatus
-            lda #>donem         ; print done
-            ldy #<donem
-            jsr print
+done
+            status donem
             jsr rdkey
             rts
 ;;          jmp reboot
 
-diskerror:
-            lda #0
-            sta preg             ; fix p reg so mon is happy
+diskerror
             ldx #slot            ; slot #6
             lda motoroff,x       ; turn it off
-            jsr clrstatus
-            lda #>diskerrorm     ; print error
-            ldy #<diskerrorm
-            jsr print
-;            jmp warm
+            status diskerrorm     ; print error
             rts
 
-clrstatus:
+clrstatus
             lda #" "            ; space
             ldx #16             ; clear 16 spaces
 -           sta line21,X
@@ -250,7 +227,7 @@ clrstatus:
             lda #0
             sta ch               ; horiz
             rts
-draw:
+draw
             clc
             lda #4
             adc secnum          ; num line
@@ -262,49 +239,46 @@ draw:
             iny
             txa
             sta (basl),y        ; store char in screen ram
-rts:        rts
-print:
+-           rts
+print
             sta prtptr+1         ; store A=MSB
             sty prtptr           ; store Y=LSB
             ldy #0
 _L1         lda (prtptr),y       ;
-            beq rts              ; return if 0 = end of string
+            beq -                ; return if 0 = end of string
             jsr cout
             iny
             jmp _L1
-
-rwts:
-            clc
-            lda #1
-
-DIRECT := false
-delay:      .binclude "delay.s"
+rwts        lda #1
+delay      .binclude "delay.s"
+load8000   .binclude "load8000.s"
+inflate    .binclude "unlz4.s"
 
             .enc "apple_inv"
-title:      .null "DISKLOAD"
+title      .null "DISKLOAD"
 
-diskerrorm:
+diskerrorm
             .enc "apple_flash"
             .null "DISK ERROR"
 
             .enc "apple"
-donem:
+donem
             .null "DONE"
-loadm:
+loadm
             .null "LOAD"
-inflatem:
+inflatem
             .null "INFLATE"
-formatm:
+formatm
             .null "FORMAT"
-writem:
+writem
             .null "WRITE"
-track:
+track
             .null "TRACK\n"
-header:
+header
             .text "    00000000001111111111222222222233333\n"
             .text "    01234567890123456789012345678901234\n"
             .null "    "
-left:
+left
             .text "  0:\n"
             .text "  1:\n"
             .text "  2:\n"

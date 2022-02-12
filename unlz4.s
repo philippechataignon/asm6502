@@ -26,7 +26,7 @@ parsetoken
         cmp end
         lda src+1
         sbc end+1
-        bge done        ; yes, done
+        bge lzdone      ; yes, done
 
 copymatches             ; else copymatch phase
         jsr getsrc      ; get offset (2 bytes)
@@ -94,7 +94,7 @@ buildcount              ; build count from token nibble
         beq -
 bc_rts  rts
 
-done    pla             ; restore stack (parsetoken pha)
+lzdone  pla             ; restore stack (parsetoken pha)
         rts
 
 getput  jsr getsrc      ; (dst++) <- (src++)

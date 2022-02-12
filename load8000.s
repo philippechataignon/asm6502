@@ -1,23 +1,17 @@
+cout        := $FDED           ; character out sub
+prbyte      := $FDDA           ; print byte in hex
+tapein      := $C060           ; read tape interface
+
+.if DIRECT
+*           = $280
 entry       = $2A0
 endaddr     = $300
-
-cout        = $FDED           ; character out sub
-prbyte      = $FDDA           ; print byte in hex
-tapein      = $C060           ; read tape interface
 
 ; zero page parameters
 
 begload     = $FA             ; begin load location LSB/MSB
 endload0    = $FC             ; end load location LSB/MSB
-pointer     = $EB             ; LSB/MSB pointer
 
-INIT_LOAD :?= true
-
-.if DIRECT
-*           = $280
-.fi
-
-.if INIT_LOAD
 mon_entry:
             lda begload         ; load begin LSB location
             sta store+1         ; store it for automodified location
@@ -31,7 +25,17 @@ mon_entry:
             sta endload+1
             jmp inline_entry
             .fill entry - *,0
+.else
+            lda begload         ; load begin LSB location
+            sta store+1         ; store it for automodified location
+            sta sumloop+1       ; store it for automodified location
+            lda begload+1       ; load begin MSB location
+            sta store+2         ; store it for automodified location
+            sta sumloop+2       ; store it for automodified location
 .fi
+
+.include "apple_enc.inc"
+.enc "apple"
 
 inline_entry:
             ldx #0              ; X is used in ROL instr at store:
@@ -94,13 +98,17 @@ nexteor:
             bge sumloop         ; while (endload) >= (sumloop+1)
             beq exit            ; checksum OK, exit
 error:
-            lda #'K'+$80
+            lda #'K'
             jsr cout
-            lda #'O'+$80
+            lda #'O'
             jsr cout
 exit:
             rts
+
+.if DIRECT
 endload     .word 0              ; end load location LSB/MSB
-.if INIT_LOAD
             .fill endaddr - *,0
+.else
+begload     .word ?
+endload     .word ?
 .fi
