@@ -1,4 +1,3 @@
-INCLUDE = true
 
 load8000    = $280
 
@@ -118,7 +117,7 @@ format:                         ; format the diskette
             ;jsr locrpl         ; locate rwts paramlist
             jsr rwts            ; do it!
             lda #MULT
-            sta NDELAY
+            pha
             jsr delay
             bcc endformat
             jmp diskerror
@@ -158,7 +157,7 @@ segloop:
             sta endload+1
             ; jsr load8000
             lda #MULT
-            sta NDELAY
+            pha
             jsr delay
 
             jsr clrstatus
@@ -170,7 +169,7 @@ segloop:
             jsr draw
             ;jsr load8000
             lda #MULT
-            sta NDELAY
+            pha
             jsr delay
 
             ldx #slot           ; slot #6
@@ -280,9 +279,10 @@ _L1         lda (prtptr),y       ;
 rwts:
             clc
             lda #1
-            sta NDELAY
-delay:
-            .include "delay.s"
+            pha
+
+DIRECT := false
+delay:      .binclude "delay.s"
 
             .enc "apple_inv"
 title:      .null "DISKLOAD"

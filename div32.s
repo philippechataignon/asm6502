@@ -7,8 +7,7 @@ R       :?= $FC ; 0       ; r = q - (n/d)*d
 
 BYTE    = 4
 
-INCLUDE :?= false
-.if !INCLUDE
+.if DIRECT
 * = $BC80
 .fi
         ; init R = 0

@@ -2,9 +2,7 @@
 ;use LZ4 legacy format:
 ; lz4 -l file
 
-INCLUDE :?= false
-
-.if !INCLUDE
+.if DIRECT
 * = $300
 .fi
 

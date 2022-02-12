@@ -1,5 +1,4 @@
-INCLUDE :?= false
-.if !INCLUDE
+.if DIRECT
 * = $803
 .fi
             ; Most reference books give the CRC-32 poly

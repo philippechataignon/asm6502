@@ -11,10 +11,9 @@ begload     = $FA             ; begin load location LSB/MSB
 endload0    = $FC             ; end load location LSB/MSB
 pointer     = $EB             ; LSB/MSB pointer
 
-INCLUDE :?= false
 INIT_LOAD :?= true
 
-.if !INCLUDE
+.if DIRECT
 *           = $280
 .fi
 

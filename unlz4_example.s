@@ -2,8 +2,6 @@
 ;use LZ4 legacy format:
 ; lz4 -l file
 
-INCLUDE := true
-
 * = $803
 
 DEST =  $6000
@@ -22,6 +20,7 @@ init
         lda #>DEST
         sta dst+1
 
+DIRECT := false
 .include "unlz4.s"
 
 pakoff
