@@ -76,46 +76,12 @@ _L2         iny
             bcc _L0             ; next digit/char
             rts
 
-POWER0      .byte 1 & $ff
-            .byte 10 & $ff
-            .byte 100 & $ff
-            .byte 1000 & $ff
-            .byte 10000 & $ff
-            .byte 100000 & $ff
-            .byte 1000000 & $ff
-            .byte 10000000 & $ff
-            .byte 100000000 & $ff
-            .byte 1000000000 & $ff
-POWER1      .byte 1 >> 8 & $ff
-            .byte 10 >> 8 & $ff
-            .byte 100 >> 8 & $ff
-            .byte 1000 >> 8 & $ff
-            .byte 10000 >> 8 & $ff
-            .byte 100000 >> 8 & $ff
-            .byte 1000000 >> 8 & $ff
-            .byte 10000000 >> 8 & $ff
-            .byte 100000000 >> 8 & $ff
-            .byte 1000000000 >> 8 & $ff
-POWER2      .byte 1 >> 16 & $ff
-            .byte 10 >> 16 & $ff
-            .byte 100 >> 16 & $ff
-            .byte 1000 >> 16 & $ff
-            .byte 10000 >> 16 & $ff
-            .byte 100000 >> 16 & $ff
-            .byte 1000000 >> 16 & $ff
-            .byte 10000000 >> 16 & $ff
-            .byte 100000000 >> 16 & $ff
-            .byte 1000000000 >> 16 & $ff
-POWER3      .byte 1 >> 24 & $ff
-            .byte 10 >> 24 & $ff
-            .byte 100 >> 24 & $ff
-            .byte 1000 >> 24 & $ff
-            .byte 10000 >> 24 & $ff
-            .byte 100000 >> 24 & $ff
-            .byte 1000000 >> 24 & $ff
-            .byte 10000000 >> 24 & $ff
-            .byte 100000000 >> 24 & $ff
-            .byte 1000000000 >> 24 & $ff
+powers = (1, 10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000, 1_000_000_000)
+
+POWER0      .byte powers & $ff
+POWER1      .byte powers >> 8 & $ff
+POWER2      .byte powers >> 16 & $ff
+POWER3      .byte powers >> 24 & $ff
 
             .align $100
 
