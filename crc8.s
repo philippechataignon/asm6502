@@ -1,15 +1,21 @@
-CRC   = $FE
-start = $FA
-end = $FC
-tmp = $19
+PTR = $CE
+PRBYTE = $FDDA
 
 * = $803
 
-        ldy start
+        jmp ENTRY
+
+START   .word 1
+END     .word 2
+
+ENTRY   ldy START
+        lda START+1
+        sta PTR+1
         lda #0
-        sta start
+        sta PTR
         sta CRC
--       lda (start),Y
+
+LOOP    lda (PTR),Y
 
 CRC8    eor CRC         ; A contained the data
         sta CRC         ; XOR it with the byte
@@ -25,12 +31,17 @@ CRC8    eor CRC         ; A contained the data
 
         iny             ; next byte
         bne +
-        inc start+1
+        inc PTR+1
         beq ++          ; if 0 after $ffff, exit
-+       sty tmp
-        lda end
-        cmp tmp
-        lda end+1
-        sbc start+1
-        bge -           ; end >= cur, continue
-+       rts
++       sty TMP
+        lda END
+        cmp TMP
+        lda END+1
+        sbc PTR+1
+        bge LOOP        ; end >= cur, continue
++       lda CRC
+        jsr PRBYTE
+        rts
+
+CRC     .byte ?
+TMP     .byte ?
