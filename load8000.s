@@ -73,7 +73,7 @@ ploop:
 
 
 store:                          ; warning: automodified code in store+1/store+2
-            rol >0,X            ; 7, roll carry bit 1/0 into store
+            rol $FFFF,X            ; 7, roll carry bit 1/0 into store
             asl                 ; 2 at bit 7, A = 0
             bne next_bit        ; 2(3)
             inx                 ; 2 cycles
@@ -84,7 +84,7 @@ store:                          ; warning: automodified code in store+1/store+2
 endcode:
             lda #$ff            ; init checksum
 sumloop:                        ; warning: automodified code in sumloop+1/sumloop+2
-            eor >0
+            eor $FFFF
             tax                 ; saves checksum in X
             inc sumloop+1       ; incr LSB
             bne nexteor

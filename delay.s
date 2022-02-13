@@ -6,7 +6,7 @@ NB = $E3
 
             sta NB
             ldx #0
-_loop0      ldy #10
+_loop0      ldy #80
 _loop1      dex             ;2 cycles
             bne _loop1      ;3c => 5c * 256 = 1280 us = 1.28 ms
             dey

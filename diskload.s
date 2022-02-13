@@ -132,7 +132,7 @@ initmain
             sta (pointer),y     ; write it to RWTS
             sta trknum          ; track 0
             sta secnum          ; sector 0
-            lda #10             ; segment number
+            lda #9              ; segment number
             sta segcnt
 
 segloop     ; main loop
@@ -141,12 +141,14 @@ segloop     ; main loop
             status loadm
 
             ldx segcnt          ; get #segment
-            lda segl,X          ; get load end LSB
-            sta load8000.endload
-            sta inflate.end
             lda segh,X          ; get load end MSB
             sta load8000.endload+1
             sta inflate.end+1
+            jsr prbyte
+            lda segl,X          ; get load end LSB
+            sta load8000.endload
+            sta inflate.end
+            jsr prbyte
 
             lda #0              ; prepare loading
             sta load8000.begload
@@ -158,14 +160,14 @@ segloop     ; main loop
             lda #>zdata
             sta inflate.dst+1
 
-            ;jsr load8000
-            lda #MULT
-            jsr delay
+            jsr load8000
+            ;lda #MULT
+            ;jsr delay
 
             ldx #'I'-$C0
             jsr draw
             status inflatem
-            ;jsr inflate
+            jsr inflate
 
             ldx #slot           ; slot #6
             lda motoron,x       ; turn it on
@@ -208,7 +210,7 @@ trkloop
 +           dec seccnt          ; decr sector number
             bne trkloop         ; if >= 0, next sector
             dec segcnt
-            beq done            ; 0, all done with segments
+            bmi done            ; 0, all done with segments
             jmp segloop
 done
             status donem
@@ -273,7 +275,7 @@ paramm
 donem
             .null "DONE"
 loadm
-            .null "LOAD"
+            .null "LOAD: $1000-$"
 inflatem
             .null "INFLATE"
 formatm
@@ -306,7 +308,6 @@ left
 
 rwts_param  .byte  1,slot,1,0             ; table type,slot,drive,volume
 
-* = $300
 segl        .fill 10,?
 segh        .fill 10,?
 segend      = * -1
