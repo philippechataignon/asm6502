@@ -1,5 +1,5 @@
-ptr = $ce
 prbyte = $fdda
+ptr = loop + 1          ; auto-modifying addr
 
 * = $803
 
@@ -16,8 +16,8 @@ ENTRY   ldy start
         stx crch
         inx             ; X = 0
         stx ptr
-loop    lda (ptr),Y
-crc16_f eor crch        ; A contained the data
+loop    lda $ffff,Y
+crc16   eor crch        ; A contained the data
         sta crch        ; XOR it into high byte
         lsr             ; right shift A 4 bits
         lsr             ; to make top of x^12 term

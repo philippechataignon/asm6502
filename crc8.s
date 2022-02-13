@@ -1,5 +1,5 @@
-PTR = $CE
 PRBYTE = $FDDA
+PTR = LOOP + 1          ; self-modifying addr
 
 * = $803
 
@@ -15,7 +15,7 @@ ENTRY   ldy START
         sta PTR
         sta CRC
 
-LOOP    lda (PTR),Y
+LOOP    lda $FFFF,Y
 
 CRC8    eor CRC         ; A contained the data
         sta CRC         ; XOR it with the byte
