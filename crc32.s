@@ -15,6 +15,7 @@ END         = $FC         ; 2 bytes
 CUR         = $FE         ; 2 bytes
 TMP         = $19         ; 1 byte
 COUT1       = $FDF0
+PRBYTE      = $FDDA
 CRCT0       = $8C00       ; Four 256-byte tables
 CRCT1       = $8D00       ; (should be page-aligned for speed)
 CRCT2       = $8E00
@@ -48,27 +49,9 @@ EXIT        ldy     #3          ; eor $FFFFFFFF for CRC at the end
 -           lda     CRC,Y
             eor     #$FF
             sta     CRC,Y
-            jsr     COUTBYTE    ; and display
+            jsr     PRBYTE    ; and display
             dey
             bpl     -
-            rts
-COUTNIB:                         ; output a nibble (0-F)
-            ora     #$B0        ; convert to ASCII for number
-            cmp     #$BA        ; >= BA (3A|80) -> not number but [A-F]
-            blt     +
-            adc     #6          ; need to add 6 : BA + C + 6 = C1 = 'A'
-+           jsr     COUT1
-            rts
-COUTBYTE:
-            pha                 ; push A for low nibble
-            lsr                 ; >> 4
-            lsr
-            lsr
-            lsr
-            jsr     COUTNIB     ; display high nibble
-            pla
-            and     #$0F
-            jsr     COUTNIB     ; display low nibble
             rts
 
 MAKECRCTABLE:
