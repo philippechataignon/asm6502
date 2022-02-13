@@ -9,20 +9,17 @@
             ; reverse things afterwards
 POLY        = $EDB88320
 
-CRC         = $EB
-START       = $FA         ; 2 bytes
-END         = $FC         ; 2 bytes
 CUR         = $FE         ; 2 bytes
-TMP         = $19         ; 1 byte
 COUT1       = $FDF0
 PRBYTE      = $FDDA
-CRCT0       = $8C00       ; Four 256-byte tables
-CRCT1       = $8D00       ; (should be page-aligned for speed)
-CRCT2       = $8E00
-CRCT3       = $8F00
 
 INIT:
-            jsr     MAKECRCTABLE
+            jmp ENTRY
+
+START       .word 1
+END         .word 2
+
+ENTRY       jsr     MAKECRCTABLE
             ldy     START+1     ; init CUR high byte with START high byte
             sty     CUR+1
             ldy     #$ff        ; init CRC with $ffffffff
@@ -34,7 +31,19 @@ INIT:
             sty     CUR         ; CUR = HH00
             ldy     START
 MAINLOOP    lda     (CUR),Y     ; current = HH00 + Y
-            jsr     UPDCRC      ; update CRC
+            eor     CRC         ; Quick CRC computation with lookup tables
+            tax                 ; update CRC
+            lda     CRC+1
+            eor     CRCT0,X
+            sta     CRC
+            lda     CRC+2
+            eor     CRCT1,X
+            sta     CRC+1
+            lda     CRC+3
+            eor     CRCT2,X
+            sta     CRC+2
+            lda     CRCT3,X
+            sta     CRC+3
             iny                 ; increment (CUR),Y
             bne     +
             inc     CUR+1
@@ -49,7 +58,7 @@ EXIT        ldy     #3          ; eor $FFFFFFFF for CRC at the end
 -           lda     CRC,Y
             eor     #$FF
             sta     CRC,Y
-            jsr     PRBYTE    ; and display
+            jsr     PRBYTE      ; and display
             dey
             bpl     -
             rts
@@ -92,18 +101,11 @@ _NOADD:     dey
             bne     _BYTELOOP    ; Do next byte
             rts
 
-UPDCRC:
-            eor     CRC         ; Quick CRC computation with lookup tables
-            tax
-            lda     CRC+1
-            eor     CRCT0,X
-            sta     CRC
-            lda     CRC+2
-            eor     CRCT1,X
-            sta     CRC+1
-            lda     CRC+3
-            eor     CRCT2,X
-            sta     CRC+2
-            lda     CRCT3,X
-            sta     CRC+3
-            rts
+CRC         .dword ?
+TMP         .byte ?
+
+.align $100
+CRCT0       .fill 256,? ; Four 256-byte tables
+CRCT1       .fill 256,? ; (should be page-aligned for speed)
+CRCT2       .fill 256,?
+CRCT3       .fill 256,?
