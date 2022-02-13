@@ -111,7 +111,7 @@ getsrc  lda (src), y    ; get from (src++)
         inc src+1
 +       rts
 
-end     .word ?
-offset  .word ?
-count   .byte ?
-tmp     .byte ?
+end     .word 0
+offset  .word 0
+count   .byte 0
+tmp     .byte 0

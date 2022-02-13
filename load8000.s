@@ -109,6 +109,6 @@ exit:
 endload     .word 0              ; end load location LSB/MSB
             .fill endaddr - *,0
 .else
-begload     .word ?
-endload     .word ?
+begload     .word 0
+endload     .word 0
 .fi

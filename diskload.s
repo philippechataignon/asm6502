@@ -2,53 +2,49 @@
 DIRECT := false
 
 ; apple vectors
-
 dos         = $9D84
 asrom       = $9D72
 init        = $A54F
-tapein      = $C060        ; read tape interface
-motoroff    = $C088        ; Turn drive motor off
-motoron     = $C089        ; Turn drive motor on
-reboot      = $FAA6        ; reboot machine
-tabv        = $FB5B        ; move cursor to ch,a
-bascalc     = $FBC1        ; calc line addr
-cleos       = $FC42        ; clear to end of screen
-clear       = $FC58        ; clear screen
-rdkey       = $FD0C        ; read key
-crout       = $FD8E        ; CR out sub
-prbyte      = $FDDA        ; print byte in hex
-cout        = $FDED        ; character out sub
-warm        = $FF69        ; back to monitor
+tapein      = $C060             ; read tape interface
+motoroff    = $C088             ; Turn drive motor off
+motoron     = $C089             ; Turn drive motor on
+reboot      = $FAA6             ; reboot machine
+tabv        = $FB5B             ; move cursor to ch,a
+bascalc     = $FBC1             ; calc line addr
+cleos       = $FC42             ; clear to end of screen
+clear       = $FC58             ; clear screen
+rdkey       = $FD0C             ; read key
+crout       = $FD8E             ; CR out sub
+prbyte      = $FDDA             ; print byte in hex
+cout        = $FDED             ; character out sub
+read        = $FEFD             ; read from tape
+warm        = $FF69             ; back to monitor
 
 ;            dos routines
-
-fm          = $3D6         ; file manager entry
-;rwts        = $3D9         ; RWTS jsr (tmp = delay)
-locfpl      = $3DC         ; locate file manager paramlist jsr
-locrpl      = $3E3         ; locate RWTS paramlist jsr
+;rwts        = $3D9             ; RWTS jsr (tmp = delay)
+locrpl      = $3E3              ; locate RWTS paramlist jsr
 
 ;            zero page parameters
-
-secnum      = $D5          ; loop var
-trknum      = $D6          ; loop var
-segcnt      = $D7          ; sgement 0-9
-buffer      = $D8          ; MSB of RWTS buffer
-seccnt      = $D9          ; sector count 0-55
-pointer     = $DA          ; pointer LSB/MSB
-prtptr      = $DC          ; pointer LSB/MSB
+secnum      = $19               ; loop var
+trknum      = $1A               ; loop var
+segcnt      = $1B               ; sgement 0-9
+buffer      = $1C               ; MSB of RWTS buffer
+seccnt      = $1D               ; sector count 0-55
+pointer     = $1E               ; pointer LSB/MSB
+prtptr      = $CE               ; pointer LSB/MSB
 
 ;             monitor vars
-
-ch          = $24          ; cursor horizontal
-basl        = $28          ; line addr form bascalc L
-bash        = $29          ; line addr form bascalc H
+ch          = $24               ; cursor horizontal
+basl        = $28               ; line addr form bascalc L
+bash        = $29               ; line addr form bascalc H
+A1          = $3C               ; for read
+A2          = $3E               ; for read
 
 ;            other vars
-
-data        = $1000        ; 7 track loaded in $1000-$8000
-enddata     = $37FF        ; false end
-zdata       = $3800        ; unlz buffer
-slot        = $60          ; slot 6 * 16
+data        = $1000             ; 7 track loaded in $1000-$8000
+enddata     = $37FF             ; false end
+zdata       = $3800             ; unlz buffer
+slot        = $60               ; slot 6 * 16
 
 line21      = $6D0
 
@@ -103,53 +99,65 @@ setupiob
             dey
             bpl -
 
-format                         ; format the diskette
-            status formatm
-            lda #4              ; read(1)/write(2) command
-            ldy #$c             ; offset in RWTS
-            sta (pointer),y     ; write it to RWTS
+;format                         ; format the diskette
+;            status formatm
+;            lda #4              ; read(1)/write(2) command
+;            ldy #$c             ; offset in RWTS
+;            sta (pointer),y     ; write it to RWTS
+;
+;            ;jsr locrpl         ; locate rwts paramlist
+;            jsr rwts            ; do it!
+;            lda #MULT
+;            jsr delay
+;            bcc initmain
+;            jmp diskerror
 
-            ;jsr locrpl         ; locate rwts paramlist
-            jsr rwts            ; do it!
-            lda #MULT
-            jsr delay
-            bcc endformat
-            jmp diskerror
+getparam    status paramm
+            lda #<segl
+            sta a1
+            lda #>segl
+            sta a1+1
+            lda #<segend
+            sta a2
+            lda #>segend
+            sta a2+1
+            jsr read
 
-endformat
+initmain
+            ;;; init main loop
             lda #0              ; 256 bytes/sector
             ldy #$b             ; offset in RWTS
             sta (pointer),y     ; write it to RWTS
-
-            ;lda #0             ; buffer LSB
-            ldy #8              ; offset in RWTS
+            ldy #8              ; buffer LSB offset in RWTS
             sta (pointer),y     ; write it to RWTS
-
-            ;lda #0
-            sta trknum          ; start with track 0
-            lda #10
+            sta trknum          ; track 0
+            sta secnum          ; sector 0
+            lda #10             ; segment number
             sta segcnt
-            lda #0
-            sta secnum
 
-            ; main loop
-
-segloop
+segloop     ; main loop
             ldx #'R'-$C0
             jsr draw
             status loadm
 
+            ldx segcnt          ; get #segment
+            lda segl,X          ; get load end LSB
+            sta load8000.endload
+            sta inflate.end
+            lda segh,X          ; get load end MSB
+            sta load8000.endload+1
+            sta inflate.end+1
+
             lda #0              ; prepare loading
             sta load8000.begload
-            sta load8000.endload
             sta inflate.src
             sta inflate.dst
             lda #>data          ; store start loc MSB
             sta load8000.begload+1
             sta inflate.src+1
-            lda #>enddata       ; store end location MSB
-            sta load8000.endload+1
-            sta inflate.end+1
+            lda #>zdata
+            sta inflate.dst+1
+
             ;jsr load8000
             lda #MULT
             jsr delay
@@ -157,8 +165,6 @@ segloop
             ldx #'I'-$C0
             jsr draw
             status inflatem
-            lda #>data
-            sta inflate.dst+1
             ;jsr inflate
 
             ldx #slot           ; slot #6
@@ -262,6 +268,8 @@ diskerrorm
             .null "DISK ERROR"
 
             .enc "apple"
+paramm
+            .null "READ PARAM"
 donem
             .null "DONE"
 loadm
@@ -297,3 +305,8 @@ left
             .null "  F:\n"
 
 rwts_param  .byte  1,slot,1,0             ; table type,slot,drive,volume
+
+* = $300
+segl        .fill 10,?
+segh        .fill 10,?
+segend      = * -1
