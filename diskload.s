@@ -223,7 +223,7 @@ diskerror
 
 clrstatus
             lda #" "            ; space
-            ldx #16             ; clear 16 spaces
+            ldx #24             ; clear 24 spaces
 -           sta line21,X
             dex
             bpl -
@@ -255,38 +255,26 @@ _L1         lda (prtptr),y       ;
             iny
             jmp _L1
 rwts        lda #1
-delay      .binclude "delay.s"
-load8000   .binclude "load8000.s"
-inflate    .binclude "unlz4.s"
-
+delay       .binclude "delay.s"
+load8000    .binclude "load8000.s"
+inflate     .binclude "unlz4.s"
+            
             .enc "apple_inv"
-title      .null "DISKLOAD"
-
-diskerrorm
+title       .null "DISKLOAD"
             .enc "apple_flash"
-            .null "DISK ERROR"
-
+diskerrorm  .null "DISK ERROR"
             .enc "apple"
-paramm
-            .null "READ PARAM"
-donem
-            .null "DONE"
-loadm
-            .null "LOAD: $1000-$"
-inflatem
-            .null "INFLATE"
-formatm
-            .null "FORMAT"
-writem
-            .null "WRITE"
-track
-            .null "TRACK\n"
-header
-            .text "    00000000001111111111222222222233333\n"
+paramm      .null "READ PARAM"
+donem       .null "DONE"
+loadm       .null "LOAD: $1000-$"
+inflatem    .null "INFLATE $4800-$7FFF"
+formatm     .null "FORMAT"
+writem      .null "WRITE"
+track       .null "TRACK\n"
+header      .text "    00000000001111111111222222222233333\n"
             .text "    01234567890123456789012345678901234\n"
             .null "    "
-left
-            .text "  0:\n"
+left        .text "  0:\n"
             .text "  1:\n"
             .text "  2:\n"
             .text "  3:\n"
@@ -302,9 +290,7 @@ left
             .text "  D:\n"
             .text "  E:\n"
             .null "  F:\n"
-
 rwts_param  .byte  1,slot,1,0             ; table type,slot,drive,volume
-
 segl        .fill 10,?
 segh        .fill 10,?
 segend      = * -1
