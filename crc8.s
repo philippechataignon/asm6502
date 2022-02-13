@@ -1,3 +1,5 @@
+; crc8 : 1s for $D000-$FFFF = $2A
+
 PRBYTE = $FDDA
 PTR = LOOP + 1          ; self-modifying addr
 

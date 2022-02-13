@@ -8,10 +8,12 @@
             ; this way means we won't have to explicitly
             ; reverse things afterwards
 POLY        = $EDB88320
-
-CUR         = $FE         ; 2 bytes
 COUT1       = $FDF0
 PRBYTE      = $FDDA
+CUR = MAINLOOP + 1
+
+ZP = true   ; if ZP if set, CRC, WORK and TMP are in page zero
+            ; on D000-FFFF, time goes from 6s20 to 5s30 for $1D05C1B1
 
 INIT:
             jmp ENTRY
@@ -29,7 +31,7 @@ ENTRY       ldy     START+1     ; init CUR high byte with START high byte
             iny                 ; Y = 0
             sty     CUR         ; CUR = HH00
             ldy     START
-MAINLOOP    lda     (CUR),Y     ; current = HH00 + Y
+MAINLOOP    lda     $ffff,Y     ; load current byte
             eor     CRC         ; Quick CRC computation with lookup tables
             jsr     CRCVALUE
             lda     CRC+1
@@ -89,12 +91,19 @@ CRCVALUE    sta     WORK
             sta     WORK+3     ; Return CRC value in WORK
             rts
 
-CRC         .dword ?
-WORK        .dword ?
-TMP         .byte ?
 
 .align $100
 CRCT0       .fill 256,? ; Four 256-byte tables
 CRCT1       .fill 256,? ; (should be page-aligned for speed)
 CRCT2       .fill 256,?
 CRCT3       .fill 256,?
+
+.if ZP
+* = $6
+.fi
+CRC         .dword ?
+.if ZP
+* = $19
+.fi
+WORK        .dword ?
+TMP         .byte ?

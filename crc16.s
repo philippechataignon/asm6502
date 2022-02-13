@@ -1,3 +1,5 @@
+; crc16 : 1s50 for D000-FFFF = $E792
+
 prbyte = $fdda
 ptr = loop + 1          ; auto-modifying addr
 
