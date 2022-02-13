@@ -18,7 +18,6 @@ crout       = $FD8E             ; CR out sub
 prbyte      = $FDDA             ; print byte in hex
 cout        = $FDED             ; character out sub
 read        = $FEFD             ; read from tape
-warm        = $FF69             ; back to monitor
 
 ;            dos routines
 ;rwts        = $3D9             ; RWTS jsr (tmp = delay)
@@ -42,8 +41,7 @@ A2          = $3E               ; for read
 
 ;            other vars
 data        = $1000             ; 7 track loaded in $1000-$8000
-enddata     = $37FF             ; false end
-zdata       = $3800             ; unlz buffer
+zdata       = $4800             ; unlz buffer
 slot        = $60               ; slot 6 * 16
 
 line21      = $6D0
@@ -214,9 +212,8 @@ trkloop
             jmp segloop
 done
             status donem
-            jsr rdkey
+            jsr crout
             rts
-;;          jmp reboot
 
 diskerror
             ldx #slot            ; slot #6
