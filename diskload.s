@@ -290,10 +290,13 @@ _L1         lda (prtptr),y       ;
             jmp _L1
 .if !REAL
 rwts
-            tya
+            tya                 ;saves Y on stack
             pha
-            status rwtsm
-            ldy #4
+            lda #22
+            jsr bascalc
+            lda #0
+            sta ch
+            ldy #0
 -           lda (rwtsptr),Y
             jsr prbyte
             lda #" "
@@ -302,7 +305,7 @@ rwts
             cpy #$D
             blt -
             clc
-            pla
+            pla                 ; restore Y
             tay
             lda #1
             jsr delay
