@@ -1,5 +1,6 @@
 *           = $9000
 DIRECT := false
+REAL := false
 
 ; apple vectors
 dos         = $9D84
@@ -20,7 +21,9 @@ cout        = $FDED             ; character out sub
 read        = $FEFD             ; read from tape
 
 ;            dos routines
-;rwts        = $3D9             ; RWTS jsr (tmp = delay)
+.if REAL
+rwts        = $3D9             ; RWTS jsr (tmp = delay)
+.fi
 locrpl      = $3E3              ; locate RWTS paramlist jsr
 
 rpliob = 0
@@ -62,7 +65,8 @@ slot        = $60               ; slot 6 * 16
 
 line21      = $6D0
 
-MULT = 5                        ; delay multiplier
+mult = 5                        ; delay multiplier
+
 
 .include "apple_enc.inc"
 .enc "apple"
@@ -103,7 +107,12 @@ start
             jsr print
 
 setupiob
-            ;jsr locrpl         ; locate rwts paramlist
+.if REAL
+            jsr locrpl         ; locate rwts paramlist
+.else
+            ldy #<rwts_iob      ; simul locrpl
+            lda #>rwts_iob
+.fi
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
@@ -133,7 +142,12 @@ getparam    status paramm
             sta a2
             lda #>segend
             sta a2+1
+.if REAL
             jsr read
+.else
+            lda #MULT
+            jsr delay
+.fi
 
 initmain
             ;;; init main loop
@@ -170,21 +184,28 @@ segloop     ; main loop
             lda #>zdata
             sta inflate.dst+1
 
+.if REAL
             jsr load8000
-            ;lda #MULT
-            ;jsr delay
-
+.else
+            lda #MULT
+            jsr delay
+.fi
             ldx #'I'-$C0
             jsr draw
             status inflatem
+.if REAL
             jsr inflate
+.else
+            lda #MULT
+            jsr delay
+.fi
 
             ldx #slot           ; slot #6
             lda motoron,x       ; turn it on
 
             status writem
 
-            lda #>data
+            lda #>zdata         ; init with zdata buffer
             sta buffer
             lda #56
             sta seccnt          ; do 7 tracks/segment
@@ -210,6 +231,7 @@ trkloop
             bcs diskerror
             ldx #"."
             jsr draw            ; write dot
+            inc buffer          ; next page to write
             inc secnum
             lda secnum
             cmp #$0F+1          ; more than sector F ?
@@ -217,7 +239,6 @@ trkloop
             inc trknum
             lda #0              ; init sector number
             sta secnum
-            inc buffer          ; next page to write
 +           dec seccnt          ; decr sector number
             bne trkloop         ; if >= 0, next sector
             dec segcnt
@@ -236,7 +257,7 @@ diskerror
 
 clrstatus
             lda #" "            ; space
-            ldx #24             ; clear 24 spaces
+            ldx #39             ; clear line
 -           sta line21,X
             dex
             bpl -
@@ -267,16 +288,37 @@ _L1         lda (prtptr),y       ;
             jsr cout
             iny
             jmp _L1
-rwts        lda #1
+.if !REAL
+rwts
+            tya
+            pha
+            status rwtsm
+            ldy #4
+-           lda (rwtsptr),Y
+            jsr prbyte
+            lda #" "
+            jsr cout
+            iny
+            cpy #$D
+            blt -
+            clc
+            pla
+            tay
+            lda #1
+            jsr delay
+            rts
+.fi
+
 delay       .binclude "delay.s"
 load8000    .binclude "load8000.s"
 inflate     .binclude "unlz4.s"
-            
+
             .enc "apple_inv"
 title       .null "DISKLOAD"
             .enc "apple_flash"
 diskerrorm  .null "DISK ERROR"
             .enc "apple"
+rwtsm       .null "RWTS "
 paramm      .null "READ PARAM"
 donem       .null "DONE"
 loadm       .null "LOAD: $1000-$"
@@ -304,6 +346,7 @@ left        .text "  0:\n"
             .text "  E:\n"
             .null "  F:\n"
 rwts_param  .byte 1,slot,1,0,0,0,0,0,0,0,0,0,0,0,0,slot,1
+rwts_iob    .byte 17
 segl        .fill 10,?
 segh        .fill 10,?
 segend      = * -1
