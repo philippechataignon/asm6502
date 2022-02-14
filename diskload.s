@@ -23,13 +23,29 @@ read        = $FEFD             ; read from tape
 ;rwts        = $3D9             ; RWTS jsr (tmp = delay)
 locrpl      = $3E3              ; locate RWTS paramlist jsr
 
+rpliob = 0
+rplslt = 1
+rpldrv = 2
+rplvol = 3
+rpltrk = 4
+rplsec = 5
+rpldct = 6
+rplbuf = 8
+rplsiz = $b
+rplcmd = $c
+rplret = $e
+cmdseek = 0
+cmdread = 1
+cmdwrite = 2
+cmdformat= 4
+
 ;            zero page parameters
 secnum      = $19               ; loop var
 trknum      = $1A               ; loop var
 segcnt      = $1B               ; sgement 0-9
 buffer      = $1C               ; MSB of RWTS buffer
 seccnt      = $1D               ; sector count 0-55
-pointer     = $1E               ; pointer LSB/MSB
+rwtsptr     = $1E               ; rwtsptr LSB/MSB
 prtptr      = $CE               ; pointer LSB/MSB
 
 ;             monitor vars
@@ -88,26 +104,24 @@ start
 
 setupiob
             ;jsr locrpl         ; locate rwts paramlist
-            sty pointer         ; and save pointer
-            sta pointer+1
+            sty rwtsptr         ; and save rwtsptr
+            sta rwtsptr+1
 
-            ldy #3              ; offset in RWTS
+            ldy #size(rwts_param)-1 ; copy default rwts param
 -           lda rwts_param,y
-            sta (pointer),y     ; write it to RWTS
+            sta (rwtsptr),y     ; write it to RWTS
             dey
             bpl -
 
 ;format                         ; format the diskette
 ;            status formatm
-;            lda #4              ; read(1)/write(2) command
+;            lda #4              ; read(1)/write(2)/format(4) command
 ;            ldy #$c             ; offset in RWTS
-;            sta (pointer),y     ; write it to RWTS
-;
-;            ;jsr locrpl         ; locate rwts paramlist
+;            sta (rwtsptr),y     ; write it to RWTS
 ;            jsr rwts            ; do it!
 ;            lda #MULT
 ;            jsr delay
-;            bcc initmain
+;            bcc getparam
 ;            jmp diskerror
 
 getparam    status paramm
@@ -123,11 +137,9 @@ getparam    status paramm
 
 initmain
             ;;; init main loop
-            lda #0              ; 256 bytes/sector
-            ldy #$b             ; offset in RWTS
-            sta (pointer),y     ; write it to RWTS
-            ldy #8              ; buffer LSB offset in RWTS
-            sta (pointer),y     ; write it to RWTS
+            lda #0
+            ldy #rplbuf         ; buffer LSB is 0 ($4800)
+            sta (rwtsptr),y     ; write it to RWTS
             sta trknum          ; track 0
             sta secnum          ; sector 0
             lda #9              ; segment number
@@ -177,20 +189,21 @@ segloop     ; main loop
             lda #56
             sta seccnt          ; do 7 tracks/segment
 trkloop
-            lda trknum          ; track number
-            ldy #4              ; offset in RWTS
-            sta (pointer),y     ; write it to RWTS
             ldx #'W'-$C0
             jsr draw
+
+            lda trknum          ; track number
+            ldy #rpltrk         ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
             lda secnum          ; sector number
-            ldy #5              ; offset in RWTS
-            sta (pointer),y     ; write it to RWTS
+            ldy #rplsec         ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
             lda buffer          ; buffer MSB
-            ldy #9              ; offset in RWTS
-            sta (pointer),y     ; write it to RWTS
-            lda #2              ; read(1)/write(2) command
-            ldy #$c             ; offset in RWTS
-            sta (pointer),y     ; write it to RWTS
+            ldy #rplbuf+1       ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
+            lda #cmdwrite       ; read(1)/write(2) command
+            ldy #rplcmd        ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
 
             ;jsr locrpl          ; locate rwts paramlist
             jsr rwts            ; do it!
@@ -290,7 +303,7 @@ left        .text "  0:\n"
             .text "  D:\n"
             .text "  E:\n"
             .null "  F:\n"
-rwts_param  .byte  1,slot,1,0             ; table type,slot,drive,volume
+rwts_param  .byte 1,slot,1,0,0,0,0,0,0,0,0,0,0,0,0,slot,1
 segl        .fill 10,?
 segh        .fill 10,?
 segend      = * -1
