@@ -58,8 +58,8 @@ A1          = $3C               ; for read
 A2          = $3E               ; for read
 
 ;            other vars
-data        = $1000             ; 7 track loaded in $1000-$8000
-zdata       = $4800             ; unlz buffer
+data        = $1000             ; max is $3848 from LZ4_compressBound
+zdata       = $4900             ; unlz buffer
 slot        = $60               ; slot 6 * 16
 
 line21      = $6D0
