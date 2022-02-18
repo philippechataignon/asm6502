@@ -43,18 +43,17 @@ cmdwrite = 2
 cmdformat= 4
 
 ;            zero page parameters
-secnum      = $19               ; loop var
-trknum      = $1A               ; loop var
-segcnt      = $1B               ; sgement 0-9
+secnum      = $19               ; sector num ($0-$f)
+trknum      = $1A               ; track num (0-34)
+segcnt      = $1B               ; segment 0-9
 buffer      = $1C               ; MSB of RWTS buffer
 seccnt      = $1D               ; sector count 0-55
-rwtsptr     = $1E               ; rwtsptr LSB/MSB
-prtptr      = $CE               ; pointer LSB/MSB
+rwtsptr     = $1E               ; rwtsptr LSB
+prtptr      = $CE               ; pointer LSB
 
 ;             monitor vars
 ch          = $24               ; cursor horizontal
-basl        = $28               ; line addr form bascalc L
-bash        = $29               ; line addr form bascalc H
+basl        = $28               ; line addr form bascalc LSB
 A1          = $3C               ; for read
 A2          = $3E               ; for read
 
@@ -65,6 +64,11 @@ slot        = $60               ; slot 6 * 16
 
 line21      = $6D0
 
+linewidth = 40
+statusline = 21
+secmax = 16                     ; 16 sectors by track
+secbyseg = 56                   ; # of sector by segment
+                                ;(560 sectors / 10 segments)
 mult = 5                        ; delay multiplier
 
 
@@ -95,7 +99,7 @@ start
             ldy #<header
             lda #>header        ; print header
             jsr print
-            ldx #35             ; length of line
+            ldx #linewidth-5    ; length of line
             lda #'-'
 -           jsr cout
             dex
@@ -207,7 +211,7 @@ segloop     ; main loop
 
             lda #>zdata         ; init with zdata buffer
             sta buffer
-            lda #56
+            lda #secbyseg
             sta seccnt          ; do 7 tracks/segment
 trkloop
             ldx #'W'-$C0
@@ -234,7 +238,7 @@ trkloop
             inc buffer          ; next page to write
             inc secnum
             lda secnum
-            cmp #$0F+1          ; more than sector F ?
+            cmp #secmax         ; more than sector max ?
             blt +               ; yes, next track
             inc trknum
             lda #0              ; init sector number
@@ -257,11 +261,11 @@ diskerror
 
 clrstatus
             lda #" "            ; space
-            ldx #39             ; clear line
+            ldx #linewidth-1    ; clear line
 -           sta line21,X
             dex
             bpl -
-            lda #21              ; vert
+            lda #statusline      ; vert
             jsr bascalc          ; move cursor to status line
             lda #0
             sta ch               ; horiz
@@ -325,7 +329,7 @@ rwtsm       .null "RWTS "
 paramm      .null "READ PARAM"
 donem       .null "DONE"
 loadm       .null "LOAD: $1000-$"
-inflatem    .null "INFLATE $4800-$7FFF"
+inflatem    .null "INFLATE $4900-$80FF"
 formatm     .null "FORMAT"
 writem      .null "WRITE"
 track       .null "TRACK\n"
