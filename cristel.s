@@ -1,26 +1,25 @@
-********************************
-*                              *
-* CRISTEL V 1.14  (C) Ch.QUEST *
-* --------------    16/10/85   *
-*                              *
-*  LOGICIEL DE COMMUNICATION   *
-*                              *
-*   POUR LA CARTE APPLE-TELL   *
-*                              *
-*    (ET LA CARTE TIME ][)     *
-*                              *
-********************************
-*
-*
-*
-*
-*
-*
-*          ORG $8880      ;(A CAUSE DU PLE)
-           ORG $9000
-*
-* ADRESSES ROM ET PAGE ZERO UTILISEES
-*
+;*******************************
+;                              *
+; CRISTEL V 1.14  (C) Ch.QUEST *
+; --------------    16/10/85   *
+;                              *
+;  LOGICIEL DE COMMUNICATION   *
+;                              *
+;   POUR LA CARTE APPLE-TELL   *
+;                              *
+;    (ET LA CARTE TIME ][)     *
+;                              *
+;*******************************
+;
+;
+;
+;
+;
+;
+* = $9000
+;
+; ADRESSES ROM ET PAGE ZERO UTILISEES
+;
 SYNTERR   = $DEC9        ;AFFICHE SYNTAX ERROR
 LOMEM     = $6D
 HIMEM     = $6F
@@ -59,9 +58,9 @@ FLOAT     = $EB93        ;A => FAC
 PRINORM   = $FDF0
 NORINPUT  = $FD1B        ;ENTREE NORMALE D'UN CARACT
 PRINTROM  = $DAD5        ;PRINT (ROM)
-*
-* SCRATCHPAD
-*
+;
+; SCRATCHPAD
+;
 SLOT16    = $6
 SLOTCARD  = $7
 STACKLVL  = $8
@@ -77,40 +76,40 @@ YCOOR     = $1D
 LEN       = $1E
 CARINP    = $FE
 LEN2      = $CE
-*
-* TOKENS UTILISES
-*
-CLEAR:    = 189
-COLOR:    = 160
-DRAW:     = 148
-END:      = 128
-FLASH:    = 159
-GET:      = 190
-GR:       = 136
-HCOLOR:   = 146
-HOME:     = 151
-POS:      = $D9
-INPUT:    = 132
-INVERSE:  = 158
-NORMAL:   = 157
-NOTRACE:  = $9C
-PLOT:     = $8D
-PRINT:    = 186
-READ:     = 135
-SCALE:    = 153
-STEP:     = 199
-TEXT:     = 137
-TRACE:    = $9B
-VTAB:     = 162
-WAIT:     = 181
-XDRAW:    = 149
-LOAD:     = $B6
-DEL:      = $85
-IF:       = $AD
-ON:       = $B4
-*
-* COMMANDES ROM
-*
+;
+; TOKENS UTILISES
+;
+CLEAR_T    = 189
+COLOR_T    = 160
+DRAW_T     = 148
+END_T      = 128
+FLASH_T    = 159
+GET_T      = 190
+GR_T       = 136
+HCOLOR_T   = 146
+HOME_T     = 151
+POS_T      = $D9
+INPUT_T    = 132
+INVERSE_T  = 158
+NORMAL_T   = 157
+NOTRACE_T  = $9C
+PLOT_T     = $8D
+PRINT_T    = 186
+READ_T     = 135
+SCALE_T    = 153
+STEP_T     = 199
+TEXT_T     = 137
+TRACE_T    = $9B
+VTAB_T     = 162
+WAIT_T     = 181
+XDRAW_T    = 149
+LOAD_T     = $B6
+DEL_T      = $85
+IF_T       = $AD
+ON_T       = $B4
+;
+; COMMANDES ROM
+;
 INITUART  = 0
 MODESLCT  = 1
 DTAFORMT  = 2
@@ -127,9 +126,9 @@ ANSWER    = 12
 SMARTCD   = 13
 CLEANUP   = 14
 BIGBELL   = 15
-*
-* CODES VIDEOTEX
-*
+;
+; CODES VIDEOTEX
+;
 BELL      = $7
 BS        = $8
 HT        = $9
@@ -160,14 +159,14 @@ SOMMAIRE  = $46
 CORRECTI  = $47
 SUITE     = $48
 CONFIN    = $49
-*
-* CONSTANTES
-*
+;
+; CONSTANTES
+;
 JOUR      = $26
-*
-* MISE EN PLACE...
-*
-INIT      LDA #DEBUT
+;
+; MISE EN PLACE...
+;
+INIT      LDA #<DEBUT
           STA AMPER+1
           LDA #>DEBUT
           STA AMPER+2
@@ -175,7 +174,7 @@ INIT      LDA #DEBUT
           STA AMPER
           LDA #32
           STA CARINP
-          LDA #INIT
+          LDA #<INIT
           STA FREE
           LDA #>INIT
           STA FREE+1
@@ -190,9 +189,9 @@ CAREP     HEX 00
 NBREP     HEX 00
 NORPRINT  HEX 0000
 NOPAGE    HEX 00
-*
-* PRGM
-*
+;
+; PRGM
+;
 DEBUT     PHA
           JSR CHRGET
           PLA
@@ -215,23 +214,23 @@ CMDFOUND  DEX
           INX
           STX STACKLVL
           RTS            ;RETOUR PAR LA COMMANDE
-CMDNAME   DFB CLEAR:,COLOR:,DRAW:,END:,FLASH:,GET:,GR:
-          DFB HCOLOR:,HOME:,POS:,INPUT:,INVERSE:,NORMAL:
-          DFB TRACE:,NOTRACE:,PLOT:
-          DFB PRINT:,READ:,SCALE:,STEP:,TEXT:,VTAB:,WAIT:,XDRAW:,LOAD:
-          DFB DEL:,IF:,ON:
+CMDNAME   DFB CLEAR_T,COLOR_T,DRAW_T,END_T,FLASH_T,GET_T,GR_T
+          DFB HCOLOR_T,HOME_T,POS_T,INPUT_T,INVERSE_T,NORMAL_T
+          DFB TRACE_T,NOTRACE_T,PLOT_T
+          DFB PRINT_T,READ_T,SCALE_T,STEP_T,TEXT_T,VTAB_T,WAIT_T,XDRAW_T,LOAD_T
+          DFB DEL_T,IF_T,ON_T
 CMDADDR   DA CLEAR-1,COLOR-1,DRAW-1,END-1,FLASH-1,GET-1,GR-1
           DA HCOLOR-1,HOME-1,POS-1,INPUT-1,INVERSE-1,NORMAL-1
           DA TRACE-1,NOTRACE-1,PLOT-1
           DA PRINT-1,READ-1,SCALE-1,STEP-1,TEXT-1,VTAB-1,WAIT-1,XDRAW-1
           DA LOAD-1,DEL-1,IF-1,ON-1
-*
-* POINT D'ENTREE ROM
-*
+;
+; POINT D'ENTREE ROM
+;
 ROM       JMP $C211
-*
-* ROUTINE MSGOUT
-*
+;
+; ROUTINE MSGOUT
+;
 MSGOUT    PLA
           STA TEMP
           PLA
@@ -250,9 +249,9 @@ MSG4      LDA TEMP+1
           LDA TEMP
           PHA
           RTS
-*
-*
-*
+;
+;
+;
 INTERUPT  PHA
           TXA
           PHA
@@ -290,7 +289,7 @@ INT       LDA FINBUF
 RETINT    JSR STABUF
           INC FINBUF
           BNE INT
-*
+;
 STABUF    BIT $C089
           BIT $C089
           HEX 8D
@@ -298,7 +297,7 @@ FINBUF    HEX 00
           HEX D0
           BIT $C08A
           RTS
-*
+;
 LDABUF    BIT $C088
           BIT $C088
           HEX AD
@@ -306,16 +305,16 @@ DEBUTBUF  HEX 00
           HEX D0
           BIT $C08A
           RTS
-*
-*
+;
+;
 
 RESET?    LDX KSW
           CPX #NORINPUT
           BEQ RETINT
 RESET     JMP $3D0       ;INTDOS !!!
-*
-*
-*
+;
+;
+;
 BFRON     LDX #5
 LOOPON    LDA BFR1,X
           STA CHRGET,X
@@ -326,7 +325,7 @@ BFR1      HEX 20
           DA INTERUPT
           HEX EAEAEA
           RTS
-*
+;
 BFROFF    LDX #5
 LOOPOFF   LDA BFR2,X
           STA CHRGET,X
@@ -336,17 +335,17 @@ LOOPOFF   LDA BFR2,X
 BFR2      INC CHRGOT
           BNE WAIT2PT
           INC CHRGOT+1
-*
-*
-*
+;
+;
+;
 WAIT2PT   LDY #0
           LDA (CHRGOT),Y
           BEQ END2PT
           CMP #':'
 END2PT    RTS
-*
-*
-*
+;
+;
+;
 SENDESC   STA TEMP
           LDA #ESC
           JSR SEND5
@@ -399,9 +398,9 @@ SEND5     STA CARSEND
           LDA #0
           STA CAREP
           RTS
-*
-*
-*
+;
+;
+;
 SCROLLS   PHA
           LDY #0
 SCLOOP2   LDA $481,Y
@@ -413,25 +412,25 @@ SCLOOP2   LDA $481,Y
           JSR CONTROL
           STA $4A7
           RTS
-*
-*
-*
+;
+;
+;
 CONTROL   AND #$7F
           CMP #$1F
           BMI CONRTS
           ORA #$80
 CONRTS    RTS
-*
-*
-*
+;
+;
+;
 PORTEUSE  LDY #RCVSTAT
           JSR ROM
           AND #%00001000
           BEQ LOST
           RTS
-*
-*
-*
+;
+;
+;
 READIT    JSR READIT2
           LDX #READIT2-FILTBL-1
 READIT3   CMP FILTBL,X
@@ -486,9 +485,9 @@ RECEIVED  BIT V1ON
           RTS
 ERROR     LDA #17
           JMP BASERR
-*
-*
-*
+;
+;
+;
 SCROLLR   ORA #$80
           PHA
           LDY #0
@@ -504,21 +503,21 @@ SCLOOP    LDA $401,Y
 VALEUR    JSR $E6F8
           LDA $A1
           RTS
-*
-*
-*
+;
+;
+;
 OUTMEM    LDA #77
           JMP BASERR
-*
-* PRISE DE MAIN PAR LE MINITEL...
-*
+;
+; PRISE DE MAIN PAR LE MINITEL...
+;
 ON        JSR VALEUR
           BEQ OFF
-          LDA #SAVPRINT
+          LDA #<SAVPRINT
           STA CSW
           LDA #>SAVPRINT
           STA CSW+1
-          LDA #ON2
+          LDA #<ON2
           STA KSW
           LDA #>ON2
           STA KSW+1
@@ -528,11 +527,11 @@ ON        JSR VALEUR
           JSR STEPIN
           LDA #17
           JMP SENDIT
-OFF       LDA #PRINORM
+OFF       LDA #<PRINORM
           STA CSW
           LDA #>PRINORM
           STA CSW+1
-          LDA #NORINPUT
+          LDA #<NORINPUT
           STA KSW
           LDA #>NORINPUT
           STA KSW+1
@@ -564,9 +563,9 @@ ON4       CPX #3
 ON5       JSR READIT
           AND #$1F
           JMP ONRTS
-*
-* WAIT: INITIALISATION ET ATTENTE
-*
+;
+; WAIT: INITIALISATION ET ATTENTE
+;
 WAIT      JSR MSGOUT
           ASC 'ATTENTE'
           HEX 0D00
@@ -623,17 +622,17 @@ WAITOK    JSR CLEAR
           LDA #0
           JSR STEPIN
           JMP HOME       ;CONNEXION OK
-*
-*
-*
+;
+;
+;
 CLEAR     LDA #0
           STA FINBUF
           STA DEBUTBUF
           LDY #CLEANUP
           JMP ROM
-*
-*
-*
+;
+;
+;
 HOME      LDA #FF        ;EFFACE ECRAN MINITEL
           JSR SENDIT
           LDA #0
@@ -642,9 +641,9 @@ HOME      LDA #FF        ;EFFACE ECRAN MINITEL
           JSR DEL2
           LDA #RS        ;RETOUR 'HOME'
           JMP SEND5
-*
-*
-*
+;
+;
+;
 VTAB      JSR VALEUR
           STA TEMP
 POS1      LDA #1
@@ -659,9 +658,9 @@ POSMNTL   STA TEMP2
           CLC
           ADC #$40
           JMP SEND5
-*
-*
-*
+;
+;
+;
 POS       JSR VALEUR
           STA TEMP
           JSR WAIT2PT
@@ -671,17 +670,17 @@ POS       JSR VALEUR
           JMP POSMNTL
 POS2      LDA #1
           JMP POSMNTL
-*
-*
-*
-*
-*
+;
+;
+;
+;
+;
 DEL       JSR POS
 DEL2      LDA #CAN
           JMP SEND5
-*
-*
-*
+;
+;
+;
 LOAD      JSR VALEUR
           STA NOPAGE
           ASL
@@ -704,9 +703,9 @@ LOAD      JSR VALEUR
           STA DOSTABL,X
           RTS
 DOSTABL   DS 32
-*
-*
-*
+;
+;
+;
 BLOAD     JSR MSGOUT
           HEX 0D04
           ASC 'BLOAD'
@@ -717,9 +716,9 @@ BLOAD     JSR MSGOUT
           JSR PRINTROM
           LDX #2
           JMP BANKSEL
-*
-*
-*
+;
+;
+;
 BANKSEL   TXA
           CLC
           ADC #$80
@@ -735,50 +734,50 @@ BANKSEL   TXA
 RAM2      JSR RAM
 RAM       LDA $C080
           RTS
-*
-*
-*
+;
+;
+;
 FLASH     LDA #'H'
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 INVERSE   LDA #']'
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 NORMAL    LDA #'I'
           JSR SENDESC
           LDA #'\'
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 COLOR     JSR VALEUR
           CLC
           ADC #$40
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 HCOLOR    JSR VALEUR
           CLC
           ADC #$50
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 TEXT      LDA #SI
           JMP SENDIT
-*
-*
-*
+;
+;
+;
 GR        LDA #SO
           JMP SENDIT
-*
-*
-*
+;
+;
+;
 READ      LDY #19
 READLOOP  LDA TABHORL,Y
           BMI READ2
@@ -820,9 +819,9 @@ HORL3     CLC
 TABCAR    ASC '- /'
 TABHORL   HEX 2524802322802120818181812827822A29822C2B
 TABJOUR   ASC 'DILUMAMEJEVESA'
-*
-*
-*
+;
+;
+;
 PRINT     LDA #$FF
           STA XCOOR
           JSR WAIT2PT
@@ -833,7 +832,7 @@ PRINT     LDA #$FF
           STA NORPRINT
           LDA CSW+1
           STA NORPRINT+1
-          LDA #SAVPRINT
+          LDA #<SAVPRINT
           STA CSW
           LDA #>SAVPRINT
           STA CSW+1
@@ -863,16 +862,16 @@ PRINT3    LDA #CR
           JSR SENDIT
           LDA #LF
           JMP SENDIT
-*
-*
-*
+;
+;
+;
 SCALE     JSR VALEUR
           CLC
           ADC #76
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 END       JSR BFROFF
           BIT V3OFF
           BIT V2OFF
@@ -880,19 +879,19 @@ END       JSR BFROFF
           LDY #LINEREL
           LDA #0
           JMP ROM        ;RACCROCHE
-*
-*
-*
+;
+;
+;
 TRACE     LDA #LINE
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 NOTRACE   LDA #NOLINE
           JMP SENDESC
-*
-*
-*
+;
+;
+;
 PLOT      JSR VALEUR
           JSR SENDIT
           JSR CHKCOM
@@ -901,16 +900,16 @@ PLOT      JSR VALEUR
           JSR VALEUR
           ADC #$3E
           JMP SENDIT
-*
-*
-*
+;
+;
+;
 XDRAW     LDA #0
           STA NOPAGE
           JSR BLOAD
           JMP DRAWBIS
-*
-*
-*
+;
+;
+;
 INPUT     JSR VALEUR
           STA XCOOR
           JSR CHKCOM
@@ -1034,9 +1033,9 @@ POSINP    LDA XCOOR
           STA TEMP
           LDA YCOOR
           JMP POSMNTL
-*
-*
-*
+;
+;
+;
 IF        LDA FINBUF
           CMP DEBUTBUF
           BNE GET
@@ -1059,9 +1058,9 @@ GET3      LDA #1
           LDA #0
           STA TEMP
           JMP CARSEP2
-*
-*
-*
+;
+;
+;
 DRAW      JSR WAIT2PT
           BEQ DRAWBIS
           JSR VALEUR
@@ -1108,9 +1107,9 @@ DRAW2     LDA TEMP
           CMP LEN2
           BNE DRAW1
           RTS
-*
-*
-*
+;
+;
+;
 STEP      JSR VALEUR
 STEPIN    STA TEMP2
           LDA #':'
@@ -1122,13 +1121,13 @@ STEPIN    STA TEMP2
           LDA #'C'
           JMP SENDIT
 
-*
-* FINDSLOT DE L'APPLE-TELL
-*
+;
+; FINDSLOT DE L'APPLE-TELL
+;
 POINTL    = TEMP
 POINTH    = POINTL+1
                          ;
-FINDSLOT  LDA #$C700
+FINDSLOT  LDA #<$C700
           STA POINTL
           LDX #>$C700      ;commencer en slot 7
 FIND1     STX POINTH
