@@ -73,7 +73,7 @@ TEMP2     = $1B
 XCOOR     = $1C
 MINUS2    = $1C
 YCOOR     = $1D
-LEN       = $1E
+LENGTH    = $1E
 CARINP    = $FE
 LEN2      = $CE
 ;
@@ -184,11 +184,11 @@ INIT      LDA #<DEBUT
           BIT V2OFF
           BIT V3OFF
           RTS
-CARSEND   HEX 00
-CAREP     HEX 00
-NBREP     HEX 00
-NORPRINT  HEX 0000
-NOPAGE    HEX 00
+CARSEND   .byte 0
+CAREP     .byte 0
+NBREP     .byte 0
+NORPRINT  .word 0
+NOPAGE    .byte 0
 ;
 ; PRGM
 ;
@@ -214,16 +214,16 @@ CMDFOUND  DEX
           INX
           STX STACKLVL
           RTS            ;RETOUR PAR LA COMMANDE
-CMDNAME   DFB CLEAR_T,COLOR_T,DRAW_T,END_T,FLASH_T,GET_T,GR_T
-          DFB HCOLOR_T,HOME_T,POS_T,INPUT_T,INVERSE_T,NORMAL_T
-          DFB TRACE_T,NOTRACE_T,PLOT_T
-          DFB PRINT_T,READ_T,SCALE_T,STEP_T,TEXT_T,VTAB_T,WAIT_T,XDRAW_T,LOAD_T
-          DFB DEL_T,IF_T,ON_T
-CMDADDR   DA CLEAR-1,COLOR-1,DRAW-1,END-1,FLASH-1,GET-1,GR-1
-          DA HCOLOR-1,HOME-1,POS-1,INPUT-1,INVERSE-1,NORMAL-1
-          DA TRACE-1,NOTRACE-1,PLOT-1
-          DA PRINT-1,READ-1,SCALE-1,STEP-1,TEXT-1,VTAB-1,WAIT-1,XDRAW-1
-          DA LOAD-1,DEL-1,IF-1,ON-1
+CMDNAME   .byte CLEAR_T,COLOR_T,DRAW_T,END_T,FLASH_T,GET_T,GR_T
+          .byte HCOLOR_T,HOME_T,POS_T,INPUT_T,INVERSE_T,NORMAL_T
+          .byte TRACE_T,NOTRACE_T,PLOT_T
+          .byte PRINT_T,READ_T,SCALE_T,STEP_T,TEXT_T,VTAB_T,WAIT_T,XDRAW_T,LOAD_T
+          .byte DEL_T,IF_T,ON_T
+CMDADDR   .word CLEAR-1,COLOR-1,DRAW-1,END-1,FLASH-1,GET-1,GR-1
+          .word HCOLOR-1,HOME-1,POS-1,INPUT-1,INVERSE-1,NORMAL-1
+          .word TRACE-1,NOTRACE-1,PLOT-1
+          .word PRINT-1,READ-1,SCALE-1,STEP-1,TEXT-1,VTAB-1,WAIT-1,XDRAW-1
+          .word LOAD-1,DEL-1,IF-1,ON-1
 ;
 ; POINT D'ENTREE ROM
 ;
@@ -257,7 +257,7 @@ INTERUPT  PHA
           PHA
           TYA
           PHA
-          JSR INT
+          JSR INTL
           PLA
           TAY
           PLA
@@ -267,7 +267,7 @@ INTERUPT  PHA
           BNE INTRTS
           INC CHRGOT+1
 INTRTS    RTS
-INT       LDA FINBUF
+INTL      LDA FINBUF
           SEC
           SBC DEBUTBUF
           CMP #$FF
@@ -285,31 +285,31 @@ INT       LDA FINBUF
           BIT V1OFF
           PLA
           CMP #CR
-          BEQ RESET?
+          BEQ ISRESET
 RETINT    JSR STABUF
           INC FINBUF
-          BNE INT
+          BNE INTL
 ;
 STABUF    BIT $C089
           BIT $C089
-          HEX 8D
-FINBUF    HEX 00
-          HEX D0
+          .byte $8D
+FINBUF    .byte $00
+          .byte $D0
           BIT $C08A
           RTS
 ;
 LDABUF    BIT $C088
           BIT $C088
-          HEX AD
-DEBUTBUF  HEX 00
-          HEX D0
+          .byte $AD
+DEBUTBUF  .byte $00
+          .byte $D0
           BIT $C08A
           RTS
 ;
 ;
 
-RESET?    LDX KSW
-          CPX #NORINPUT
+ISRESET   LDX KSW
+          CPX #<NORINPUT
           BEQ RETINT
 RESET     JMP $3D0       ;INTDOS !!!
 ;
@@ -321,9 +321,9 @@ LOOPON    LDA BFR1,X
           DEX
           BPL LOOPON
           RTS
-BFR1      HEX 20
-          DA INTERUPT
-          HEX EAEAEA
+BFR1      .byte $20             ; JSR
+          .word INTERUPT        ; INTERRUPT addr
+          .byte $EA,$EA,$EA     ; 3 NOP
           RTS
 ;
 BFROFF    LDX #5
@@ -392,7 +392,7 @@ SEND3     PHA
           LDY #SENDCHAR
           JSR ROM
           BIT V2OFF
-          JMP INT
+          JMP INTL
 SEND5     STA CARSEND
           JSR SEND6
           LDA #0
@@ -438,7 +438,7 @@ READIT3   CMP FILTBL,X
           DEX
           BPL READIT3
           RTS
-FILTBL    HEX 1B070300
+FILTBL    .byte $1B,$07,$03,$00
 READIT2   LDA FINBUF
           CMP DEBUTBUF
           BEQ READOLD
@@ -468,7 +468,7 @@ LOST      JSR END
           LDX STACKLVL
           TXS
           LDA KSW
-          CMP #NORINPUT
+          CMP #<NORINPUT
           BEQ LOST2
           JMP $C600
 LOST2     BIT ONERR
@@ -536,7 +536,7 @@ OFF       LDA #<PRINORM
           LDA #>NORINPUT
           STA KSW+1
           RTS
-ONVAR     HEX 0000
+ONVAR     .word 0
 ON2       STX ONVAR
           STY ONVAR+1
 ONIN      LDA #17
@@ -555,7 +555,7 @@ ONRTS     LDX ONVAR
           LDY ONVAR+1
           ORA #$80
           RTS
-ONTBL     HEX 200D2080201880082020202020202020
+ONTBL     .text x"200D2080201880082020202020202020"
 ON4       CPX #3
           BNE ON5
           JSR HOME
@@ -567,15 +567,12 @@ ON5       JSR READIT
 ; WAIT: INITIALISATION ET ATTENTE
 ;
 WAIT      JSR MSGOUT
-          ASC 'ATTENTE'
-          HEX 0D00
+          .null 'ATTENTE\n'
           BIT V3OFF
           JSR FINDSLOT   ;CHERCHE LA CARTE
           BCS WAIT2      ;TROUVEE ??
           JSR MSGOUT     ;MSG ERREUR
-          HEX 0D
-          ASC "PAS DE CARTE !"
-          HEX 0D00
+          .null "\nPAS DE CARTE !\n"
           JMP SYNTERR
 WAIT2     LDA SLOTCARD
           STA ROM+2
@@ -613,9 +610,7 @@ WAIT2     LDA SLOTCARD
           JSR ROM        ;PORTEUSE: 1,7s
           BNE WAITOK
           JSR MSGOUT
-          HEX 0D0D
-          ASC "PORTEUSE ?"
-          HEX 0D00
+          .null "\n\nPORTEUSE ?\n"
           JMP WAIT
 WAITOK    JSR CLEAR
           JSR BFRON
@@ -702,14 +697,14 @@ LOAD      JSR VALEUR
           LDA DOSLEN+1
           STA DOSTABL,X
           RTS
-DOSTABL   DS 32
+DOSTABL   .fill 32
 ;
 ;
 ;
 BLOAD     JSR MSGOUT
-          HEX 0D04
-          ASC 'BLOAD'
-          HEX 00
+          .byte $0D,$04
+          .text 'BLOAD'
+          .byte $00
           LDX #1
           JSR BANKSEL
           LDA #14
@@ -816,9 +811,9 @@ HORL2     CPY #12
 HORL3     CLC
           ADC #$30
           RTS
-TABCAR    ASC '- /'
-TABHORL   HEX 2524802322802120818181812827822A29822C2B
-TABJOUR   ASC 'DILUMAMEJEVESA'
+TABCAR    .text '- /'
+TABHORL   .text x"2524802322802120818181812827822A29822C2B"
+TABJOUR   .text 'DILUMAMEJEVESA'
 ;
 ;
 ;
@@ -852,11 +847,11 @@ SAVPRINT  AND #%01111111
           BEQ CROUT
           RTS
 CROUT     LDA #LF
-PRINTIT   STX LEN
+PRINTIT   STX LENGTH
           STY TEMP2
           JSR SENDIT
           LDY TEMP2
-          LDX LEN
+          LDX LENGTH
           RTS
 PRINT3    LDA #CR
           JSR SENDIT
@@ -917,17 +912,17 @@ INPUT     JSR VALEUR
           STA YCOOR
           JSR CHKCOM
           JSR VALEUR
-          STA LEN
+          STA LENGTH
           JSR CHKCOM
           JSR POSINP
           LDA CARINP
 INPUTIN   JSR SEND5
-          LDA LEN
+          LDA LENGTH
           CMP #1
           BEQ ONLY1
           LDA #REP
           JSR SEND5
-          LDA LEN
+          LDA LENGTH
           CLC
           ADC #$3F
           JSR SEND5
@@ -944,7 +939,7 @@ WAITCAR   JSR READIT
           LDX LEN2
           STA $200,X
           LDX LEN2
-          CPX LEN
+          CPX LENGTH
           BEQ FULL
           LDA SLOTCARD
           BPL INPUT1
@@ -978,7 +973,7 @@ CORRECT   LDA LEN2
 CARSEP3   LDA #20
           JSR SEND5
 CARSEP2   LDA #0
-          STA LEN
+          STA LENGTH
           LDA TEMP
           AND #$F
           STA $FF
@@ -992,11 +987,11 @@ LOOP2     LDA HIMEM
           SBC LOMEM+1
           STA TEMP2
           BCS LOOPOK
-          LDA LEN
+          LDA LENGTH
           CMP #1
           BNE LOOP5
           JMP OUTMEM
-LOOP5     INC LEN
+LOOP5     INC LENGTH
           JSR GARBAGE
           JMP LOOP2
 LOOPOK    LDA HIMEM
@@ -1083,7 +1078,7 @@ DRAWBIS   LDA DOSADD
           STA TEMP
           CLC
           ADC DOSLEN
-          STA LEN
+          STA LENGTH
           LDA DOSADD+1
           STA TEMP2
           ADC DOSLEN+1
@@ -1101,7 +1096,7 @@ DRAW1     LDX #0
           BNE DRAW2
           INC TEMP2
 DRAW2     LDA TEMP
-          CMP LEN
+          CMP LENGTH
           BNE DRAW1
           LDA TEMP2
           CMP LEN2
