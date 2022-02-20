@@ -163,6 +163,10 @@ CONFIN    = $49
 ; CONSTANTES
 ;
 JOUR      = $26
+
+.include "apple_enc.inc"
+.enc "none"
+
 ;
 ; MISE EN PLACE...
 ;
@@ -567,12 +571,14 @@ ON5       JSR READIT
 ; WAIT: INITIALISATION ET ATTENTE
 ;
 WAIT      JSR MSGOUT
-          .null 'ATTENTE\n'
+          .null 'ATTENTE',$0d
           BIT V3OFF
           JSR FINDSLOT   ;CHERCHE LA CARTE
           BCS WAIT2      ;TROUVEE ??
           JSR MSGOUT     ;MSG ERREUR
-          .null "\nPAS DE CARTE !\n"
+          .enc "apple"
+          .null $0d,"PAS DE CARTE !",$0d
+          .enc "none"
           JMP SYNTERR
 WAIT2     LDA SLOTCARD
           STA ROM+2
@@ -610,7 +616,9 @@ WAIT2     LDA SLOTCARD
           JSR ROM        ;PORTEUSE: 1,7s
           BNE WAITOK
           JSR MSGOUT
-          .null "\n\nPORTEUSE ?\n"
+          .enc "apple"
+          .null $0d,$0d,"PORTEUSE ?",$0d
+          .enc "none"
           JMP WAIT
 WAITOK    JSR CLEAR
           JSR BFRON
