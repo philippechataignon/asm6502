@@ -16,8 +16,8 @@
 *
 *
 *
-          ORG $8880      ;(A CAUSE DU PLE)
-* (SINON ORG $9000)
+*          ORG $8880      ;(A CAUSE DU PLE)
+           ORG $9000
 *
 * ADRESSES ROM ET PAGE ZERO UTILISEES
 *
@@ -169,7 +169,7 @@ JOUR      = $26
 *
 INIT      LDA #DEBUT
           STA AMPER+1
-          LDA #/DEBUT
+          LDA #>DEBUT
           STA AMPER+2
           LDA #$4C
           STA AMPER
@@ -177,7 +177,7 @@ INIT      LDA #DEBUT
           STA CARINP
           LDA #INIT
           STA FREE
-          LDA #/INIT
+          LDA #>INIT
           STA FREE+1
           LDA #0
           STA XCOOR
@@ -516,11 +516,11 @@ ON        JSR VALEUR
           BEQ OFF
           LDA #SAVPRINT
           STA CSW
-          LDA #/SAVPRINT
+          LDA #>SAVPRINT
           STA CSW+1
           LDA #ON2
           STA KSW
-          LDA #/ON2
+          LDA #>ON2
           STA KSW+1
           JSR HOME
           JSR CLEAR
@@ -530,11 +530,11 @@ ON        JSR VALEUR
           JMP SENDIT
 OFF       LDA #PRINORM
           STA CSW
-          LDA #/PRINORM
+          LDA #>PRINORM
           STA CSW+1
           LDA #NORINPUT
           STA KSW
-          LDA #/NORINPUT
+          LDA #>NORINPUT
           STA KSW+1
           RTS
 ONVAR     HEX 0000
@@ -835,7 +835,7 @@ PRINT     LDA #$FF
           STA NORPRINT+1
           LDA #SAVPRINT
           STA CSW
-          LDA #/SAVPRINT
+          LDA #>SAVPRINT
           STA CSW+1
           JSR PRINTROM
 PRINERR   LDA NORPRINT
@@ -1130,7 +1130,7 @@ POINTH    = POINTL+1
                          ;
 FINDSLOT  LDA #$C700
           STA POINTL
-          LDX #/$C700      ;commencer en slot 7
+          LDX #>$C700      ;commencer en slot 7
 FIND1     STX POINTH
           LDY #$0B        ;tester l'octet de signature generique
           LDA #$01        ;signature generique des cartes avec firmware
@@ -1146,7 +1146,7 @@ FIND1     STX POINTH
 FIND3     STA $CFFF       ;debrancher la ROM d'extension
           BEQ FIND2       ;on a trouve...
           DEX
-          CPX #/$C100      ;en est-on plus loin que le slot 1 ?
+          CPX #>$C100      ;en est-on plus loin que le slot 1 ?
           BCS FIND1       ;non, essayer encore
           RTS
 FIND2     TXA

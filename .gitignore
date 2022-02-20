@@ -13,6 +13,7 @@ macro1
 archives/
 c/
 pi/
+merlin/
 .*.swp
 *.lz4
 *.dsk
