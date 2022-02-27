@@ -91,13 +91,6 @@ CRCVALUE    sta     WORK
             sta     WORK+3     ; Return CRC value in WORK
             rts
 
-
-.align $100
-CRCT0       .fill 256,? ; Four 256-byte tables
-CRCT1       .fill 256,? ; (should be page-aligned for speed)
-CRCT2       .fill 256,?
-CRCT3       .fill 256,?
-
 .if ZP
 * = $6
 .fi
