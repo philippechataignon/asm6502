@@ -266,7 +266,7 @@ xorball     ldy BALL
             and #$38
             tax                ; Offset into sprite table (pixel * 8)
 
-xsplot        ldy HGRY        ; Get the row address
+xsplot      ldy HGRY        ; Get the row address
             lda LKLO,y
             sta GBASL
             lda LKHI,y
@@ -327,7 +327,7 @@ LKLO
 
         ; Eight bytes per sprite, first bytes
 
-BALL0    .byte %00111100
+BALL0       .byte %00111100
             .byte %01111111
             .byte %01111111
             .byte %01111111
