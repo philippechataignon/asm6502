@@ -1,6 +1,6 @@
-RESETZ  EQU $F592
+RESETZ  = $F592
 
-        ORG $F666
+        * = $F666
 
         JMP RESETZ
         ;BLK 32,$FF

@@ -1,10 +1,4 @@
-            ifndef ORG
-ORG         = $E000
-            endif
-
-            if ORG > 0
-*           = ORG
-            fi
+* = $E000
 
 ;*******************************************************************************
 ; Integer BASIC for the Apple II                                               *
@@ -28,6 +22,9 @@ ORG         = $E000
 ; file for Integer BASIC.  The entire program was written out by hand.         *
 ;*******************************************************************************
 
+.include "apple_enc.inc"
+.enc "apple"
+
 ETX             = $03               ;Ctrl+C
 CR              = $0d               ;carriage return
 BLANK           = $20               ;space
@@ -45,12 +42,12 @@ MON_A2L         = $3e               ;general purpose
 MON_A2H         = $3f               ;general purpose
 LOMEM           = $4a               ;pointer to start of variables
 HIMEM           = $4c               ;pointer to end of program
-MON_RNDL        = $4e               ;low byte of KEYIN "random" value
-MON_RNDH        = $4f               ;high byte of KEYIN "random" value
-NOUNSTKL        = $50               ;noun stack low bytes
-SYNSTKH         = $58               ;syntax stack high byte
-NOUNSTKH        = $78               ;noun stack high bytes
-SYNSTKL         = $80               ;syntax stack low bytes
+MON_RNDL        = $4e               ;low .byte of KEYIN "random" value
+MON_RNDH        = $4f               ;high .byte of KEYIN "random" value
+NOUNSTKL        = $50               ;noun stack low .bytes
+SYNSTKH         = $58               ;syntax stack high .byte
+NOUNSTKH        = $78               ;noun stack high .bytes
+SYNSTKL         = $80               ;syntax stack low .bytes
 NOUNSTKC        = $a0               ;noun stack counter
 TXTNDXSTK       = $a8               ;text index stack
 TXTNDX          = $c8               ;text index val (OUTVAL)
@@ -140,18 +137,18 @@ LE01A           cmp     MON_CH            ;check line length
                 bcs     NextByte          ;line too short
                 lda     #CR+128           ;print CR, then 7 blanks
                 ldy     #$07
-.Loop           jsr     MON_COUT
+_Loop           jsr     MON_COUT
                 lda     #BLANK+128
                 dey
-                bne     .Loop
+                bne     _Loop
 ;
-NextByte        ldy     #$00              ;get next byte 16-bit ptr
+NextByte        ldy     #$00              ;get next .byte 16-bit ptr
                 lda     (P1),y
                 inc     P1
                 bne     RTS9
                 inc     P1+1
 RTS9
-.Return         rts
+_Return         rts
 
 ;
 ; Token $75 , (with token $74 LIST)
@@ -203,53 +200,53 @@ LE077           sta     P2
                 tax
                 jsr     NextByte
                 jsr     PRDEC
-K.Loop          jsr     LE018
+K_Loop          jsr     LE018
                 sty     LEADZR
                 tax
                 bpl     LE0A3
                 asl     A
                 bpl     LE077
                 lda     P2
-                bne     .NotEq
+                bne     _NotEq
                 jsr     LE011
-.NotEq          txa
-I.Loop          jsr     MON_COUT
+_NotEq          txa
+I_Loop          jsr     MON_COUT
 LE099           lda     #$25
                 jsr     LE01A
                 tax
-                bmi     I.Loop
+                bmi     I_Loop
                 sta     P2
 LE0A3           cmp     #$01
-                bne     .NotEq
+                bne     _NotEq
                 ldx     XSAVE
                 jmp     MON_CROUT
 
-.NotEq          pha
+_NotEq          pha
                 sty     ACC
                 ldx     #>SYNTABL2
                 stx     ACC+1
                 cmp     #$51              ;END token
-                bcc     .Loop1
+                bcc     _Loop1
                 dec     ACC+1             ;in SYNTABL
                 sbc     #$50              ;TAB tkn
-.Loop1          pha
+_Loop1          pha
                 lda     (ACC),y
-.Loop2          tax
+_Loop2          tax
                 dey
                 lda     (ACC),y
-                bpl     .Loop2
+                bpl     _Loop2
                 cpx     #$c0
-                bcs     .LE0CC
+                bcs     _LE0CC
                 cpx     #$00
-                bmi     .Loop2
-.LE0CC          tax
+                bmi     _Loop2
+_LE0CC          tax
                 pla
                 sbc     #$01              ;carry is set
-                bne     .Loop1
+                bne     _Loop1
                 bit     P2
-                bmi     H.Loop
+                bmi     H_Loop
                 jsr     LEFF8
-H.Loop          lda     (ACC),y
+H_Loop          lda     (ACC),y
                 bpl     LE0ED
                 tax
                 and     #$3f
@@ -259,13 +256,13 @@ H.Loop          lda     (ACC),y
                 jsr     MON_COUT
                 dey
                 cpx     #$c0
-                bcc     H.Loop
+                bcc     H_Loop
 LE0ED           jsr     LE00C
                 pla
-                cmp     #']'
+                cmp     #']'-$80
                 beq     LE099
-                cmp     #'('
-                bne     K.Loop
+                cmp     #'('-$80
+                bne     K_Loop
                 beq     LE099             ;(always)
 
 ;
@@ -342,21 +339,21 @@ LE134           lda     NOUNSTKL,x
                 tay
                 adc     AUX+1
                 sta     AUX+1
-.Loop1          iny
+_Loop1          iny
                 lda     (AUX),y
                 cmp     PV,y
                 bne     DimErr
                 tya
-                beq     .Loop1
-.Loop2          pla
+                beq     _Loop1
+_Loop2          pla
                 sta     (AUX),y
                 sta     PV,y
                 dey
-                bpl     .Loop2
+                bpl     _Loop2
                 inx
                 rts
 
-                byte    $ea
+                .byte    $ea
 
 DimErr          ldy     #<ErrMsg17        ;"DIM"
 LE16F           bne     LE106             ;(always)
@@ -389,7 +386,7 @@ TE18C           lda     NOUNSTKL+1,x
                 inx
                 inx
                 jsr     LE1BC
-G.Loop          lda     NOUNSTKL-2,x
+G_Loop          lda     NOUNSTKL-2,x
                 cmp     NOUNSTKH-2,x
                 bcs     LE1B4
                 inc     NOUNSTKL-2,x
@@ -403,7 +400,7 @@ G.Loop          lda     NOUNSTKL-2,x
 
 LE1AE           sta     (AUX),y
                 inc     NOUNSTKL,x
-                bcc     G.Loop
+                bcc     G_Loop
 
 LE1B4           ldy     NOUNSTKL,x
                 txa
@@ -456,9 +453,9 @@ LE1F3           lda     HIMEM+1,x
                 bcc     LE206
                 pla
                 plp
-                bcs     .Return
-LE206.LoopExit  lsr     NOUNSTKL,x
-.Return         rts
+                bcs     +
+LE206_LoopExit  lsr     NOUNSTKL,x
++               rts
 
 LE206           tay
                 lda     (ACC),y
@@ -466,10 +463,10 @@ LE206           tay
                 pla
                 tay
                 plp
-                bcs     LE206.LoopExit
+                bcs     LE206_LoopExit
                 lda     (AUX),y
                 cmp     P2
-                bne     LE206.LoopExit
+                bne     LE206_LoopExit
                 inc     NOUNSTKL-1,x
                 inc     HIMEM+1,x
                 bcs     LE1F3             ;(always)
@@ -487,7 +484,7 @@ TE21C           jsr     TE1D7
 ;   A = 27 ; 2
 ;
 MULT            jsr     LE254
-J.Loop          asl     ACC
+J_Loop          asl     ACC
                 rol     ACC+1             ;add partial product if C flag set
                 bcc     LE238
                 clc
@@ -501,7 +498,7 @@ LE238           dey
                 beq     MultEnd           ;exit loop
                 asl     P3
                 rol     P3+1
-                bpl     J.Loop
+                bpl     J_Loop
                 jmp     Err32767
 
 MultEnd         lda     P3
@@ -530,7 +527,7 @@ LE25B           lda     ACC               ;AUX = ACC
                 jsr     GET16BIT
 LE277           ldy     #$10
 RTS8
-.Return         rts
+_Return         rts
 
 ;
 ; Token $1f MOD
@@ -539,7 +536,7 @@ RTS8
 ;
 MOD             jsr     LEE6C
                 beq     MultEnd           ;(always)
-                byte    $ff
+                .byte    $ff
 
 LE280           inc     MON_PROMPT        ;change '>' to '?'
                 ldy     #$00
@@ -557,7 +554,7 @@ SCRN            jsr     GETBYTE
                 jsr     MON_GBASCALC
                 jsr     GETBYTE
                 tay
-                lda     (MON_GBASL),y     ;get screen byte
+                lda     (MON_GBASL),y     ;get screen .byte
                 plp                       ;retrieve carry
                 bcc     LE29F
                 lsr     A                 ;odd; upper half
@@ -576,7 +573,7 @@ LE29F           and     #$0f              ;A-reg = color number
 ;
 COMMA_SCRN      rts
 
-                byte   $ff,$ff,$ff,$ff
+                .byte   $ff,$ff,$ff,$ff
 
 unref_e2b0      jsr     LEFD3             ;old 4K cold start
 ;
@@ -584,7 +581,7 @@ unref_e2b0      jsr     LEFD3             ;old 4K cold start
 ;
 WARM            jsr     MON_CROUT         ;emit blank line
 LE2B6           lsr     RUNFLAG           ;not running
-                lda     #">"+$80
+                lda     #">"
                 jsr     SetPrompt         ;set and print prompt char
                 ldy     #$00
                 sty     LEADZR            ;no leading zeroes for AUTOLN
@@ -612,11 +609,11 @@ LE2D1           ldx     #$ff              ;init S-reg
                 sta     PX+1
                 lda     (PX,x)
                 and     #$f0
-                cmp     #"0"+$80
+                cmp     #"0"
                 beq     LE2F9
                 jmp     LE883
 
-LE2F9           ldy     #$02              ;move two bytes
+LE2F9           ldy     #$02              ;move two .bytes
 LE2FB           lda     (PX),y
                 sta     ACC-1,y
                 dey
@@ -667,15 +664,15 @@ LE350           dey
                 bne     LE350
                 bit     AUTOFLAG          ;auto line?
                 bpl     LE365             ;no, branch
-.Loop           lda     AUTOLN+1,x        ;AUTOLN = AUTOLN + AUTOINC
+_Loop           lda     AUTOLN+1,x        ;AUTOLN = AUTOLN + AUTOINC
                 adc     AUTOINC+1,x
                 sta     AUTOLN+1,x
                 inx
-                beq     .Loop
+                beq     _Loop
 LE365           bpl     LE3E5
                 brk
 
-                byte   $00,$00,$00
+                .byte   $00,$00,$00
 
 MEMFULL         ldy     #<ErrMsg03        ;"MEM FULL"
                 bne     ERRMESS           ;(always)
@@ -706,7 +703,7 @@ LE38A           jsr     LE56D
                 sta     P1+1
 ; Memory move: P3 < PP.P2 backwards.
 LE395           ldy     #$00
-F.Loop          lda     PP
+F_Loop          lda     PP
                 cmp     P2
                 lda     PP+1
                 sbc     P2+1
@@ -721,7 +718,7 @@ LE3A7           dec     P2
 LE3AF           dec     P3
                 lda     (P2),y
                 sta     (P3),y
-                bcc     F.Loop
+                bcc     F_Loop
 
 LE3B7           lda     P3                ;PP = P3
                 sta     PP
@@ -729,13 +726,13 @@ LE3B7           lda     P3                ;PP = P3
                 sta     PP+1
                 rts
 
-E.Loop          jsr     MON_COUT          ;print error message
+E_Loop          jsr     MON_COUT          ;print error message
                 iny
 ;
 ; Print error message routine entry point.
 ;
 ERRORMESS       lda     ErrMsg00,y
-                bmi     E.Loop
+                bmi     E_Loop
                 ora     #$80
                 jmp     MON_COUT
 
@@ -744,16 +741,16 @@ GETCMD          tya
                 jsr     MON_NXTCHAR
                 txa
                 tay
-                lda     #"_"+$80           ;underline problem?
+                lda     #"_"           ;underline problem?
                 sta     IN,y
                 ldx     #$ff
                 rts
 
-                byte    $60
+                .byte    $60
 
 ErrTooLong      ldy     #<ErrMsg01        ;"TOO LONG"
 ;
-; Print error message and goto mainline.
+; Print error message and goto mainline_
 ;
 ERRMESS         jsr     PRINTERR
 ; DOS 3.3 chains here when processing errors.
@@ -780,14 +777,14 @@ LE400           stx     TXTNDX
                 ldx     #$00
                 lda     (SYNPAG,x)
                 tax
-D.Loop          lsr     A
+D_Loop          lsr     A
                 eor     #$40
                 ora     (SYNPAG),y
                 cmp     #$c0
                 bcc     LE413
                 inx
 LE413           iny
-                bne     D.Loop
+                bne     D_Loop
                 pla
                 tay
                 txa
@@ -798,7 +795,7 @@ LE41C           inc     TOKNDX
                 beq     ErrTooLong
                 sta     IN,x
 RTS6
-.Return         rts
+_Return         rts
 
 LE426           ldx     TXTNDX
 LE428           lda     #BLANK+128
@@ -818,7 +815,7 @@ LE442           adc     #$4f
                 cmp     #$0a
                 bcc     LE4B1
 LE448           ldx     SYNSTKDX
-.Loop1          iny
+_Loop1          iny
                 lda     (SYNPAG),y
                 and     #$e0
                 cmp     #$20
@@ -827,10 +824,10 @@ LE448           ldx     SYNSTKDX
                 sta     TXTNDX
                 lda     TOKNDXSTK,x
                 sta     TOKNDX
-.Loop2          dey
+_Loop2          dey
                 lda     (SYNPAG),y
                 asl     A                 ;double
-                bpl     .Loop2
+                bpl     _Loop2
                 dey
                 bcs     LE49C
                 asl     A
@@ -839,7 +836,7 @@ LE448           ldx     SYNSTKDX
                 sty     SYNPAG+1
                 ldy     SYNSTKL,x
                 inx
-                bpl     .Loop1
+                bpl     _Loop1
 LE470           beq     RTS6
                 cmp     #$7e
                 bcs     LE498
@@ -884,14 +881,14 @@ LE4B1           lda     IN,x
                 bcc     LE4BA
                 cmp     #DQT+128
                 beq     LE4C4
-LE4BA           cmp     #"_"+$80          ;underline problem?
+LE4BA           cmp     #"_"          ;underline problem?
                 beq     LE4C4
                 stx     TXTNDX
 LE4C0           jsr     LE41C
                 iny
 LE4C4           dey
                 ldx     SYNSTKDX
-C.Loop          lda     (SYNPAG),y
+C_Loop          lda     (SYNPAG),y
                 dey
                 asl     A
                 bpl     LE49C
@@ -901,7 +898,7 @@ LE4CD           ldy     SYNSTKH,x
                 inx
                 lda     (SYNPAG),y
                 and     #%10011111
-                bne     C.Loop
+                bne     C_Loop
                 sta     PCON
                 sta     PCON+1
                 tya
@@ -910,13 +907,13 @@ LE4CD           ldy     SYNSTKH,x
                 ldy     TOKNDXSTK-1,x
                 sty     LEADBL
                 clc
-.Loop1          lda     #$0a
+_Loop1          lda     #$0a
                 sta     CHAR
                 ldx     #$00
                 iny
                 lda     IN,y
                 and     #$0f
-.Loop2          adc     PCON
+_Loop2          adc     PCON
                 pha
                 txa
                 adc     PCON+1
@@ -924,11 +921,11 @@ LE4CD           ldy     SYNSTKH,x
                 tax
                 pla
                 dec     CHAR
-                bne     .Loop2
+                bne     _Loop2
                 sta     PCON
                 stx     PCON+1
                 cpy     TOKNDX
-                bne     .Loop1
+                bne     _Loop1
                 ldy     LEADBL
                 iny
                 sty     TOKNDX
@@ -944,16 +941,16 @@ LE517           ldy     #<ErrMsg00        ;">32767"
 ; Prints a 16-bit number in decimal.
 ;
 ; On entry:
-;   A-reg: high byte
-;   X-reg: low byte
+;   A-reg: high .byte
+;   X-reg: low .byte
 ;
 PRDEC           sta     PCON+1
                 stx     PCON
                 ldx     #$04
                 stx     LEADBL
-B.Loop1         lda     #"0"+$80
+B_Loop1         lda     #"0"
                 sta     CHAR
-.Loop2          lda     PCON
+_Loop2          lda     PCON
                 cmp     NUMLOW,x
                 lda     PCON+1
                 sbc     NUMHI,x
@@ -963,12 +960,12 @@ B.Loop1         lda     #"0"+$80
                 sbc     NUMLOW,x
                 sta     PCON
                 inc     CHAR
-                bne     .Loop2
+                bne     _Loop2
 LE540           lda     CHAR
                 inx
                 dex
                 beq     PRDEC5
-                cmp     #"0"+$80
+                cmp     #"0"
                 beq     LE54C
                 sta     LEADBL
 LE54C           bit     LEADBL
@@ -983,19 +980,19 @@ PRDEC5          jsr     MON_COUT
                 iny
 ; NXTX
 PRDEC6          dex
-                bpl     B.Loop1
+                bpl     B_Loop1
                 rts
 
-NUMLOW          byte    1                 ;1
-                byte    10                ;10
-                byte    100               ;100
-                byte    $e8               ;1000 ($3e8)
-                byte    $10               ;10000 ($2710
-NUMHI           byte    0                 ;1
-                byte    0                 ;10
-                byte    0                 ;100
-                byte    $03               ;1000 ($03e8)
-                byte    $27               ;10000 ($2710)
+NUMLOW          .byte    1                 ;1
+                .byte    10                ;10
+                .byte    100               ;100
+                .byte    $e8               ;1000 ($3e8)
+                .byte    $10               ;10000 ($2710
+NUMHI           .byte    0                 ;1
+                .byte    0                 ;10
+                .byte    0                 ;100
+                .byte    $03               ;1000 ($03e8)
+                .byte    $27               ;10000 ($2710)
 
 LE56D           lda     PP                ;P3 = PP
                 sta     P3
@@ -1033,7 +1030,7 @@ LE5A0           iny
                 sbc     (P2),y
                 bcs     LE576
 RTS7
-.Return         rts
+_Return         rts
 
 ;
 ; Token $0b NEW
@@ -1067,16 +1064,16 @@ unref_e5cc      lda     SRCH
 ;
 ErrMemFull      jmp     MEMFULL
 
-A.Loop1         ldy     #$ff
-A.Loop2         sty     XSAVE
-A.Loop3         iny
+A_Loop1         ldy     #$ff
+A_Loop2         sty     XSAVE
+A_Loop3         iny
                 lda     (PX),y
                 bmi     LE5E0
                 cmp     #$40
                 bne     LE646             ;exit loop
                 sta     XSAVE
 LE5E0           cmp     (SRCH),y
-                beq     A.Loop3
+                beq     A_Loop3
 LE5E4           lda     (SRCH),y
 LE5E6           iny
                 lsr     A
@@ -1090,15 +1087,15 @@ LE5E6           iny
 LE5F2           sta     SRCH
                 sty     SRCH+1
                 cmp     PV
-                bne     A.Loop1
+                bne     A_Loop1
                 cpy     PV+1
-                bne     A.Loop1
+                bne     A_Loop1
                 ldy     #$00
-.Loop           iny
+_Loop           iny
                 lda     (PX),y
-                bmi     .Loop
+                bmi     _Loop
                 eor     #$40
-                beq     .Loop
+                beq     _Loop
                 tya
                 adc     #$04
                 pha
@@ -1128,11 +1125,11 @@ LE5F2           sta     SRCH
                 sta     (SRCH),y
                 dey
                 lda     #$00
-.Loop2          sta     (SRCH),y
+_Loop2          sta     (SRCH),y
                 dey
-                bmi     A.Loop2
+                bmi     A_Loop2
                 lda     (PX),y
-                bne     .Loop2            ;(always)
+                bne     _Loop2            ;(always)
 
 LE640           lda     LOMEM
                 ldy     LOMEM+1
@@ -1147,9 +1144,9 @@ LE646           lda     (SRCH),y
                 pha
                 adc     SRCH
                 jsr     LE70A
-.Loop           jsr     GETVERB
+_Loop           jsr     GETVERB
                 dey
-                bne     .Loop
+                bne     _Loop
                 tya
                 adc     SRCH+1
                 sta     NOUNSTKH,x
@@ -1166,7 +1163,7 @@ LE66F           lda     (SRCH),y
                 iny
                 bne     LE66F             ;(always)
 
-                byte    $09
+                .byte    $09
 
 LE679           lda     #$00
                 sta     IFFLAG
@@ -1199,9 +1196,9 @@ LE6A0           cmp     #$28
                 jsr     LE70A
                 lda     #$00
                 sta     NOUNSTKH,x
-LE6BC.Loop      inc     NOUNSTKH,x
+LE6BC_Loop      inc     NOUNSTKH,x
 LE6BC           jsr     GETVERB
-                bmi     LE6BC.Loop
+                bmi     LE6BC_Loop
                 bcs     LE696
 LE6C3           bit     IFFLAG
                 bpl     LE6CD
@@ -1239,9 +1236,9 @@ LE6FC           jmp     (ACC)
 ; Get next verb to use.
 ;
 GETVERB         inc     PX
-                bne     .NoInc
+                bne     _NoInc
                 inc     PX+1
-.NoInc          lda     (PX),y
+_NoInc          lda     (PX),y
                 rts
 
 LE708           sty     NOUNSTKH-1,x
@@ -1265,11 +1262,11 @@ GET16BIT        ldy     #$00
                 beq     LE731
                 sta     ACC+1
                 lda     (ACC),y           ;ACC = (ACC),Y
-                pha                       ;save low byte
+                pha                       ;save low .byte
                 iny                       ;Y-reg = 1
                 lda     (ACC),y
                 sta     ACC+1
-                pla                       ;restore low byte
+                pla                       ;restore low .byte
                 sta     ACC
                 dey                       ;Y-reg = 0
 LE731           inx
@@ -1291,11 +1288,11 @@ NOT             jsr     GET16BIT
                 jsr     LE708
                 sta     NOUNSTKC,x
                 cmp     ACC
-                bne     .Return
+                bne     _Return
                 cmp     ACC+1
-                bne     .Return
+                bne     _Return
                 inc     NOUNSTKL,x
-.Return         rts
+_Return         rts
 
 ;
 ; Token $17 #
@@ -1316,7 +1313,7 @@ ABS             jsr     GET16BIT
                 bmi     LE772
 LE757           dex
 RTS5
-.Return         rts
+_Return         rts
 
 ;
 ; Token $30 SGN
@@ -1404,7 +1401,7 @@ unref_branch   bne     LE7AE             ;no, adjust CH [always?]
 unref_e7bc      bcs     unref_branch
                 rts
 
-                byte   $00,$00
+                .byte   $00,$00
 
 ;
 ; Token $49 ,
@@ -1424,7 +1421,7 @@ TE7C1           jsr     LE7B1
 PRINTNUM        jsr     GET16BIT
 LE7C7           lda     ACC+1             ;is it positive?
                 bpl     LE7D5
-                lda     #"-"+$80          ;no, print minus sign
+                lda     #"-"          ;no, print minus sign
                 jsr     MON_COUT
                 jsr     LE772
                 bvc     PRINTNUM          ;(always)
@@ -1501,7 +1498,7 @@ BEGIN_LINE      pla
 ;   X = 5: A$ = "HELLO"
 ;
 COLON           bit     CRFLAG
-                bpl     COLON.Return
+                bpl     COLON_Return
 ;
 ; Token $63 PRINT
 ;   dummy print
@@ -1514,7 +1511,7 @@ PRINT_CR        jsr     MON_CROUT
 ;   PRINT A$;
 ;
 TE820           lsr     CRFLAG
-COLON.Return         rts
+COLON_Return         rts
 
 ;
 ; Token $22 (
@@ -1639,7 +1636,7 @@ RETURN          ldy     #<ErrMsg09        ;"BAD RETURN"
                 sta     PR
                 lda     STK_30-1,y
                 sta     PR+1
-                ldx     >STK_00-1,y
+                ldx     @wSTK_00-1,y
                 lda     STK_10-1,y
 LE8BE           tay
                 txa
@@ -1725,7 +1722,7 @@ FOR             ldy     #<ErrMsg10        ;"16 FORS"
                 lda     NOUNSTKH,x
                 jmp     LF288
 
-                byte    $60
+                .byte    $60
 
 ;
 ; Token $57 TO
@@ -1754,329 +1751,309 @@ LE966           sta     STK_70-1,y
                 sta     STK_B0-1,y
                 rts
 
-                byte    $20
-                byte    $15
+                .byte    $20
+                .byte    $15
 ;
-TABLE1          byte   $00,$00,$00,$ab,$03,$03,$03,$03
-                byte   $03,$03,$03,$03,$03,$03,$03,$03
-                byte   $03,$03,$3f,$3f,$c0,$c0,$3c,$3c
-                byte   $3c,$3c,$3c,$3c,$3c,$30,$0f,$c0
-                byte   $c3,$ff,$55,$00,$ab,$ab,$03,$03
-                byte   $ff,$ff,$55,$ff,$ff,$55,$cf,$cf
-                byte   $cf,$cf,$cf,$ff,$55,$c6,$c6,$c6
-                byte   $55,$f0,$f0,$cf,$cf,$55,$01,$55
-                byte   $ff,$ff,$55,$03,$03,$03,$03,$03
-                byte   $03,$03,$03,$03,$03,$03,$03,$03
-                byte   $03,$03,$03,$03,$03,$03,$03,$03
-                byte   $03,$03,$03,$03,$03,$00,$ab,$03
-                byte   $57,$03,$03,$03,$03,$07,$03,$03
-                byte   $03,$03,$03,$03,$03,$03,$03,$03
-                byte   $03,$03,$aa,$ff,$03,$03,$03,$03
-                byte   $03,$03,$03,$03,$03,$03,$03,$03
+TABLE1          .byte   $00,$00,$00,$ab,$03,$03,$03,$03
+                .byte   $03,$03,$03,$03,$03,$03,$03,$03
+                .byte   $03,$03,$3f,$3f,$c0,$c0,$3c,$3c
+                .byte   $3c,$3c,$3c,$3c,$3c,$30,$0f,$c0
+                .byte   $c3,$ff,$55,$00,$ab,$ab,$03,$03
+                .byte   $ff,$ff,$55,$ff,$ff,$55,$cf,$cf
+                .byte   $cf,$cf,$cf,$ff,$55,$c6,$c6,$c6
+                .byte   $55,$f0,$f0,$cf,$cf,$55,$01,$55
+                .byte   $ff,$ff,$55,$03,$03,$03,$03,$03
+                .byte   $03,$03,$03,$03,$03,$03,$03,$03
+                .byte   $03,$03,$03,$03,$03,$03,$03,$03
+                .byte   $03,$03,$03,$03,$03,$00,$ab,$03
+                .byte   $57,$03,$03,$03,$03,$07,$03,$03
+                .byte   $03,$03,$03,$03,$03,$03,$03,$03
+                .byte   $03,$03,$aa,$ff,$03,$03,$03,$03
+                .byte   $03,$03,$03,$03,$03,$03,$03,$03
 ;
 ; Token address tables (verb dispatch tables).
 ;
-VERBADRL        byte    <BEGIN_LINE
-                byte    $ff
-                byte    $ff
-                byte    <COLON
-                byte    <LOAD
-                byte    <SAVE
-                byte    <CON
-                byte    <RUNNUM
-                byte    <RUN
-                byte    <DEL
-                byte    <COMMA_DEL
-                byte    <NEW
-                byte    <CLR
-                byte    <AUTO
-                byte    <COMMA_AUTO
-                byte    <TEE54
-                byte    <VHIMEM
-                byte    <VLOMEM
-                byte    <TE785
-                byte    <SUBTRACT
-                byte    <MULT
-                byte    <DIVIDE
-                byte    <TE733
-                byte    <TE74A
-                byte    <TF25B
-                byte    <TF24E
-                byte    <TF253
-                byte    <TE74A
-                byte    <TF249
-                byte    <VAND
-                byte    <VOR
-                byte    <MOD
-                byte    <EXP
-                byte    $ff
-                byte    <TE823
-                byte    <COMMA_SUBSTR
-                byte    <GOTO
-                byte    <LET
-                byte    <TEFB6
-                byte    <TEBCB
-                byte    $ff
-                byte    $ff
-                byte    <PAREN_SUBSTR
-                byte    $ff
-                byte    $ff
-                byte    <TEF24
-                byte    <PEEK
-                byte    <RND
-                byte    <SGN
-                byte    <ABS
-                byte    <PDL
-                byte    $ff
-                byte    <TE823
-                byte    <POSITIVE
-                byte    <NEGATE
-                byte    <NOT
-                byte    <TE823
-                byte    <TE1D7
-                byte    <TE21C
-                byte    <LEN
-                byte    <ASC
-                byte    <SCRN
-                byte    <COMMA_SCRN
-                byte    <TE823
-                byte    $ff
-                byte    $ff
-                byte    <TE121
-                byte    <DIMSTR
-                byte    <DIMNUM
-                byte    <PRINTSTR
-                byte    <PRINTNUM
-                byte    <TE820
-                byte    <TEE00
-                byte    <TE7C1
-                byte    <TF3BA
-                byte    <MON_SETTXT
-                byte    <MON_SETGR
-                byte    <CALL
-                byte    <DIMSTR
-                byte    <DIMNUM
-                byte    <TAB
-                byte    <END
-                byte    <TEFB6
-                byte    <INPUT_PROMPT
-                byte    <TEBAA
-                byte    <FOR
-                byte    <TE801
-                byte    <TO
-                byte    <STEP
-                byte    <NEXT
-                byte    <NEXT
-                byte    <RETURN
-                byte    <GOSUB
-                byte    $ff
-                byte    <LET
-                byte    <GOTO
-                byte    <IF
-                byte    <PRINTSTR
-                byte    <PRINTNUM
-                byte    <PRINT_CR
-                byte    <POKE
-                byte    <GETVAL255
-                byte    <TEE4E
-                byte    <GETVAL255
-                byte    <COMMA_PLOT
-                byte    <GETVAL255
-                byte    <COMMA_HLIN
-                byte    <AT_HLIN
-                byte    <GETVAL255
-                byte    <COMMA_VLIN
-                byte    <AT_VLIN
-                byte    <IVTAB
-                byte    <TE18C
-                byte    <TE801
-                byte    <RIGHT_PAREN
-                byte    $ff
-                byte    <LISTNUM
-                byte    <COMMA_LIST
-                byte    <LIST
-                byte    <POP
-                byte    <NODSP_STR
-                byte    <NODSP_NUM
-                byte    <NOTRACE
-                byte    <DSP_STR
-                byte    <DSP_NUM
-                byte    <TRACE
-                byte    <PRSLOT
-                byte    <INSLOT
-VERBADRH        byte    >BEGIN_LINE
-                byte    $ff
-                byte    $ff
-                byte    >COLON
-                byte    >LOAD
-                byte    >SAVE
-                byte    >CON
-                byte    >RUNNUM
-                byte    >RUN
-                byte    >DEL
-                byte    >COMMA_DEL
-                byte    >NEW
-                byte    >CLR
-                byte    >AUTO
-                byte    >COMMA_AUTO
-                byte    >TEE54
-                byte    >VHIMEM
-                byte    >VLOMEM
-                byte    >TE785
-                byte    >SUBTRACT
-                byte    >MULT
-                byte    >DIVIDE
-                byte    >TE733
-                byte    >TE74A
-                byte    >TF25B
-                byte    >TF24E
-                byte    >TF253
-                byte    >TE74A
-                byte    >TF249
-                byte    >VAND
-                byte    >VOR
-                byte    >MOD
-                byte    >EXP
-                byte    $ff
-                byte    >TE823
-                byte    >COMMA_SUBSTR
-                byte    >GOTO
-                byte    >LET
-                byte    >TEFB6
-                byte    >TEBCB
-                byte    $ff
-                byte    $ff
-                byte    >PAREN_SUBSTR
-                byte    $ff
-                byte    $ff
-                byte    >TEF24
-                byte    >PEEK
-                byte    >RND
-                byte    >SGN
-                byte    >ABS
-                byte    >PDL
-                byte    $ff
-                byte    >TE823
-                byte    >POSITIVE
-                byte    >NEGATE
-                byte    >NOT
-                byte    >TE823
-                byte    >TE1D7
-                byte    >TE21C
-                byte    >LEN
-                byte    >ASC
-                byte    >SCRN
-                byte    >COMMA_SCRN
-                byte    >TE823
-                byte    $ff
-                byte    $ff
-                byte    >TE121
-                byte    >DIMSTR
-                byte    >DIMNUM
-                byte    >PRINTSTR
-                byte    >PRINTNUM
-                byte    >TE820
-                byte    >TEE00
-                byte    >TE7C1
-                byte    >TF3BA
-                byte    >MON_SETTXT
-                byte    >MON_SETGR
-                byte    >CALL
-                byte    >DIMSTR
-                byte    >DIMNUM
-                byte    >TAB
-                byte    >END
-                byte    >TEFB6
-                byte    >INPUT_PROMPT
-                byte    >TEBAA
-                byte    >FOR
-                byte    >TE801
-                byte    >TO
-                byte    >STEP
-                byte    >NEXT
-                byte    >NEXT
-                byte    >RETURN
-                byte    >GOSUB
-                byte    $ff
-                byte    >LET
-                byte    >GOTO
-                byte    >IF
-                byte    >PRINTSTR
-                byte    >PRINTNUM
-                byte    >PRINT_CR
-                byte    >POKE
-                byte    >GETVAL255
-                byte    >TEE4E
-                byte    >GETVAL255
-                byte    >COMMA_PLOT
-                byte    >GETVAL255
-                byte    >COMMA_HLIN
-                byte    >AT_HLIN
-                byte    >GETVAL255
-                byte    >COMMA_VLIN
-                byte    >AT_VLIN
-                byte    >IVTAB
-                byte    >TE18C
-                byte    >TE801
-                byte    >RIGHT_PAREN
-                byte    $ff
-                byte    >LISTNUM
-                byte    >COMMA_LIST
-                byte    >LIST
-                byte    >POP
-                byte    >NODSP_STR
-                byte    >NODSP_NUM
-                byte    >NOTRACE
-                byte    >DSP_STR
-                byte    >DSP_NUM
-                byte    >TRACE
-                byte    >PRSLOT
-                byte    >INSLOT
+VERBADRL        .byte    <BEGIN_LINE
+                .byte    $ff
+                .byte    $ff
+                .byte    <COLON
+                .byte    <LOAD
+                .byte    <SAVE
+                .byte    <CON
+                .byte    <RUNNUM
+                .byte    <RUN
+                .byte    <DEL
+                .byte    <COMMA_DEL
+                .byte    <NEW
+                .byte    <CLR
+                .byte    <AUTO
+                .byte    <COMMA_AUTO
+                .byte    <TEE54
+                .byte    <VHIMEM
+                .byte    <VLOMEM
+                .byte    <TE785
+                .byte    <SUBTRACT
+                .byte    <MULT
+                .byte    <DIVIDE
+                .byte    <TE733
+                .byte    <TE74A
+                .byte    <TF25B
+                .byte    <TF24E
+                .byte    <TF253
+                .byte    <TE74A
+                .byte    <TF249
+                .byte    <VAND
+                .byte    <VOR
+                .byte    <MOD
+                .byte    <EXP
+                .byte    $ff
+                .byte    <TE823
+                .byte    <COMMA_SUBSTR
+                .byte    <GOTO
+                .byte    <LET
+                .byte    <TEFB6
+                .byte    <TEBCB
+                .byte    $ff
+                .byte    $ff
+                .byte    <PAREN_SUBSTR
+                .byte    $ff
+                .byte    $ff
+                .byte    <TEF24
+                .byte    <PEEK
+                .byte    <RND
+                .byte    <SGN
+                .byte    <ABS
+                .byte    <PDL
+                .byte    $ff
+                .byte    <TE823
+                .byte    <POSITIVE
+                .byte    <NEGATE
+                .byte    <NOT
+                .byte    <TE823
+                .byte    <TE1D7
+                .byte    <TE21C
+                .byte    <LEN
+                .byte    <ASC
+                .byte    <SCRN
+                .byte    <COMMA_SCRN
+                .byte    <TE823
+                .byte    $ff
+                .byte    $ff
+                .byte    <TE121
+                .byte    <DIMSTR
+                .byte    <DIMNUM
+                .byte    <PRINTSTR
+                .byte    <PRINTNUM
+                .byte    <TE820
+                .byte    <TEE00
+                .byte    <TE7C1
+                .byte    <TF3BA
+                .byte    <MON_SETTXT
+                .byte    <MON_SETGR
+                .byte    <CALL
+                .byte    <DIMSTR
+                .byte    <DIMNUM
+                .byte    <TAB
+                .byte    <END
+                .byte    <TEFB6
+                .byte    <INPUT_PROMPT
+                .byte    <TEBAA
+                .byte    <FOR
+                .byte    <TE801
+                .byte    <TO
+                .byte    <STEP
+                .byte    <NEXT
+                .byte    <NEXT
+                .byte    <RETURN
+                .byte    <GOSUB
+                .byte    $ff
+                .byte    <LET
+                .byte    <GOTO
+                .byte    <IF
+                .byte    <PRINTSTR
+                .byte    <PRINTNUM
+                .byte    <PRINT_CR
+                .byte    <POKE
+                .byte    <GETVAL255
+                .byte    <TEE4E
+                .byte    <GETVAL255
+                .byte    <COMMA_PLOT
+                .byte    <GETVAL255
+                .byte    <COMMA_HLIN
+                .byte    <AT_HLIN
+                .byte    <GETVAL255
+                .byte    <COMMA_VLIN
+                .byte    <AT_VLIN
+                .byte    <IVTAB
+                .byte    <TE18C
+                .byte    <TE801
+                .byte    <RIGHT_PAREN
+                .byte    $ff
+                .byte    <LISTNUM
+                .byte    <COMMA_LIST
+                .byte    <LIST
+                .byte    <POP
+                .byte    <NODSP_STR
+                .byte    <NODSP_NUM
+                .byte    <NOTRACE
+                .byte    <DSP_STR
+                .byte    <DSP_NUM
+                .byte    <TRACE
+                .byte    <PRSLOT
+                .byte    <INSLOT
+VERBADRH        .byte    >BEGIN_LINE
+                .byte    $ff
+                .byte    $ff
+                .byte    >COLON
+                .byte    >LOAD
+                .byte    >SAVE
+                .byte    >CON
+                .byte    >RUNNUM
+                .byte    >RUN
+                .byte    >DEL
+                .byte    >COMMA_DEL
+                .byte    >NEW
+                .byte    >CLR
+                .byte    >AUTO
+                .byte    >COMMA_AUTO
+                .byte    >TEE54
+                .byte    >VHIMEM
+                .byte    >VLOMEM
+                .byte    >TE785
+                .byte    >SUBTRACT
+                .byte    >MULT
+                .byte    >DIVIDE
+                .byte    >TE733
+                .byte    >TE74A
+                .byte    >TF25B
+                .byte    >TF24E
+                .byte    >TF253
+                .byte    >TE74A
+                .byte    >TF249
+                .byte    >VAND
+                .byte    >VOR
+                .byte    >MOD
+                .byte    >EXP
+                .byte    $ff
+                .byte    >TE823
+                .byte    >COMMA_SUBSTR
+                .byte    >GOTO
+                .byte    >LET
+                .byte    >TEFB6
+                .byte    >TEBCB
+                .byte    $ff
+                .byte    $ff
+                .byte    >PAREN_SUBSTR
+                .byte    $ff
+                .byte    $ff
+                .byte    >TEF24
+                .byte    >PEEK
+                .byte    >RND
+                .byte    >SGN
+                .byte    >ABS
+                .byte    >PDL
+                .byte    $ff
+                .byte    >TE823
+                .byte    >POSITIVE
+                .byte    >NEGATE
+                .byte    >NOT
+                .byte    >TE823
+                .byte    >TE1D7
+                .byte    >TE21C
+                .byte    >LEN
+                .byte    >ASC
+                .byte    >SCRN
+                .byte    >COMMA_SCRN
+                .byte    >TE823
+                .byte    $ff
+                .byte    $ff
+                .byte    >TE121
+                .byte    >DIMSTR
+                .byte    >DIMNUM
+                .byte    >PRINTSTR
+                .byte    >PRINTNUM
+                .byte    >TE820
+                .byte    >TEE00
+                .byte    >TE7C1
+                .byte    >TF3BA
+                .byte    >MON_SETTXT
+                .byte    >MON_SETGR
+                .byte    >CALL
+                .byte    >DIMSTR
+                .byte    >DIMNUM
+                .byte    >TAB
+                .byte    >END
+                .byte    >TEFB6
+                .byte    >INPUT_PROMPT
+                .byte    >TEBAA
+                .byte    >FOR
+                .byte    >TE801
+                .byte    >TO
+                .byte    >STEP
+                .byte    >NEXT
+                .byte    >NEXT
+                .byte    >RETURN
+                .byte    >GOSUB
+                .byte    $ff
+                .byte    >LET
+                .byte    >GOTO
+                .byte    >IF
+                .byte    >PRINTSTR
+                .byte    >PRINTNUM
+                .byte    >PRINT_CR
+                .byte    >POKE
+                .byte    >GETVAL255
+                .byte    >TEE4E
+                .byte    >GETVAL255
+                .byte    >COMMA_PLOT
+                .byte    >GETVAL255
+                .byte    >COMMA_HLIN
+                .byte    >AT_HLIN
+                .byte    >GETVAL255
+                .byte    >COMMA_VLIN
+                .byte    >AT_VLIN
+                .byte    >IVTAB
+                .byte    >TE18C
+                .byte    >TE801
+                .byte    >RIGHT_PAREN
+                .byte    $ff
+                .byte    >LISTNUM
+                .byte    >COMMA_LIST
+                .byte    >LIST
+                .byte    >POP
+                .byte    >NODSP_STR
+                .byte    >NODSP_NUM
+                .byte    >NOTRACE
+                .byte    >DSP_STR
+                .byte    >DSP_NUM
+                .byte    >TRACE
+                .byte    >PRSLOT
+                .byte    >INSLOT
 ;
 ; Error messages.
 ;
-ErrMsg00        abyte  +$80,">3276"
-                byte   "7"
-ErrMsg01        abyte  +$80,"TOO LON"
-                byte   "G"
-ErrMsg02        abyte  +$80,"SYNTA"
-                byte   "X"
-ErrMsg03        abyte  +$80,"MEM FUL"
-                byte   "L"
-ErrMsg04        abyte  +$80,"TOO MANY PAREN"
-                byte   "S"
-ErrMsg05        abyte  +$80,"STRIN"
-                byte   "G"
-ErrMsg06        abyte  +$80,"NO EN"
-                byte   "D"
-ErrMsg07        abyte  +$80,"BAD BRANC"
-                byte   "H"
-ErrMsg08        abyte  +$80,"16 GOSUB"
-                byte   "S"
-ErrMsg09        abyte  +$80,"BAD RETUR"
-                byte   "N"
-ErrMsg10        abyte  +$80,"16 FOR"
-                byte   "S"
-ErrMsg11        abyte  +$80,"BAD NEX"
-                byte   "T"
-ErrMsg12        abyte  +$80,"STOPPED AT"
-                byte   " "
-ErrMsg13        abyte  +$80,"***"
-                byte   " "
-ErrMsg14        abyte  +$80," ERR"
-                byte   $0d
-ErrMsg15        abyte  +$80,">25"
-                byte   "5"
-ErrMsg16        abyte  +$80,"RANG"
-                byte   "E"
-ErrMsg17        abyte  +$80,"DI"
-                byte   "M"
-ErrMsg18        abyte  +$80,"STR OVF"
-                byte   "L"
-                abyte  +$80,"\"
-                byte   $0d
-ErrMsg20        abyte  +$80,"RETYPE LINE",$0d
-ErrMsg21        byte    '?'
+ErrMsg00        .text   ">3276","7"-$80
+ErrMsg01        .text   "TOO LON","G"-$80
+ErrMsg02        .text   "SYNTA","X"-$80
+ErrMsg03        .text   "MEM FUL","L"-$80
+ErrMsg04        .text   "TOO MANY PAREN","S"-$80
+ErrMsg05        .text   "STRIN","G"-$80
+ErrMsg06        .text   "NO EN","D"-$80
+ErrMsg07        .text   "BAD BRANC","H"-$80
+ErrMsg08        .text   "16 GOSUB","S"-$80
+ErrMsg09        .text   "BAD RETUR","N"-$80
+ErrMsg10        .text   "16 FOR","S"-$80
+ErrMsg11        .text   "BAD NEX","T"-$80
+ErrMsg12        .text   "STOPPED AT"," "-$80
+ErrMsg13        .text   "***"," "-$80
+ErrMsg14        .text   " ERR",$0d
+ErrMsg15        .text   ">25","5"-$80
+ErrMsg16        .text   "RANG","E"-$80
+ErrMsg17        .text   "DI","M"-$80
+ErrMsg18        .text   "STR OVF","L"-$80
+                .byte   $a2,$0d ; "\"
+ErrMsg20        .text   "RETYPE LINE",$8d
+ErrMsg21        .byte   $3F     ; '?'
 
 ; Continue run w/o deleting vars?
 LEB9A           lsr     RUNFLAG           ;pos
@@ -2122,7 +2099,7 @@ LEBCE           sta     ACC
                 lda     IN,y
                 cmp     #$80
                 beq     TEBAA             ;end of input?
-                eor     #"0"+$80
+                eor     #"0"
                 cmp     #10
                 bcs     LEBCE
                 iny
@@ -2141,7 +2118,7 @@ LEBCE           sta     ACC
                 jsr     NEGATE
 LEBFA           jmp     TE801
 
-                byte    $ff,$ff,$ff     ;fill
+                .byte    $ff,$ff,$ff     ;fill
 ;
 ; Token / syntax table.
 ;
@@ -2150,80 +2127,80 @@ LEBFA           jmp     TE801
 ;   "E"+32, "C"-32, "A"-32, "R"-32", "T"-32
 ;   $e5     $a3     $a1     $b2      $b4
 ;
-SYNTABL         byte   $50,$20,$4f,$c0,$f4,$a1,$e4,$af
-                byte   $ad,$f2,$af,$e4,$ae,$a1,$f0,$a5
-                byte   $b4,$b3,$ef,$b4,$ee,$a5,$a8,$b4
+SYNTABL         .byte   $50,$20,$4f,$c0,$f4,$a1,$e4,$af
+                .byte   $ad,$f2,$af,$e4,$ae,$a1,$f0,$a5
+                .byte   $b4,$b3,$ef,$b4,$ee,$a5,$a8,$b4
 ;
-                byte   $5c,$80,$00,$40,$60,$8d,$60,$8b
-                byte   $7f,$1d,$20,$7e,$8c,$33,$00,$00
-                byte   $60,$03,$bf,$12
+                .byte   $5c,$80,$00,$40,$60,$8d,$60,$8b
+                .byte   $7f,$1d,$20,$7e,$8c,$33,$00,$00
+                .byte   $60,$03,$bf,$12
 ;
-                byte   $47,$83,$ae,$a9,$67,$83,$b2,$b0
-                byte   $e5,$a3,$a1,$b2,$b4,$79,$b0,$b3
-                byte   $a4,$69,$b0,$b3,$a4,$e5,$a3,$a1
-                byte   $b2,$b4,$af,$ae,$79,$b0,$b3,$a4
-                byte   $af,$ae,$69,$b0,$b3,$a4,$af,$ae
-                byte   $f0,$af,$b0,$f4,$b3,$a9,$ac,$60
-                byte   $8c,$20,$b4,$b3,$a9,$ac
-                byte    $00
-                byte   $40,$89,$c9,$47,$9d,$17,$68,$9d
-                byte   $0a,$58,$7b,$67,$a2,$a1,$b4,$b6
-                byte   $67,$b4,$a1,$07,$8c,$07,$ae,$a9
-                byte   $ac,$b6,$67,$b4,$a1,$07,$8c,$07
-                byte   $ae,$a9,$ac,$a8,$67,$8c,$07,$b4
-                byte   $af,$ac,$b0,$67,$9d,$b2,$af,$ac
-                byte   $af,$a3,$67,$8c,$07,$a5,$ab,$af
-                byte   $b0,$f4,$ae,$a9,$b2,$b0,$7f,$0e
-                byte   $27,$b4,$ae,$a9,$b2,$b0,$7f,$0e
-                byte   $28,$b4,$ae,$a9,$b2,$b0,$64,$07
-                byte   $a6,$a9,$67,$af,$b4,$af,$a7,$78
-                byte   $b4,$a5,$ac,$6b,$7f,$02,$ad,$a5
-                byte   $b2,$67,$a2,$b5,$b3,$af,$a7,$ee
-                byte   $b2,$b5,$b4,$a5,$b2,$7e,$8c,$39
-                byte   $b4,$b8,$a5,$ae,$67,$b0,$a5,$b4
-                byte   $b3,$27,$af,$b4,$07,$9d,$19,$b2
-                byte   $af,$a6,$7f,$05,$37,$b4,$b5,$b0
-                byte   $ae,$a9,$7f,$05,$28,$b4,$b5,$b0
-                byte   $ae,$a9,$7f,$05,$2a,$b4,$b5,$b0
-                byte   $ae,$a9,$e4,$ae,$a5
+                .byte   $47,$83,$ae,$a9,$67,$83,$b2,$b0
+                .byte   $e5,$a3,$a1,$b2,$b4,$79,$b0,$b3
+                .byte   $a4,$69,$b0,$b3,$a4,$e5,$a3,$a1
+                .byte   $b2,$b4,$af,$ae,$79,$b0,$b3,$a4
+                .byte   $af,$ae,$69,$b0,$b3,$a4,$af,$ae
+                .byte   $f0,$af,$b0,$f4,$b3,$a9,$ac,$60
+                .byte   $8c,$20,$b4,$b3,$a9,$ac
+                .byte    $00
+                .byte   $40,$89,$c9,$47,$9d,$17,$68,$9d
+                .byte   $0a,$58,$7b,$67,$a2,$a1,$b4,$b6
+                .byte   $67,$b4,$a1,$07,$8c,$07,$ae,$a9
+                .byte   $ac,$b6,$67,$b4,$a1,$07,$8c,$07
+                .byte   $ae,$a9,$ac,$a8,$67,$8c,$07,$b4
+                .byte   $af,$ac,$b0,$67,$9d,$b2,$af,$ac
+                .byte   $af,$a3,$67,$8c,$07,$a5,$ab,$af
+                .byte   $b0,$f4,$ae,$a9,$b2,$b0,$7f,$0e
+                .byte   $27,$b4,$ae,$a9,$b2,$b0,$7f,$0e
+                .byte   $28,$b4,$ae,$a9,$b2,$b0,$64,$07
+                .byte   $a6,$a9,$67,$af,$b4,$af,$a7,$78
+                .byte   $b4,$a5,$ac,$6b,$7f,$02,$ad,$a5
+                .byte   $b2,$67,$a2,$b5,$b3,$af,$a7,$ee
+                .byte   $b2,$b5,$b4,$a5,$b2,$7e,$8c,$39
+                .byte   $b4,$b8,$a5,$ae,$67,$b0,$a5,$b4
+                .byte   $b3,$27,$af,$b4,$07,$9d,$19,$b2
+                .byte   $af,$a6,$7f,$05,$37,$b4,$b5,$b0
+                .byte   $ae,$a9,$7f,$05,$28,$b4,$b5,$b0
+                .byte   $ae,$a9,$7f,$05,$2a,$b4,$b5,$b0
+                .byte   $ae,$a9,$e4,$ae,$a5
 ;
-SYNTABL2        byte    $00
-                byte   $47,$a2,$a1,$b4,$7f,$0d,$30,$ad
-                byte   $a9,$a4,$7f,$0d,$23,$ad,$a9,$a4
-                byte   $67,$ac,$ac,$a1,$a3,$f2,$a7,$f4
-                byte   $b8,$a5,$b4
-                byte    $00               ;above are statements
-                byte   $4d,$cc,$67,$8c,$68,$8c,$db,$67
-                byte   $9b,$68,$9b,$50,$8c,$63,$8c,$7f
-                byte   $01,$51,$07,$88,$29,$84,$80,$c4
-                byte   $19,$57,$71,$07,$88,$14,$71,$07
-                byte   $8c,$07,$88,$ae,$b2,$a3,$b3,$71
-                byte   $08,$88,$a3,$b3,$a1,$71,$08,$88
-                byte   $ae,$a5,$ac,$68,$83,$08,$68,$9d
-                byte   $08,$71,$07,$88,$60,$75,$b4,$af
-                byte   $ae,$75,$8d,$75,$8b,$51,$07,$88
-                byte   $19,$b8,$a4,$ae,$b2,$ec,$a4,$b0
-                byte   $f3,$a2,$a1,$ee,$a7,$b3,$e4,$ae
-                byte   $b2,$eb,$a5,$a5,$b0,$51,$07,$88
-                byte   $39,$81,$c1,$4f,$7f,$0f,$2f,$00
-                byte   $51,$06,$88,$29,$c2,$0c,$82,$57
-                byte   $8c,$6a,$8c,$42,$ae,$a5,$a8,$b4
-                byte   $60,$ae,$a5,$a8,$b4,$4f,$7e,$1e
-                byte   $35,$8c,$27,$51,$07,$88,$09,$8b
-                byte   $fe,$e4,$af,$ad,$f2,$af,$e4,$ae
-                byte   $a1,$dc,$de,$9c,$dd,$9c,$de,$dd
-                byte   $9e,$c3,$dd,$cf,$ca,$cd,$cb
-                byte    $00               ;above 4 are num ops
-                byte   $47,$9a,$ad,$a5,$ad,$af,$ac,$67
-                byte   $9a,$ad,$a5,$ad,$a9,$a8,$ee,$a1
-                byte   $ad,$60,$8c,$20,$af,$b4,$b5,$a1
-                byte   $f2,$ac,$a3,$f7,$a5,$ae,$60,$8c
-                byte   $20,$ac,$a5,$a4,$ee,$b5,$b2,$60
-                byte   $ae,$b5,$b2,$ee,$af,$a3,$e5,$b6
-                byte   $a1,$b3,$e4,$a1,$af,$ac
+SYNTABL2        .byte    $00
+                .byte   $47,$a2,$a1,$b4,$7f,$0d,$30,$ad
+                .byte   $a9,$a4,$7f,$0d,$23,$ad,$a9,$a4
+                .byte   $67,$ac,$ac,$a1,$a3,$f2,$a7,$f4
+                .byte   $b8,$a5,$b4
+                .byte    $00               ;above are statements
+                .byte   $4d,$cc,$67,$8c,$68,$8c,$db,$67
+                .byte   $9b,$68,$9b,$50,$8c,$63,$8c,$7f
+                .byte   $01,$51,$07,$88,$29,$84,$80,$c4
+                .byte   $19,$57,$71,$07,$88,$14,$71,$07
+                .byte   $8c,$07,$88,$ae,$b2,$a3,$b3,$71
+                .byte   $08,$88,$a3,$b3,$a1,$71,$08,$88
+                .byte   $ae,$a5,$ac,$68,$83,$08,$68,$9d
+                .byte   $08,$71,$07,$88,$60,$75,$b4,$af
+                .byte   $ae,$75,$8d,$75,$8b,$51,$07,$88
+                .byte   $19,$b8,$a4,$ae,$b2,$ec,$a4,$b0
+                .byte   $f3,$a2,$a1,$ee,$a7,$b3,$e4,$ae
+                .byte   $b2,$eb,$a5,$a5,$b0,$51,$07,$88
+                .byte   $39,$81,$c1,$4f,$7f,$0f,$2f,$00
+                .byte   $51,$06,$88,$29,$c2,$0c,$82,$57
+                .byte   $8c,$6a,$8c,$42,$ae,$a5,$a8,$b4
+                .byte   $60,$ae,$a5,$a8,$b4,$4f,$7e,$1e
+                .byte   $35,$8c,$27,$51,$07,$88,$09,$8b
+                .byte   $fe,$e4,$af,$ad,$f2,$af,$e4,$ae
+                .byte   $a1,$dc,$de,$9c,$dd,$9c,$de,$dd
+                .byte   $9e,$c3,$dd,$cf,$ca,$cd,$cb
+                .byte    $00               ;above 4 are num ops
+                .byte   $47,$9a,$ad,$a5,$ad,$af,$ac,$67
+                .byte   $9a,$ad,$a5,$ad,$a9,$a8,$ee,$a1
+                .byte   $ad,$60,$8c,$20,$af,$b4,$b5,$a1
+                .byte   $f2,$ac,$a3,$f7,$a5,$ae,$60,$8c
+                .byte   $20,$ac,$a5,$a4,$ee,$b5,$b2,$60
+                .byte   $ae,$b5,$b2,$ee,$af,$a3,$e5,$b6
+                .byte   $a1,$b3,$e4,$a1,$af,$ac
 ; Above are commands.
-                byte   $7a,$7e,$9a,$22,$20,$00,$60,$03
-                byte   $bf,$60,$03,$bf,$1f
+                .byte   $7a,$7e,$9a,$22,$20,$00,$60,$03
+                .byte   $bf,$60,$03,$bf,$1f
 
 ;
 ; Token $48 ,
@@ -2247,13 +2224,13 @@ PRINTSTR        inx
                 lda     NOUNSTKH-1,x
                 sta     AUX+1
                 ldy     NOUNSTKL-2,x
-.Loop           tya
+_Loop           tya
                 cmp     NOUNSTKH-2,x
                 bcs     LEE1D             ;exit loop
                 lda     (AUX),y
                 jsr     MON_COUT
                 iny
-                jmp     .Loop
+                jmp     _Loop
 
 LEE1D           lda     #$ff
                 sta     CRFLAG            ;CRFLAG = $ff
@@ -2272,7 +2249,7 @@ LEN             inx
                 sta     NOUNSTKL,x
                 jmp     TE823
 
-                byte    $ff
+                .byte    $ff
 
 GETBYTE         jsr     GET16BIT
                 lda     ACC+1
@@ -2347,7 +2324,7 @@ LEE96           dey
                 bne     LEE7A
                 rts
 
-                byte   $ff,$ff,$ff,$ff,$ff,$ff
+                .byte   $ff,$ff,$ff,$ff,$ff,$ff
 
 ;
 ; Token $4d CALL
@@ -2554,7 +2531,7 @@ unref_ef96      jsr     GET16BIT
 
 JmpBcsRANGEERR  jmp     BcsRANGERR
 
-                byte   $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
+                .byte   $ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
 
 ;
 ; Token $26 ,
@@ -2632,7 +2609,7 @@ COLD            ldy     #$00
                 lda     #$08
                 sta     LOMEM+1
                 sta     HIMEM+1
-.Loop           inc     HIMEM+1           ;find top of RAM
+_Loop           inc     HIMEM+1           ;find top of RAM
                 lda     (HIMEM),y
                 eor     #$ff
                 sta     (HIMEM),y
@@ -2641,7 +2618,7 @@ COLD            ldy     #$00
                 eor     #$ff
                 sta     (HIMEM),y
                 cmp     (HIMEM),y
-                beq     .Loop             ;(always, unless RAM is broken)
+                beq     _Loop             ;(always, unless RAM is broken)
 
 LF022           jmp     NEW
 
@@ -2664,7 +2641,7 @@ from_unref     ldy     KBD               ;get keypress
                 sta     NOUNSTKH+1
                 jmp     STOPPED_AT
 
-                byte   $ff,$ff
+                .byte   $ff,$ff
 
 ;
 ; Token $10 HIMEM:
@@ -2673,22 +2650,22 @@ VHIMEM          jsr     GET16BIT
                 stx     XSAVE
                 ldx     #$fe
                 sec
-.Loop1          lda     ACC+2,x           ;P2 = ACC
+_Loop1          lda     ACC+2,x           ;P2 = ACC
                 sta     P2+2,x
                 lda     HIMEM+2,x         ;AUX = HIMEM - ACC
                 sbc     ACC+2,x
                 sta     AUX+2,x
                 inx
-                bne     .Loop1
+                bne     _Loop1
                 bcc     LF0AF
 ;
                 dex                       ;X-reg = $ff
-.Loop2          lda     PP+1,x            ;P3 = PP
+_Loop2          lda     PP+1,x            ;P3 = PP
                 sta     P3+1,x
                 sbc     AUX+1,x           ;P2 = PP - AUX
                 sta     P2+1,x
                 inx
-                beq     .Loop2            ;compare PV to P2
+                beq     _Loop2            ;compare PV to P2
                 bcc     JmpMEMFULL
                 lda     PV
                 cmp     P2
@@ -2697,7 +2674,7 @@ VHIMEM          jsr     GET16BIT
                 bcc     NoInc3
 JmpMEMFULL      jmp     MEMFULL
 
-M.Loop          lda     (P3),y
+M_Loop          lda     (P3),y
                 sta     (P2),y
                 inc     P2
                 bne     NoInc2
@@ -2709,29 +2686,29 @@ NoInc3         lda     P3                ;compare P3 and HIMEM
                 cmp     HIMEM
                 lda     P3+1
                 sbc     HIMEM+1
-                bcc     M.Loop
+                bcc     M_Loop
 ;
 LF099           ldx     #$fe
-LF099.Loop      lda     P2+2,x            ;P2 = HIMEM
+-               lda     P2+2,x            ;P2 = HIMEM
                 sta     HIMEM+2,x
                 lda     PP+2,x            ;PP = PP - AUX
                 sbc     AUX+2,x
                 sta     PP+2,x
                 inx
-                bne     .Loop
+                bne     -
                 ldx     XSAVE
                 rts
 
 LF0AB           lda     (HIMEM),y
                 sta     (ACC),y
 LF0AF           lda     ACC
-                bne     .NoInc1
+                bne     _NoInc1
                 dec     ACC+1
-.NoInc1         dec     ACC
+_NoInc1         dec     ACC
                 lda     HIMEM
-                bne     .NoInc2
+                bne     _NoInc2
                 dec     HIMEM+1
-.NoInc2         dec     HIMEM
+_NoInc2         dec     HIMEM
                 cmp     PP                ;compare PP to HIMEM
                 lda     HIMEM+1
                 sbc     PP+1
@@ -2761,11 +2738,11 @@ LOAD            stx     XSAVE
                 jsr     MON_READ
                 ldx     #$ff
                 sec
-.Loop           lda     HIMEM+1,x         ;AUX = HIMEM - ACC
+_Loop           lda     HIMEM+1,x         ;AUX = HIMEM - ACC
                 sbc     ACC+1,x
                 sta     AUX+1,x
                 inx
-                beq     .Loop
+                beq     _Loop
                 bcc     JmpMEMFULL
                 lda     PV                ;compare PV to AUX
                 cmp     AUX
@@ -2815,11 +2792,11 @@ unref_f140      stx     XSAVE
 ;
 SAVE            sec                       ;ACC = HIMEM - PP
                 ldx     #$ff
-.Loop           lda     HIMEM+1,x
+_Loop           lda     HIMEM+1,x
                 sbc     PP+1,x
                 sta     ACC+1,x
                 inx
-                beq     .Loop
+                beq     _Loop
 ;
                 jsr     SETHDR
                 jsr     MON_WRITE
@@ -2858,7 +2835,7 @@ NOTRACE         lsr     NOUNSTKC          ;clear bit 7
 
 LF179           bit     NOUNSTKC          ;trace mode?
                 bpl     RTS4              ;no
-LF17D           lda     #"#"+$80          ;yes, print line number
+LF17D           lda     #"#"          ;yes, print line number
                 jsr     MON_COUT
                 ldy     #$01
                 lda     (PR),y
@@ -2872,26 +2849,26 @@ LF17D           lda     #"#"+$80          ;yes, print line number
 unref_f192      lda     PR
                 ldy     PR+1
 RTS4
-.Return         rts
+_Return         rts
 
 ;
 ; Indices into SYNTABL.
 ;
-SYNTABLNDX      byte   $c1,$00,$7f,$d1,$cc,$c7,$cf,$ce
-                byte   $c5,$9a,$98,$8d,$96,$95,$93,$bf
-                byte   $b2,$32,$12,$0f,$bc,$b0,$ac,$be
-                byte   $35,$0c,$61,$30,$10,$0b,$dd,$fb
+SYNTABLNDX      .byte   $c1,$00,$7f,$d1,$cc,$c7,$cf,$ce
+                .byte   $c5,$9a,$98,$8d,$96,$95,$93,$bf
+                .byte   $b2,$32,$12,$0f,$bc,$b0,$ac,$be
+                .byte   $35,$0c,$61,$30,$10,$0b,$dd,$fb
 
 LF1B7           ldy     #$00
                 jsr     LE7C7
                 lda     #$a0
                 jmp     MON_COUT
 
-                byte   $00,$00,$00,$00,$00,$00,$00,$00
+                .byte   $00,$00,$00,$00,$00,$00,$00,$00
 
 LF1C9           ldy     LOMEM
                 lda     LOMEM+1
-.Loop1          pha
+_Loop1          pha
                 cpy     AUX               ;compare LOMEM to AUX
                 sbc     AUX+1
                 bcs     LF1F0
@@ -2899,11 +2876,11 @@ LF1C9           ldy     LOMEM
                 sty     SRCH              ;SRCH = LOMEM
                 sta     TOKNDXSTK
                 ldy     #$ff
-.Loop2          iny
+_Loop2          iny
                 lda     (SRCH),y
-                bmi     .Loop2
+                bmi     _Loop2
                 cmp     #$40
-                beq     .Loop2
+                beq     _Loop2
                 iny
                 iny
                 lda     (SRCH),y
@@ -2912,7 +2889,7 @@ LF1C9           ldy     LOMEM
                 lda     (SRCH),y
                 tay
                 pla
-                bne     .Loop1
+                bne     _Loop1
 ;
 LF1F0           pla
                 ldy     #$00
@@ -2920,11 +2897,11 @@ LF1F3           lda     (SRCH),y
                 bmi     LF1FC
                 lsr     A
                 beq     LF202
-                lda     #"$"+$80
+                lda     #"$"
 LF1FC           jsr     MON_COUT
                 iny
                 bne     LF1F3
-LF202           lda     #"="+$80
+LF202           lda     #"="
                 jmp     MON_COUT
 
 LF207           sta     (AUX),y
@@ -2933,7 +2910,7 @@ LF207           sta     (AUX),y
                 beq     RTS3
                 jmp     LF3D5
 
-                byte    $a0
+                .byte    $a0
 
 LF212           bmi     LF21B
                 lda     PR
@@ -2957,10 +2934,10 @@ LF235           jsr     LF1C9
                 ldx     XSAVE
                 jmp     LF409
 
-                byte    $e8
+                .byte    $e8
 
 RTS3
-.Return         rts
+_Return         rts
 
 LF23F           jsr     GET16BIT
                 inc     ACC
@@ -3022,16 +2999,16 @@ STEP            jsr     GET16BIT
                 jmp     LE966
 
 LF288           sta     STK_50,y
-.Loop1          dey
-                bmi     .Return
+_Loop1          dey
+                bmi     _Return
                 lda     STK_40,y
                 cmp     NOUNSTKL,x
-                bne     .Loop1
+                bne     _Loop1
                 lda     STK_50,y
                 cmp     NOUNSTKH,x
-                bne     .Loop1
+                bne     _Loop1
                 dec     FORNDX
-.Loop2          lda     STK_40+1,y
+_Loop2          lda     STK_40+1,y
                 sta     STK_40,y
                 lda     STK_50+1,y
                 sta     STK_50,y
@@ -3056,8 +3033,8 @@ LF288           sta     STK_50,y
 ;   STA STK_B0,Y
                 iny
                 cpy     FORNDX
-                bcc     .Loop2
-.Return         rts
+                bcc     _Loop2
+_Return         rts
 
 ;
 ; Token $78 NODSP
@@ -3102,7 +3079,7 @@ DSP_STR         inx                       ;[DSP_NUM in paulrsm disasm]
 DSP_NUM         lda     #$01              ;[DSP_STR in paulrsm disasm]
                 bne     LF2E3             ;(always)
 
-                byte    $e8
+                .byte    $e8
 
 ;
 ; Token $06 CON
@@ -3186,7 +3163,7 @@ EXP             jsr     GET16BIT
                 jsr     LE708
                 sty     NOUNSTKC,x
 RTS2
-.Return         rts
+_Return         rts
 
 LF380           sta     SRCH+1            ;SRCH = ACC
                 lda     ACC
@@ -3200,24 +3177,24 @@ LF380           sta     SRCH+1            ;SRCH = ACC
                 jsr     LE708
                 sty     NOUNSTKC,x
 ;
-.Loop           lda     SRCH              ;srch = SRCH - 1
-                bne     .NoDec
+_Loop           lda     SRCH              ;srch = SRCH - 1
+                bne     _NoDec
                 dec     SRCH+1            ;is SRCH negative?
                 bmi     RTS2              ;yes, return
-.NoDec          dec     SRCH
+_NoDec          dec     SRCH
                 lda     SRCH2
                 ldy     #$00
                 jsr     LE708
                 lda     SRCH2+1
                 sta     NOUNSTKC,x
                 jsr     MULT
-                jmp     .Loop
+                jmp     _Loop
 
 LF3B3           jsr     GETBYTE
                 clc                       ;A-reg = A-reg - 1
                 adc     #$ff
-RTS
-.Return         rts
+-
+_Return         rts
 
 ;
 ; Token $4a ,
@@ -3242,16 +3219,16 @@ PRSLOT          jsr     GETBYTE
                 ldx     XSAVE
                 rts
 
-                byte    $fe
+                .byte    $fe
 
 LF3D5           bit     RUNFLAG
-                bpl     RTS
+                bpl     -
                 stx     XSAVE
                 bit     NOUNSTKC
                 jmp     LF212
 
 LF3E0           bit     RUNFLAG
-                bpl     RTS
+                bpl     -
                 stx     XSAVE
                 bit     NOUNSTKC
                 jmp     LF22C
@@ -3259,16 +3236,16 @@ LF3E0           bit     RUNFLAG
 LF3EB           ldy     #$00
                 jmp     GETVERB
 
-LF3F4.Loop      tay
+LF3F4_Loop      tay
                 jsr     MON_CROUT
 LF3F4           tya
                 sec
                 sbc     MON_WNDWDTH
-                bcs     LF3F4.Loop
+                bcs     LF3F4_Loop
                 sty     MON_CH
                 rts
 
-                byte   $00,$00,$00,$ff,$ff,$ff,$ff
+                .byte   $00,$00,$00,$ff,$ff,$ff,$ff
 
 LF404           sty     NOUNSTKC,x
                 jmp     TE823
@@ -3276,10 +3253,10 @@ LF404           sty     NOUNSTKC,x
 LF409           ldy     #$00
                 beq     LF411             ; always
 
-N.Loop          jsr     MON_COUT
+N_Loop          jsr     MON_COUT
                 iny
 LF411           lda     (AUX),y
-                bmi     N.Loop
+                bmi     N_Loop
                 lda     #$ff
                 sta     CRFLAG            ;CRFLAG = $ff
                 rts

@@ -19,6 +19,10 @@
 ;* Project created by Andy McFadden, using 6502bench SourceGen v1.4.            *
 ;* Last updated 2019/09/22                                                      *
 ;********************************************************************************
+
+.include "apple_enc.inc"
+.enc "apple"
+
 IOADR       =     $c000
 LOC0        =     $00
 LOC1        =     $01
@@ -105,10 +109,6 @@ LASTIN      =    $2f
 
 ; Clear variables
 CHKSUM      =    $2e
-
-
-.include "apple_enc.inc"
-.enc "apple"
 
 *           =     $f800
 

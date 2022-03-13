@@ -18,86 +18,90 @@
 ;* Project created by Andy McFadden, using 6502bench SourceGen v1.4.            *
 ;* Last updated 2019/10/29                                                      *
 ;********************************************************************************
-LOC0        equ     $00
-LOC1        equ     $01
-WNDLFT      equ     $20
-WNDWDTH     equ     $21
-WNDTOP      equ     $22
-WNDBTM      equ     $23
-CH          equ     $24
-CV          equ     $25
-GBASL       equ     $26
-GBASH       equ     $27
-BASL        equ     $28
-BASH        equ     $29
-BAS2L       equ     $2a
-BAS2H       equ     $2b
-H2          equ     $2c
-LMNEM       equ     $2c
-RTNL        equ     $2c
-RMNEM       equ     $2d
-RTNH        equ     $2d
-V2          equ     $2d
-CHKSUM      equ     $2e
-FORMAT      equ     $2e
-MASK        equ     $2e
-LASTIN      equ     $2f
-LENGTH      equ     $2f
-SIGN        equ     $2f
-COLOR       equ     $30
-MODE        equ     $31
-INVFLG      equ     $32
-PROMPT      equ     $33
-YSAV        equ     $34
-YSAV1       equ     $35
-CSWL        equ     $36
-KSWL        equ     $38
-PCL         equ     $3a
-PCH         equ     $3b
-A1L         equ     $3c
-XQT         equ     $3c
-A1H         equ     $3d
-A2L         equ     $3e
-A2H         equ     $3f
-A3L         equ     $40
-A3H         equ     $41
-A4L         equ     $42
-A4H         equ     $43
-A5L         equ     $44
-ACC         equ     $45
-XREG        equ     $46
-YREG        equ     $47
-STATUS      equ     $48
-SPNT        equ     $49
-RNDL        equ     $4e
-RNDH        equ     $4f
-ACL         equ     $50
-ACH         equ     $51
-XTNDL       equ     $52
-XTNDH       equ     $53
-AUXL        equ     $54
-AUXH        equ     $55
-PICK        equ     $95
-IN          equ     $0200
-USRADR      equ     $03f8
-NMI         equ     $03fb
-IRQLOC      equ     $03fe
-IOADR       equ     $c000
-KBDSTRB     equ     $c010           ;RW keyboard strobe
-TAPEOUT     equ     $c020           ;RW toggle caseette tape output
-SPKR        equ     $c030           ;RW toggle speaker
-TXTCLR      equ     $c050           ;RW display graphics
-TXTSET      equ     $c051           ;RW display text
-MIXSET      equ     $c053           ;RW display split screen
-TXTPAGE1    equ     $c054           ;RW display page 1
-LORES       equ     $c056           ;RW display lo-res graphics
-TAPEIN      equ     $c060           ;R read cassette input
-PADDL0      equ     $c064           ;R analog input 0
-PTRIG       equ     $c070           ;RW analog input reset
-BASIC       equ     $e000
-BASIC2      equ     $e003
+LOC0        =     $00
+LOC1        =     $01
+WNDLFT      =     $20
+WNDWDTH     =     $21
+WNDTOP      =     $22
+WNDBTM      =     $23
+CH          =     $24
+CV          =     $25
+GBASL       =     $26
+GBASH       =     $27
+BASL        =     $28
+BASH        =     $29
+BAS2L       =     $2a
+BAS2H       =     $2b
+H2          =     $2c
+LMNEM       =     $2c
+RTNL        =     $2c
+RMNEM       =     $2d
+RTNH        =     $2d
+V2          =     $2d
+CHKSUM      =     $2e
+FORMAT      =     $2e
+MASK        =     $2e
+LASTIN      =     $2f
+LENGTH      =     $2f
+SIGN        =     $2f
+COLOR       =     $30
+MODE        =     $31
+INVFLG      =     $32
+PROMPT      =     $33
+YSAV        =     $34
+YSAV1       =     $35
+CSWL        =     $36
+KSWL        =     $38
+PCL         =     $3a
+PCH         =     $3b
+A1L         =     $3c
+XQT         =     $3c
+A1H         =     $3d
+A2L         =     $3e
+A2H         =     $3f
+A3L         =     $40
+A3H         =     $41
+A4L         =     $42
+A4H         =     $43
+A5L         =     $44
+ACC         =     $45
+XREG        =     $46
+YREG        =     $47
+STATUS      =     $48
+SPNT        =     $49
+RNDL        =     $4e
+RNDH        =     $4f
+ACL         =     $50
+ACH         =     $51
+XTNDL       =     $52
+XTNDH       =     $53
+AUXL        =     $54
+AUXH        =     $55
+PICK        =     $95
+IN          =     $0200
+USRADR      =     $03f8
+NMI         =     $03fb
+IRQLOC      =     $03fe
+IOADR       =     $c000
+KBDSTRB     =     $c010           ;RW keyboard strobe
+TAPEOUT     =     $c020           ;RW toggle caseette tape output
+SPKR        =     $c030           ;RW toggle speaker
+TXTCLR      =     $c050           ;RW display graphics
+TXTSET      =     $c051           ;RW display text
+MIXSET      =     $c053           ;RW display split screen
+TXTPAGE1    =     $c054           ;RW display page 1
+LORES       =     $c056           ;RW display lo-res graphics
+TAPEIN      =     $c060           ;R read cassette input
+PADDL0      =     $c064           ;R analog input 0
+PTRIG       =     $c070           ;RW analog input reset
+BASIC       =     $e000
+BASIC2      =     $e003
 
-            org    $f800
+.include "apple_enc.inc"
+.enc "apple"
+
+* =  $f800
+
 PLOT        lsr     A               ;Y-coord/2
             php                     ;save LSB in carry
             jsr     GBASCALC        ;calc base adr in GBASL,H
@@ -161,7 +165,7 @@ NXTCOL      lda     COLOR           ;increment color by 3
             adc     #$03
 SETCOL      and     #$0f            ;sets COLOR=17*A mod 16
             sta     COLOR
-            asl     A               ;both half bytes of COLOR equal
+            asl     A               ;both half .bytes of COLOR =al
             asl     A
             asl     A
             asl     A
@@ -172,12 +176,12 @@ SETCOL      and     #$0f            ;sets COLOR=17*A mod 16
 SCRN        lsr     A               ;read screen Y-coord/2
             php                     ;save LSB (carry)
             jsr     GBASCALC        ;calc base address
-            lda     (GBASL),y       ;get byte
+            lda     (GBASL),y       ;get .byte
             plp                     ;restore LSB from carry
 SCRN2       bcc     RTMSKZ          ;if even, use lo H
             lsr     A
             lsr     A
-            lsr     A               ;shift high half byte down
+            lsr     A               ;shift high half .byte down
             lsr     A
 RTMSKZ      and     #$0f            ;mask 4-bits
             rts
@@ -197,15 +201,15 @@ INSDS2      tay
             and     #$87            ;mask bits
 IEVEN       lsr     A               ;LSB into carry for L/R test
             tax
-            lda     FMT1,x          ;get format index byte
-            jsr     SCRN2           ;R/L H-byte on carry
+            lda     FMT1,x          ;get format index .byte
+            jsr     SCRN2           ;R/L H-.byte on carry
             bne     GETFMT
 ERR         ldy     #$80            ;substitute $80 for invalid ops
             lda     #$00            ;set print format index to 0
 GETFMT      tax
             lda     FMT2,x          ;index into print format table
             sta     FORMAT          ;save for adr field formatting
-            and     #$03            ;mask for 2-bit length (P=1 byte, 1=2 byte, 2=3 byte)
+            and     #$03            ;mask for 2-bit length (P=1 .byte, 1=2 byte, 2=3 byte)
             sta     LENGTH
             tya                     ;opcode
             and     #$8f            ;mask for 1XXX1010 test
@@ -226,15 +230,15 @@ MNNDX3      dey
             bne     MNNDX1
             rts
 
-            byte   $ff,$ff,$ff
+            .byte   $ff,$ff,$ff
 
-INSTDSP     jsr     INSDS1          ;gen fmt, len bytes
+INSTDSP     jsr     INSDS1          ;gen fmt, len .bytes
             pha                     ;save mnemonic table index
 PRNTOP      lda     (PCL),y
             jsr     PRBYTE
             ldx     #$01            ;print 2 blanks
 PRNTBL      jsr     PRBL2
-            cpy     LENGTH          ;print inst (1-3 bytes)
+            cpy     LENGTH          ;print inst (1-3 .bytes)
             iny                     ;in a 12 chr field
             bcc     PRNTOP
             ldx     #$03            ;char count for mnemonic print
@@ -244,7 +248,7 @@ PRNTBL      jsr     PRBL2
             tay
             lda     MNEML,y
             sta     LMNEM           ;fech 3-char mnemonic
-            lda     MNEMR,y         ;  (packed in 2-bytes)
+            lda     MNEMR,y         ;  (packed in 2-.bytes)
             sta     RMNEM
 PRMN1       lda     #$00
             ldy     #$05
@@ -297,8 +301,8 @@ PRBL3       jsr     COUT            ;output a blank
             bne     PRBL2           ;loop until count=0
             rts
 
-PCADJ       sec                     ;0=1-byte,1=2-byte,
-PCADJ2      lda     LASTIN          ;  2=3-byte
+PCADJ       sec                     ;0=1-.byte,1=2-byte,
+PCADJ2      lda     LASTIN          ;  2=3-.byte
 PCADJ3      ldy     PCH
             tax                     ;test displacement sign
             bpl     PCADJ4          ;  (for rel branch)
@@ -308,35 +312,35 @@ PCADJ4      adc     PCL
             iny                     ;  carry into Y (PCH)
 RTS2        rts
 
-; FMT1 bytes:  XXXXXXY0 instrs
-; if Y=0       then left half byte
-; if Y=1       then right half byte
+; FMT1 .bytes:  XXXXXXY0 instrs
+; if Y=0       then left half .byte
+; if Y=1       then right half .byte
 ;                   (x=index)
-FMT1        byte   $04,$20,$54,$30,$0d,$80,$04,$90,$03,$22,$54,$33,$0d,$80,$04,$90
-            byte        $04,$20,$54,$33,$0d,$80,$04,$90,$04,$20,$54,$3b,$0d,$80,$04,$90
-            byte        $00,$22,$44,$33,$0d,$c8,$44,$00,$11,$22,$44,$33,$0d,$c8,$44,$a9
-            byte        $01,$22,$44,$33,$0d,$80,$04,$90,$01,$22,$44,$33,$0d,$80,$04,$90
-            byte        $26,$31,$87,$9a
+FMT1        .byte   $04,$20,$54,$30,$0d,$80,$04,$90,$03,$22,$54,$33,$0d,$80,$04,$90
+            .byte        $04,$20,$54,$33,$0d,$80,$04,$90,$04,$20,$54,$3b,$0d,$80,$04,$90
+            .byte        $00,$22,$44,$33,$0d,$c8,$44,$00,$11,$22,$44,$33,$0d,$c8,$44,$a9
+            .byte        $01,$22,$44,$33,$0d,$80,$04,$90,$01,$22,$44,$33,$0d,$80,$04,$90
+            .byte        $26,$31,$87,$9a
 ; ZZXXXY01 instr's
-FMT2        byte    $00             ;err
-            byte    $21             ;imm
-            byte    $81             ;z-page
-            byte    $82             ;abs
-            byte    $00             ;implied
-            byte    $00             ;accumulator
-            byte    $59             ;(zpag,x)
-            byte    $4d             ;(zpag),y
-            byte    $91             ;zpag,x
-            byte    $92             ;abs,x
-            byte    $86             ;abs,y
-            byte    $4a             ;(abs)
-            byte    $85             ;zpag,y
-            byte    $9d             ;relative
-CHAR1       abyte   +$80,",),#($"
-CHAR2       abyte   +$80,"Y"
-            byte    $00
-            abyte   +$80,"X","$","$"
-            byte    $00
+FMT2        .byte    $00             ;err
+            .byte    $21             ;imm
+            .byte    $81             ;z-page
+            .byte    $82             ;abs
+            .byte    $00             ;implied
+            .byte    $00             ;accumulator
+            .byte    $59             ;(zpag,x)
+            .byte    $4d             ;(zpag),y
+            .byte    $91             ;zpag,x
+            .byte    $92             ;abs,x
+            .byte    $86             ;abs,y
+            .byte    $4a             ;(abs)
+            .byte    $85             ;zpag,y
+            .byte    $9d             ;relative
+CHAR1       .text    ",),#($"
+CHAR2       .text    "Y"
+            .byte    $00
+            .text    "X","$","$"
+            .byte    $00
 ; MNEML is of form:
 ; (A) XXXXX000
 ; (B) XXXYY100
@@ -344,15 +348,15 @@ CHAR2       abyte   +$80,"Y"
 ; (D) XXXYYY10
 ; (E) XXXYYY01
 ;     (X=index)
-MNEML       byte   $1c,$8a,$1c,$23,$5d,$8b,$1b,$a1,$9d,$8a,$1d,$23,$9d,$8b,$1d,$a1
-            byte      $00,$29,$19,$ae,$69,$a8,$19,$23,$24,$53,$1b,$23,$24,$53,$19,$a1
-            byte      $00,$1a,$5b,$5b,$a5,$69,$24,$24,$ae,$ae,$a8,$ad,$29,$00,$7c,$00
-            byte      $15,$9c,$6d,$9c,$a5,$69,$29,$53,$84,$13,$34,$11,$a5,$69,$23,$a0
-MNEMR       byte   $d8,$62,$5a,$48,$26,$62,$94,$88,$54,$44,$c8,$54,$68,$44,$e8,$94
-            byte      $00,$b4,$08,$84,$74,$b4,$28,$6e,$74,$f4,$cc,$4a,$72,$f2,$a4,$8a
-            byte      $00,$aa,$a2,$a2,$74,$74,$74,$72,$44,$68,$b2,$32,$b2,$00,$22,$00
-            byte      $1a,$1a,$26,$26,$72,$72,$88,$c8,$c4,$ca,$26,$48,$44,$44,$a2,$c8
-            byte      $ff,$ff,$ff
+MNEML       .byte   $1c,$8a,$1c,$23,$5d,$8b,$1b,$a1,$9d,$8a,$1d,$23,$9d,$8b,$1d,$a1
+            .byte      $00,$29,$19,$ae,$69,$a8,$19,$23,$24,$53,$1b,$23,$24,$53,$19,$a1
+            .byte      $00,$1a,$5b,$5b,$a5,$69,$24,$24,$ae,$ae,$a8,$ad,$29,$00,$7c,$00
+            .byte      $15,$9c,$6d,$9c,$a5,$69,$29,$53,$84,$13,$34,$11,$a5,$69,$23,$a0
+MNEMR       .byte   $d8,$62,$5a,$48,$26,$62,$94,$88,$54,$44,$c8,$54,$68,$44,$e8,$94
+            .byte      $00,$b4,$08,$84,$74,$b4,$28,$6e,$74,$f4,$cc,$4a,$72,$f2,$a4,$8a
+            .byte      $00,$aa,$a2,$a2,$74,$74,$74,$72,$44,$68,$b2,$32,$b2,$00,$22,$00
+            .byte      $1a,$1a,$26,$26,$72,$72,$88,$c8,$c4,$ca,$26,$48,$44,$44,$a2,$c8
+            .byte      $ff,$ff,$ff
 
 STEP        jsr     INSTDSP         ;disassemble one inst
             pla                     ;  at (PCL,H)
@@ -364,7 +368,7 @@ XQINIT      lda     INITBL-1,x      ;init XEQ area
             sta     XQT,x
             dex
             bne     XQINIT
-            lda     (PCL,x)         ;user opcode byte
+            lda     (PCL,x)         ;user opcode .byte
             beq     XBRK            ;special if break
             ldy     LENGTH          ;len from disassembly
             cmp     #$20
@@ -477,7 +481,7 @@ INITBL      nop
 
             jmp     BRANCH
 
-            abyte   +$80,"AXYPS"
+            .text   "AXYPS"
 
 PREAD       lda     PTRIG           ;trigger paddles
             ldy     #$00            ;init count
@@ -708,10 +712,10 @@ WAIT3       sbc     #$01            ;1.0204 usec [wrong]
             bne     WAIT2
             rts
 
-NXTA4       inc     A4L             ;incr 2-byte A4
+NXTA4       inc     A4L             ;incr 2-.byte A4
             bne     NXTA1           ;  and A1
             inc     A4H
-NXTA1       lda     A1L             ;incr 2-byte A1.
+NXTA1       lda     A1L             ;incr 2-.byte A1.
             cmp     A2L
             lda     A1H             ;  and compare to A2
             sbc     A2H
@@ -847,7 +851,7 @@ XAM         jsr     PRA1
 DATACUT     lda     #$a0
             jsr     COUT            ;output blank
             lda     (A1L),y
-            jsr     PRBYTE          ;output byte in hex
+            jsr     PRBYTE          ;output .byte in hex
             jsr     NXTA1
             bcc     MOD8CHK         ;check if time to,
 RTS4C       rts                     ;  print addr
@@ -864,7 +868,7 @@ ADD         adc     A1L
             lda     #$bd
             jsr     COUT            ;print '=', then result
             pla
-PRBYTE      pha                     ;print byte as 2 hex
+PRBYTE      pha                     ;print .byte as 2 hex
             lsr     A               ;  digits, destroys A-reg
             lsr     A
             lsr     A
@@ -896,7 +900,7 @@ BLANK       dex                     ;blank to mon
             bne     XAMPM           ;  no, xam, add or sub
 STOR        sta     MODE            ;keep in store mode
             lda     A2L
-            sta     (A3L),y         ;store as lwo byte as (A3)
+            sta     (A3L),y         ;store as lwo .byte as (A3)
             inc     A3L
             bne     RTS5            ;incr A3, return
             inc     A3H
@@ -908,7 +912,7 @@ SETMDZ      sta     MODE
             rts
 
 LT          ldx     #$01
-LT2         lda     A2L,x           ;copy A2 (2 bytes) to
+LT2         lda     A2L,x           ;copy A2 (2 .bytes) to
             sta     A4L,x           ;  A4 and A5
             sta     A5L,x
             dex
@@ -939,7 +943,7 @@ VFYOK       jsr     NXTA4
             bcc     VFY
             rts
 
-LIST        jsr     A1PC            ;move A1 (2 bytes) to
+LIST        jsr     A1PC            ;move A1 (2 .bytes) to
             lda     #$14            ;  PC if spec'd and
 LIST2       pha                     ;  dissemble 20 instrs
             jsr     INSTDSP
@@ -1043,14 +1047,14 @@ RD2         ldy     #$24            ;look for sync bit
             bcs     RD2             ;  loop until found
             jsr     RDBIT           ;skip second sync H-cycle
             ldy     #$3b            ;index for 0/1 test
-RD3         jsr     RDBYTE          ;read a byte
+RD3         jsr     RDBYTE          ;read a .byte
             sta     (A1L,x)         ;store at (A1)
             eor     CHKSUM
             sta     CHKSUM          ;update running chksum
             jsr     NXTA1           ;incr A1, compare to A2
             ldy     #$35            ;compenstate 0/1 index
             bcc     RD3             ;loop until done
-            jsr     RDBYTE          ;read chksum byte
+            jsr     RDBYTE          ;read chksum .byte
             cmp     CHKSUM
             beq     BELL            ;good, sound bell and return
 PRERR       lda     #$c5
@@ -1142,52 +1146,52 @@ ZMODE       ldy     #$00            ;clr mode, old mode
             sty     MODE            ;  to A-reg
             rts                     ;go to subr via RTS
 
-CHRTBL      byte    $bc             ;F("Ctrl+C")
-            byte    $b2             ;F("Ctrl+Y")
-            byte    $be             ;F("Ctrl+E")
-            byte    $ed             ;F("T")
-            byte    $ef             ;F("V")
-            byte    $c4             ;F("Ctrl+K")
-            byte    $ec             ;F("S")
-            byte    $a9             ;F("Ctrl+P")
-            byte    $bb             ;F("Ctrl+B")
-            byte    $a6             ;F("-")
-            byte    $a4             ;F("+")
-            byte    $06             ;F("M")  (F=EX-OR $B0+$89)
-            byte    $95             ;F("<")
-            byte    $07             ;F("N")
-            byte    $02             ;F("I")
-            byte    $05             ;F("L")
-            byte    $f0             ;F("W")
-            byte    $00             ;F("G")
-            byte    $eb             ;G("R")
-            byte    $93             ;F(":")
-            byte    $a7             ;F(".")
-            byte    $c6             ;F("CR")
-            byte    $99             ;F(BLANK)
-SUBTBL      byte    <BASCONT-1
-            byte    <USR-1
-            byte    <REGZ-1
-            byte    <TRACE-1
-            byte    <VFY-1
-            byte    <INPRT-1
-            byte    <STEPZ-1
-            byte    <OUTPRT-1
-            byte    <XBASIC-1
-            byte    <SETMODE-1
-            byte    <SETMODE-1
-            byte    <MOVE-1
-            byte    <LT-1
-            byte    <SETNORM-1
-            byte    <SETINV-1
-            byte    <LIST-1
-            byte    <WRITE-1
-            byte    <GO-1
-            byte    <READ-1
-            byte    <SETMODE-1
-            byte    <SETMODE-1
-            byte    <CRMON-1
-            byte    <BLANK-1
-            word    NMI             ;NMI vector
-            word    RESET           ;reset vector
-            word    IRQ             ;IRQ vector
+CHRTBL      .byte    $bc             ;F("Ctrl+C")
+            .byte    $b2             ;F("Ctrl+Y")
+            .byte    $be             ;F("Ctrl+E")
+            .byte    $ed             ;F("T")
+            .byte    $ef             ;F("V")
+            .byte    $c4             ;F("Ctrl+K")
+            .byte    $ec             ;F("S")
+            .byte    $a9             ;F("Ctrl+P")
+            .byte    $bb             ;F("Ctrl+B")
+            .byte    $a6             ;F("-")
+            .byte    $a4             ;F("+")
+            .byte    $06             ;F("M")  (F=EX-OR $B0+$89)
+            .byte    $95             ;F("<")
+            .byte    $07             ;F("N")
+            .byte    $02             ;F("I")
+            .byte    $05             ;F("L")
+            .byte    $f0             ;F("W")
+            .byte    $00             ;F("G")
+            .byte    $eb             ;G("R")
+            .byte    $93             ;F(":")
+            .byte    $a7             ;F(".")
+            .byte    $c6             ;F("CR")
+            .byte    $99             ;F(BLANK)
+SUBTBL      .byte    <BASCONT-1
+            .byte    <USR-1
+            .byte    <REGZ-1
+            .byte    <TRACE-1
+            .byte    <VFY-1
+            .byte    <INPRT-1
+            .byte    <STEPZ-1
+            .byte    <OUTPRT-1
+            .byte    <XBASIC-1
+            .byte    <SETMODE-1
+            .byte    <SETMODE-1
+            .byte    <MOVE-1
+            .byte    <LT-1
+            .byte    <SETNORM-1
+            .byte    <SETINV-1
+            .byte    <LIST-1
+            .byte    <WRITE-1
+            .byte    <GO-1
+            .byte    <READ-1
+            .byte    <SETMODE-1
+            .byte    <SETMODE-1
+            .byte    <CRMON-1
+            .byte    <BLANK-1
+            .word    NMI             ;NMI vector
+            .word    RESET           ;reset vector
+            .word    IRQ             ;IRQ vector

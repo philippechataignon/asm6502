@@ -9,7 +9,8 @@ TOPT=--intel-hex -B -q -m --tab-size=4 --line-numbers -Wall -Wlong-branch -Wno-i
 target_hex = $(patsubst %.s,%.hex,$(wildcard *.s)) $(patsubst %.S,%.hex,$(wildcard *.S))
 target_bin = $(patsubst %.s,%.bin,$(wildcard *.s)) $(patsubst %.S,%.bin,$(wildcard *.S))
 
-all:	hex
+
+all:	hex apple
 bin:	$(target_bin)
 hex:	$(target_hex)
 
@@ -22,5 +23,11 @@ loadlz.hex: load8000.s unlz4.s
 unlz4_example.hex: unlz4.s integer.s.lz4
 inc.hex: inc1.s inc2.s
 
+apple:
+	make -C $@
+
+.PHONY: all apple
+
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s)) *.bin *.hex *.lst
+	make -C apple clean

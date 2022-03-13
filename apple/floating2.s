@@ -10,17 +10,17 @@
 ;     S. WOZNIAK
 ;
 ;**********************
-SIGN    EQU $F3
-X2      EQU $F4
-M2      EQU $F5
-X1      EQU $F8
-M1      EQU $F9
-E       EQU $FC
-OVLOC   EQU $3F5
+SIGN    = $F3
+X2      = $F4
+M2      = $F5
+X1      = $F8
+M1      = $F9
+E       = $FC
+OVLOC   = $3F5
 
-RTAR    EQU $F47D
+RTAR    = $F47D
 
-        ORG $F63D
+* = $F63D
 FIX1    JSR RTAR
 FIX     LDA X1
         BPL UNDFL
@@ -39,4 +39,4 @@ UNDFL   LDA #$0
         STA M1+1
         RTS
 
-        BLK 8,$FF   ; FILL WITH 8 FF
+        .fill 8,$FF   ; FILL WITH 8 FF

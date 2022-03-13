@@ -11,26 +11,26 @@
 ; Project created by Andy McFadden, using 6502bench SourceGen v1.5             *
 ; Last updated 2020/01/15                                                      *
 ;*******************************************************************************
-STACK         equ     $0100  ;{addr/256}
-TWOS_BUFFER   equ     $0300  ;{addr/86}  ;holds the 2-bit chunks
-CONV_TAB      equ     $0356  ;{addr/128} ;6+2 conversion table
-BOOT1         equ     $0800  ;{addr/256} ;buffer for next stage of loader
-IWM_PH0_OFF   equ     $c080  ;           ;stepper motor control
-IWM_PH0_ON    equ     $c081  ;           ;stepper motor control
-IWM_MOTOR_ON  equ     $c089  ;           ;starts drive spinning
-IWM_SEL_DRIVE_1 equ   $c08a  ;           ;selects drive 1
-IWM_Q6_OFF    equ     $c08c  ;           ;read
-IWM_Q7_OFF    equ     $c08e  ;           ;WP sense/read
-MON_WAIT      equ     $fca8  ;           ;delay for (26 + 27;Acc + 5*(Acc*Acc))/2 cycles
-MON_IORTS     equ     $ff58  ;           ;JSR here to find out where one is
+STACK         =     $0100  ;{addr/256}
+TWOS_BUFFER   =     $0300  ;{addr/86}  ;holds the 2-bit chunks
+CONV_TAB      =     $0356  ;{addr/128} ;6+2 conversion table
+BOOT1         =     $0800  ;{addr/256} ;buffer for next stage of loader
+IWM_PH0_OFF   =     $c080  ;           ;stepper motor control
+IWM_PH0_ON    =     $c081  ;           ;stepper motor control
+IWM_MOTOR_ON  =     $c089  ;           ;starts drive spinning
+IWM_SEL_DRIVE_1 =   $c08a  ;           ;selects drive 1
+IWM_Q6_OFF    =     $c08c  ;           ;read
+IWM_Q7_OFF    =     $c08e  ;           ;WP sense/read
+MON_WAIT      =     $fca8  ;           ;delay for (26 + 27;Acc + 5*(Acc*Acc))/2 cycles
+MON_IORTS     =     $ff58  ;           ;JSR here to find out where one is
 
-              org    $c600
-data_ptr      equ    $26    ;{addr/2}   ;pointer to BOOT1 data buffer
-slot_index    equ    $2b    ;{addr/1}   ;slot number << 4
-bits          equ    $3c    ;{addr/1}   ;temp storage for bit manipulation
-sector        equ    $3d    ;{addr/1}   ;sector to read
-found_track   equ    $40    ;{addr/1}   ;track found
-track         equ    $41    ;{addr/1}   ;track to read
+* = $c600
+data_ptr      =    $26    ;{addr/2}   ;pointer to BOOT1 data buffer
+slot_index    =    $2b    ;{addr/1}   ;slot number << 4
+bits          =    $3c    ;{addr/1}   ;temp storage for bit manipulation
+sector        =    $3d    ;{addr/1}   ;sector to read
+found_track   =    $40    ;{addr/1}   ;track found
+track         =    $41    ;{addr/1}   ;track to read
 
 ENTRY         ldx     #$20              ;20/00/03 is the controller signature
 ; 
@@ -41,7 +41,7 @@ ENTRY         ldx     #$20              ;20/00/03 is the controller signature
 ; locations from $36c to $3d5.  Nearby bytes are left unchanged.
 ; 
 ; We want 64 values that have the high bit set and don't have two consecutive 0
-; bits.  This is required by the disk hardware.  There are 70 possible values,
+; bits.  This is r=ired by the disk hardware.  There are 70 possible values,
 ; so we also mandate that there are two adjacent 1 bits, excluding bit 7.  (Note
 ; that $D5 and $AA, used to identify sector headers, do not meet these criteria,
 ; which means they never appear in the encoded data.)
@@ -75,17 +75,17 @@ CreateDecTabLoop
               txa
               asl     A                 ;shift left, putting high bit in carry
               bit     bits              ;does shifted version overlap?
-              beq     .reject           ;no, doesn't have two adjacent 1s
+              beq     _reject           ;no, doesn't have two adjacent 1s
               ora     bits              ;merge
               eor     #$ff              ;invert
               and     #$7e              ;clear hi and lo bits
-.check_dub0   bcs     .reject           ;initial hi bit set ;or* adjacent 0 bits set
+_check_dub0   bcs     _reject           ;initial hi bit set ;or* adjacent 0 bits set
               lsr     A                 ;shift right, low bit into carry
-              bne     .check_dub0       ;if more bits in byte, loop
-              tya                       ;we have a winner... store Y-reg to memory
+              bne     _check_dub0       ;if more bits in byte, loop
+              tya                       ;we have a winner_.. store Y-reg to memory
               sta     CONV_TAB,x        ;actual lookup will be on bytes with hi bit set
               iny                       ; so they'll read from CONV_TAB-128
-.reject       inx                       ;try next candidate
+_reject       inx                       ;try next candidate
               bpl     CreateDecTabLoop
 ; 
 ; Prep the hardware.
@@ -107,7 +107,7 @@ CreateDecTabLoop
 ; Blind-seek to track 0.
 ; 
               ldy     #80               ;80 phases (40 tracks)
-.seek_loop    lda     IWM_PH0_OFF,x     ;turn phase N off
+_seek_loop    lda     IWM_PH0_OFF,x     ;turn phase N off
               tya
               and     #$03              ;mod the phase number to get 0-3
               asl     A                 ;double it to 0/2/4/6
@@ -117,7 +117,7 @@ CreateDecTabLoop
               lda     #86
               jsr     MON_WAIT          ;wait 19664 cycles
               dey                       ;next phase
-              bpl     .seek_loop
+              bpl     _seek_loop
               sta     data_ptr          ;A-reg is 0 when MON_WAIT returns
               sta     sector            ;so we're looking for T=0 S=0
               sta     track
@@ -139,17 +139,17 @@ CreateDecTabLoop
 ; 
 ReadSector    clc                       ;C=0 to look for addr (C=1 for data)
 ReadSector_C  php
-.rdbyte1      lda     IWM_Q6_OFF,x      ;wait for byte
-              bpl     .rdbyte1          ;not yet, loop
-.check_d5     eor     #$d5              ;is it $d5?
-              bne     .rdbyte1          ;no, keep looking
-.rdbyte2      lda     IWM_Q6_OFF,x      ;grab another byte
-              bpl     .rdbyte2
+_rdbyte1      lda     IWM_Q6_OFF,x      ;wait for byte
+              bpl     _rdbyte1          ;not yet, loop
+_check_d5     eor     #$d5              ;is it $d5?
+              bne     _rdbyte1          ;no, keep looking
+_rdbyte2      lda     IWM_Q6_OFF,x      ;grab another byte
+              bpl     _rdbyte2
               cmp     #$aa              ;is it $aa?
-              bne     .check_d5         ;no, check if it's another $d5
+              bne     _check_d5         ;no, check if it's another $d5
               nop                       ;(?)
-.rdbyte3      lda     IWM_Q6_OFF,x      ;grab a third byte
-              bpl     .rdbyte3
+_rdbyte3      lda     IWM_Q6_OFF,x      ;grab a third byte
+              bpl     _rdbyte3
               cmp     #$96              ;is it $96?
               beq     FoundAddress      ;winner
               plp                       ;did we want data?
@@ -163,16 +163,16 @@ ReadSector_C  php
 ; sector, checksum.
 ; 
 FoundAddress  ldy     #$03              ;sector # is the 3rd item in header
-.hdr_loop     sta     found_track       ;store $96, then volume, then track
-.rdbyte1      lda     IWM_Q6_OFF,x      ;read first part
-              bpl     .rdbyte1
+_hdr_loop     sta     found_track       ;store $96, then volume, then track
+_rdbyte1      lda     IWM_Q6_OFF,x      ;read first part
+              bpl     _rdbyte1
               rol     A                 ;first byte has bits 7/5/3/1
               sta     bits
-.rdbyte2      lda     IWM_Q6_OFF,x      ;read second part
-              bpl     .rdbyte2
+_rdbyte2      lda     IWM_Q6_OFF,x      ;read second part
+              bpl     _rdbyte2
               and     bits              ;merge them
               dey                       ;is this the 3rd item?
-              bne     .hdr_loop         ;nope, keep going
+              bne     _hdr_loop         ;nope, keep going
               plp                       ;pull this off to keep stack in balance
               cmp     sector            ;is this the sector we want?
               bne     ReadSector        ;no, go back to looking for addresses
@@ -195,46 +195,46 @@ FoundAddress  ldy     #$03              ;sector # is the 3rd item in header
 ;   A: $00
 ; 
 FoundData     ldy     #86               ;read 86 bytes of data into $300-355
-.read_twos_loop
+_read_twos_loop
               sty     bits              ;each byte has 3 sets of 2 bits, encoded
-.rdbyte1      ldy     IWM_Q6_OFF,x
-              bpl     .rdbyte1
+_rdbyte1      ldy     IWM_Q6_OFF,x
+              bpl     _rdbyte1
               eor     $02d6,y           ;$02d6 + $96 = $36c, our first table entry
               ldy     bits
               dey
               sta     TWOS_BUFFER,y     ;store these in our page 3 buffer
-              bne     .read_twos_loop
+              bne     _read_twos_loop
 ; 
-.read_sixes_loop
+_read_sixes_loop
               sty     bits              ;read 256 bytes of data into $800
-.rdbyte2      ldy     IWM_Q6_OFF,x      ;each byte has the high 6 bits, encoded
-              bpl     .rdbyte2
+_rdbyte2      ldy     IWM_Q6_OFF,x      ;each byte has the high 6 bits, encoded
+              bpl     _rdbyte2
               eor     CONV_TAB-128,y
               ldy     bits
               sta     (data_ptr),y      ;store these in the eventual data buffer
               iny
-              bne     .read_sixes_loop
+              bne     _read_sixes_loop
 ; 
-.rdbyte3      ldy     IWM_Q6_OFF,x      ;read checksum byte
-              bpl     .rdbyte3
+_rdbyte3      ldy     IWM_Q6_OFF,x      ;read checksum byte
+              bpl     _rdbyte3
               eor     CONV_TAB-128,y    ;does it match?
-.another      bne     ReadSector        ;no, try to find one that's undamaged
+_another      bne     ReadSector        ;no, try to find one that's undamaged
 ; 
 ; Decode the 6+2 encoding.  The high 6 bits of each byte are in place, now we
 ; just need to shift the low 2 bits of each in.
 ; 
               ldy     #$00              ;update 256 bytes
-.init_x       ldx     #86               ;run through the 2-bit pieces 3x (86;3=258)
-.decode_loop  dex
-              bmi     .init_x           ;if we hit $2ff, go back to $355
-              lda     (data_ptr),y      ;foreach byte in the data buffer...
+_init_x       ldx     #86               ;run through the 2-bit pieces 3x (86;3=258)
+_decode_loop  dex
+              bmi     _init_x           ;if we hit $2ff, go back to $355
+              lda     (data_ptr),y      ;foreach byte in the data buffer_..
               lsr     TWOS_BUFFER,x     ; grab the low two bits from the stuff at $300-$355
               rol     A                 ; and roll them into the low two bits of the byte
               lsr     TWOS_BUFFER,x
               rol     A
               sta     (data_ptr),y
               iny
-              bne     .decode_loop
+              bne     _decode_loop
 ; 
 ; Advance the data pointer and sector number, and check to see if the sector
 ; number matches the first byte of BOOT1.  If it does, we're done.  If not, go
@@ -245,6 +245,6 @@ FoundData     ldy     #86               ;read 86 bytes of data into $300-355
               lda     sector            ;sector we'd read next
               cmp     BOOT1             ;is next sector < BOOT1?
               ldx     slot_index
-              bcc     .another          ;yes, go get another sector (note branch x2)
+              bcc     _another          ;yes, go get another sector (note branch x2)
 ; All done, jump to BOOT1 ($0801).
               jmp     BOOT1+1

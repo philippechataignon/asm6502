@@ -10,15 +10,15 @@
 ;     S. WOZNIAK
 ;
 ;**********************
-SIGN    EQU $F3
-X2      EQU $F4
-M2      EQU $F5
-X1      EQU $F8
-M1      EQU $F9
-E       EQU $FC
-OVLOC   EQU $3F5
+SIGN    = $F3
+X2      = $F4
+M2      = $F5
+X1      = $F8
+M1      = $F9
+E       = $FC
+OVLOC   = $3F5
 
-        ORG $F425
+*= $F425
 
 ADD     CLC         ; CLEAR CARRY
         LDX #$2     ; INDEX FOR 3-BYTE ADD.
@@ -47,7 +47,7 @@ SWAP1   STY E-1,X
 FLOAT   LDA #$8E    ; INIT EXP1 TO 14,
         STA X1      ; THEN NORMALIZE TO FLOAT.
 NORM1   LDA M1      ; HIGH-ORDER MANT1 BYTE.
-        CMP #$C0    ; UPPER TWO BITS UNEQUAL?
+        CMP #$C0    ; UPPER TWO BITS UN=AL?
         BMI RTS1    ; YES, RETURN WITH MANT1 NORMALIZED
         DEC X1      ; DECREMENT EXP1.
         ASL M1+2
@@ -135,4 +135,4 @@ MD3     EOR #$80    ; COMPLEMENT SIGN BIT OF EXPONENT.
 OVCHK   BPL MD3     ; IF POSITIVE EXP THEN NO OVFL.
 OVFL    JMP OVLOC
 
-FILL    BYTE        $FF,$FF,$FF,$FF ; FILL TO F4FF
+FILL    .BYTE       $FF,$FF,$FF,$FF ; FILL TO F4FF

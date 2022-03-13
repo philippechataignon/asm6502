@@ -1,4 +1,4 @@
-  org    $F669
+  * =    $F669
   sty    $58
   stx    $57
   sta    $56
@@ -21,5 +21,3 @@
   lda    $56
   plp
   rts
-  end
-
