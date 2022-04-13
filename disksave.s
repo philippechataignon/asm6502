@@ -161,7 +161,12 @@ trkloop
             ldy #rplcmd         ; offset in RWTS
             sta (rwtsptr),y     ; write it to RWTS
 
-            ;jsr locrpl          ; locate rwts paramlist
+.if REAL
+            jsr locrpl         ; locate rwts paramlist
+.else
+            ldy #<rwts_iob      ; simul locrpl
+            lda #>rwts_iob
+.fi
             jsr rwts            ; do it!
             bcs diskerror
             ldx #"."
