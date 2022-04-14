@@ -1,11 +1,8 @@
 *           = $9000
 DIRECT := false
-REAL := false
+REAL := true
 
 ; apple vectors
-dos         = $9D84
-asrom       = $9D72
-init        = $A54F
 tapein      = $C060             ; read tape interface
 motoroff    = $C088             ; Turn drive motor off
 motoron     = $C089             ; Turn drive motor on
@@ -56,6 +53,7 @@ ch          = $24               ; cursor horizontal
 basl        = $28               ; line addr form bascalc LSB
 A1          = $3C               ; for read
 A2          = $3E               ; for read
+preg        = $48
 
 ;            other vars
 data        = $1000             ; max is $3848 from LZ4_compressBound
@@ -120,12 +118,6 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
-            ldy #size(rwts_param)-1 ; copy default rwts param
--           lda rwts_param,y
-            sta (rwtsptr),y     ; write it to RWTS
-            dey
-            bpl -
-
 ;format                         ; format the diskette
 ;            status formatm
 ;            lda #4              ; read(1)/write(2)/format(4) command
@@ -157,6 +149,8 @@ initmain
             ;;; init main loop
             lda #0
             ldy #rplbuf         ; buffer LSB is 0 ($4800)
+            sta (rwtsptr),y     ; write it to RWTS
+            ldy #rplvol         ; every volume number
             sta (rwtsptr),y     ; write it to RWTS
             sta trknum          ; track 0
             sta secnum          ; sector 0
@@ -230,8 +224,10 @@ trkloop
             ldy #rplcmd        ; offset in RWTS
             sta (rwtsptr),y     ; write it to RWTS
 
-            ;jsr locrpl          ; locate rwts paramlist
+            jsr locrpl          ; locate rwts paramlist
             jsr rwts            ; do it!
+            lda #0
+            sta preg
             bcs diskerror
             ldx #"."
             jsr draw            ; write dot
@@ -352,7 +348,6 @@ left        .text "  0:\n"
             .text "  D:\n"
             .text "  E:\n"
             .null "  F:\n"
-rwts_param  .byte 1,slot,1,0,0,0,0,0,0,0,0,0,0,0,0,slot,1
 rwts_iob    .byte 17
 segl        .fill 10,?
 segh        .fill 10,?

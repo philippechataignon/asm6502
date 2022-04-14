@@ -1,6 +1,6 @@
 *           = $9000
 DIRECT := false
-REAL := false
+REAL := true
 
 ; apple vectors
 tapein      = $C060             ; read tape interface
@@ -119,16 +119,12 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
-            ldy #size(rwts_param)-1 ; copy default rwts param
--           lda rwts_param,y
-            sta (rwtsptr),y     ; write it to RWTS
-            dey
-            bpl -
-
 initmain
             ;;; init main loop
             lda #0
             ldy #rplbuf         ; buffer LSB is 0 ($4800)
+            sta (rwtsptr),y     ; write it to RWTS
+            ldy #rplvol         ; every volume
             sta (rwtsptr),y     ; write it to RWTS
             sta trknum          ; track 0
             sta secnum          ; sector 0
@@ -201,7 +197,8 @@ trkloop
             jsr delay
 .fi
             dec segcnt
-            bne done            ; 0, all done with segments
+            lda segcnt
+            beq done            ; 0, all done with segments
             jmp segloop
 done
             ldx #' '
@@ -306,5 +303,4 @@ left        .text "  0:\n"
             .text "  D:\n"
             .text "  E:\n"
             .null "  F:\n"
-rwts_param  .byte 1,slot,1,0,0,0,0,0,0,0,0,0,0,0,0,slot,1
 rwts_iob    .byte 17
