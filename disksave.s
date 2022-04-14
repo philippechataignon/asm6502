@@ -3,9 +3,6 @@ DIRECT := false
 REAL := false
 
 ; apple vectors
-dos         = $9D84
-asrom       = $9D72
-init        = $A54F
 tapein      = $C060             ; read tape interface
 motoroff    = $C088             ; Turn drive motor off
 motoron     = $C089             ; Turn drive motor on
@@ -56,6 +53,7 @@ ch          = $24               ; cursor horizontal
 basl        = $28               ; line addr form bascalc LSB
 a1          = $3c               ; for save
 a2          = $3e               ; for save
+preg        = $48               ; monitor status register
 
 ;            other vars
 data        = $1000             ; 7 track loaded in $1000-$8000
@@ -67,7 +65,8 @@ line21      = $6D0
 linewidth = 40
 statusline = 21
 secmax = 16                     ; 16 sectors by track
-secbyseg = 112                  ; # of sector by segment
+segtotal = 5
+secbyseg = 560 / segtotal       ; # of sector by segment
                                 ; (560 sectors / 5 segments)
 mult = 15                       ; delay multiplier
 
@@ -133,17 +132,17 @@ initmain
             sta (rwtsptr),y     ; write it to RWTS
             sta trknum          ; track 0
             sta secnum          ; sector 0
-            lda #4              ; segment number
+            lda #segtotal       ; segment number
             sta segcnt
 
 segloop     ; main loop
             status readm
             ldx #slot           ; slot #6
-            lda motoron,x       ; turn it on
+            ; lda motoron,x       ; turn it on
             lda #>data          ; init with data buffer
             sta buffer
             lda #secbyseg
-            sta seccnt          ; do 7 tracks/segment
+            sta seccnt          ; 560 / 5 sectors
 trkloop
             ldx #'R'-$C0
             jsr draw
@@ -157,7 +156,7 @@ trkloop
             lda buffer          ; buffer MSB
             ldy #rplbuf+1       ; offset in RWTS
             sta (rwtsptr),y     ; write it to RWTS
-            lda #cmdread        ; read(1)/write(2) command
+            lda #cmdread        ; read command
             ldy #rplcmd         ; offset in RWTS
             sta (rwtsptr),y     ; write it to RWTS
 
@@ -168,6 +167,8 @@ trkloop
             lda #>rwts_iob
 .fi
             jsr rwts            ; do it!
+            lda #0
+            sta preg
             bcs diskerror
             ldx #"."
             jsr draw            ; write dot
@@ -181,7 +182,6 @@ trkloop
             sta secnum
 +           dec seccnt          ; decr sector number
             bne trkloop         ; if >= 0, next sector
-
 
             status savem
             ldx #'S'-$C0
@@ -201,7 +201,7 @@ trkloop
             jsr delay
 .fi
             dec segcnt
-            bmi done            ; 0, all done with segments
+            bne done            ; 0, all done with segments
             jmp segloop
 done
             ldx #' '
