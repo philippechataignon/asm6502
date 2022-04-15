@@ -195,7 +195,6 @@ trkloop
             jsr delay
 .fi
             dec segcnt
-            lda segcnt
             beq done            ; 0, all done with segments
             jmp segloop
 done
