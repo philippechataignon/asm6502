@@ -6,12 +6,8 @@ REAL := true
 tapein      = $C060             ; read tape interface
 motoroff    = $C088             ; Turn drive motor off
 motoron     = $C089             ; Turn drive motor on
-reboot      = $FAA6             ; reboot machine
-tabv        = $FB5B             ; move cursor to ch,a
 bascalc     = $FBC1             ; calc line addr
-cleos       = $FC42             ; clear to end of screen
 clear       = $FC58             ; clear screen
-rdkey       = $FD0C             ; read key
 crout       = $FD8E             ; CR out sub
 prbyte      = $FDDA             ; print byte in hex
 cout        = $FDED             ; character out sub
@@ -65,8 +61,8 @@ line21      = $6D0
 linewidth = 40
 statusline = 21
 secmax = 16                     ; 16 sectors by track
-secbyseg = 56                   ; # of sector by segment
-                                ;(560 sectors / 10 segments)
+segtotal = 10
+secbyseg = 560 / segtotal       ; # of sector by segment
 mult = 5                        ; delay multiplier
 
 
@@ -118,17 +114,6 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
-;format                         ; format the diskette
-;            status formatm
-;            lda #4              ; read(1)/write(2)/format(4) command
-;            ldy #$c             ; offset in RWTS
-;            sta (rwtsptr),y     ; write it to RWTS
-;            jsr rwts            ; do it!
-;            lda #MULT
-;            jsr delay
-;            bcc getparam
-;            jmp diskerror
-
 getparam    status paramm
             lda #<segl
             sta a1
@@ -154,7 +139,7 @@ initmain
             sta (rwtsptr),y     ; write it to RWTS
             sta trknum          ; track 0
             sta secnum          ; sector 0
-            lda #9              ; segment number
+            lda #segtotal-1     ; segment number
             sta segcnt
 
 segloop     ; main loop

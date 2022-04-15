@@ -6,12 +6,8 @@ REAL := true
 tapein      = $C060             ; read tape interface
 motoroff    = $C088             ; Turn drive motor off
 motoron     = $C089             ; Turn drive motor on
-reboot      = $FAA6             ; reboot machine
-tabv        = $FB5B             ; move cursor to ch,a
 bascalc     = $FBC1             ; calc line addr
-cleos       = $FC42             ; clear to end of screen
 clear       = $FC58             ; clear screen
-rdkey       = $FD0C             ; read key
 crout       = $FD8E             ; CR out sub
 prbyte      = $FDDA             ; print byte in hex
 cout        = $FDED             ; character out sub
@@ -23,6 +19,7 @@ rwts        = $3D9             ; RWTS jsr (tmp = delay)
 .fi
 locrpl      = $3E3              ; locate RWTS paramlist jsr
 
+;           rwts
 rpliob = 0
 rplslt = 1
 rpldrv = 2
@@ -34,6 +31,7 @@ rplbuf = 8
 rplsiz = $b
 rplcmd = $c
 rplret = $e
+
 cmdseek = 0
 cmdread = 1
 cmdwrite = 2
@@ -268,11 +266,9 @@ rwts
             lda #1
             jsr delay
             rts
-.fi
 
 delay       .binclude "delay.s"
-load8000    .binclude "load8000.s"
-inflate     .binclude "unlz4.s"
+.fi
 
             .enc "apple_inv"
 title       .null "DISKSAVE"
