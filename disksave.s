@@ -54,9 +54,10 @@ a2          = $3e               ; for save
 preg        = $48               ; monitor status register
 
 ;            other vars
-data        = $1000             ; 7 track loaded in $1000-$8000
-dataend     = $7FFF
-slot        = $60               ; slot 6 * 16
+diskslot    = $60               ; slot 6 * 16
+sscslot     = $30               ; slot 3
+start_page  = $10
+end_page    = $80
 
 line21      = $6D0
 
@@ -68,6 +69,9 @@ secbyseg = 560 / segtotal       ; # of sector by segment
                                 ; (560 sectors / 5 segments)
 mult = 15                       ; delay multiplier
 
+esc        = $9b        ; ESCAPE KEY
+ack        = $06        ; ACKNOWLEDGE
+nak        = $15        ; NEGATIVE ACKNOWLEDGE
 
 .include "apple_enc.inc"
 .enc "apple"
@@ -80,6 +84,14 @@ status      .macro
             .endm
 
 start
+            ; init ssc
+
+initssc     bit $C088+sscslot   ; reset ssc
+            lda #$0B            ; no parity, rts on, dtr on, intr
+            sta $C08A+sscslot   ; command 
+            lda #$1F            ; 19200, 8bits, no parity
+            sta $C08B+sscslot   ; control
+
             jsr clear           ; clear screen
             ldy #<title
             lda #>title         ; print title
@@ -117,6 +129,20 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
+            status waitm
+            lda #$19
+            jsr sscput
+            lda #$64
+            jsr sscput
+            lda #$0
+            jsr sscput
+            jsr sscget
+            cmp #ack
+            beq initmain
+
+sscerr      status sscerrorm     ; print error
+            rts
+
 initmain
             ;;; init main loop
             lda #0
@@ -131,9 +157,9 @@ initmain
 
 segloop     ; main loop
             status readm
-            ldx #slot           ; slot #6
-            ; lda motoron,x       ; turn it on
-            lda #>data          ; init with data buffer
+            ldx #diskslot           ; slot #6
+            ; lda motoron,x     ; turn it on
+            lda #start_page     ; init with data buffer
             sta buffer
             lda #secbyseg
             sta seccnt          ; 560 / 5 sectors
@@ -177,23 +203,20 @@ trkloop
 +           dec seccnt          ; decr sector number
             bne trkloop         ; if >= 0, next sector
 
-            status savem
+            status sendm
             ldx #'S'-$C0
             jsr draw
-            lda #<data
-            sta a1
-            lda #>data
-            sta a1+1
-            lda #<dataend
-            sta a2
-            lda #>dataend
-            sta a2+1
 .if REAL
-            jsr save
+            jsr send
 .else
             lda #MULT
             jsr delay
 .fi
+            ; wait ack
+            status waitm
+            jsr sscget
+            cmp #ack
+
             dec segcnt
             beq done            ; 0, all done with segments
             jmp segloop
@@ -202,10 +225,11 @@ done
             jsr draw
             status donem
             jsr crout
+            bit $c010
             rts
 
 diskerror
-            ldx #slot            ; slot #6
+            ldx #diskslot            ; slot #6
             lda motoroff,x       ; turn it off
             status diskerrorm     ; print error
             rts
@@ -243,6 +267,41 @@ _L1         lda (prtptr),y       ;
             jsr cout
             iny
             jmp _L1
+
+send:       lda #start_page
+            sta mod1+2
+            ldx #$0
+loop:
+mod1:       lda $ffff,X
+            jsr sscput
+            inx
+            bne loop
+            inc mod1+2
+            lda mod1+2
+            cmp #end_page
+            blt loop
+            rts
+
+sscput:     pha                     ; Push A onto the stack
+-           lda $C089+sscslot       ; Check status bits
+            and #%00010000          ; Test bit 4 = transmit register empty if 1
+            beq -                   ; Output register is full, so loop
+            pla
+            sta $c088+sscslot       ; Put character
+            rts
+
+sscget:
+            lda $C000
+            cmp #esc
+            beq done
+            lda $C089+sscslot       ; Check status bits
+            and #%00001000          ; Test bit3 = receive register full if 1
+            ;and #$68
+            ;cmp #$8
+            beq sscget              ; Input register empty, loop
+            lda $C088+sscslot       ; Get character
+            rts
+
 .if !REAL
 rwts
             tya                 ;saves Y on stack
@@ -273,11 +332,13 @@ delay       .binclude "delay.s"
 title       .null "DISKSAVE"
             .enc "apple_flash"
 diskerrorm  .null "DISK ERROR"
+sscerrorm   .null "SSC ERROR"
             .enc "apple"
 readm       .null "READ"
 rwtsm       .null "RWTS "
 donem       .null "DONE"
-savem       .null "SAVE"
+sendm       .null "SEND"
+waitm       .null "WAIT SSC"
 track       .null "TRACK\n"
 header      .text "    00000000001111111111222222222233333\n"
             .text "    01234567890123456789012345678901234\n"
