@@ -6,6 +6,8 @@ REAL := true
 tapein      = $C060             ; read tape interface
 motoroff    = $C088             ; Turn drive motor off
 motoron     = $C089             ; Turn drive motor on
+kbd         = $C000
+kbdstrobe   = $C010
 bascalc     = $FBC1             ; calc line addr
 clear       = $FC58             ; clear screen
 crout       = $FD8E             ; CR out sub
@@ -55,7 +57,6 @@ preg        = $48               ; monitor status register
 
 ;            other vars
 diskslot    = $60               ; slot 6 * 16
-sscslot     = $30               ; slot 3
 start_page  = $10
 end_page    = $80
 
@@ -73,6 +74,12 @@ esc        = $9b        ; ESCAPE KEY
 ack        = $06        ; ACKNOWLEDGE
 nak        = $15        ; NEGATIVE ACKNOWLEDGE
 
+sscslot     = $30               ; slot 3
+sscreg      = $C088+sscslot
+sscstatus   = $C089+sscslot
+ssccommand  = $C08A+sscslot
+ssccontrol  = $C08B+sscslot
+
 .include "apple_enc.inc"
 .enc "apple"
 
@@ -86,11 +93,11 @@ status      .macro
 start
             ; init ssc
 
-initssc     bit $C088+sscslot   ; reset ssc
+initssc     bit sscreg         ; reset ssc
             lda #$0B            ; no parity, rts on, dtr on, intr
-            sta $C08A+sscslot   ; command 
+            sta ssccommand
             lda #$1F            ; 19200, 8bits, no parity
-            sta $C08B+sscslot   ; control
+            sta ssccontrol
 
             jsr clear           ; clear screen
             ldy #<title
@@ -268,6 +275,24 @@ _L1         lda (prtptr),y       ;
             iny
             jmp _L1
 
+sscput:     pha                     ; Push A onto the stack
+-           lda sscstatus            ; Check status bits
+            and #%00010000          ; Test bit 4 = transmit register empty if 1
+            beq -                   ; Output register is full, so loop
+            pla
+            sta sscreg              ; Put character
+            rts
+
+sscget:
+            lda kbd
+            cmp #esc
+            beq done
+            lda sscstatus          ; Check status bits
+            and #%00001000          ; Test bit3 = receive register full if 1
+            beq sscget              ; Input register empty, loop
+            lda sscreg              ; Get character
+            rts
+
 send:       lda #start_page
             sta mod1+2
             ldx #$0
@@ -280,26 +305,6 @@ mod1:       lda $ffff,X
             lda mod1+2
             cmp #end_page
             blt loop
-            rts
-
-sscput:     pha                     ; Push A onto the stack
--           lda $C089+sscslot       ; Check status bits
-            and #%00010000          ; Test bit 4 = transmit register empty if 1
-            beq -                   ; Output register is full, so loop
-            pla
-            sta $c088+sscslot       ; Put character
-            rts
-
-sscget:
-            lda $C000
-            cmp #esc
-            beq done
-            lda $C089+sscslot       ; Check status bits
-            and #%00001000          ; Test bit3 = receive register full if 1
-            ;and #$68
-            ;cmp #$8
-            beq sscget              ; Input register empty, loop
-            lda $C088+sscslot       ; Get character
             rts
 
 .if !REAL
