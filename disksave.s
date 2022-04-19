@@ -93,7 +93,7 @@ status      .macro
 start
             ; init ssc
 
-initssc     bit sscreg         ; reset ssc
+initssc     bit sscreg          ; reset ssc
             lda #$0B            ; no parity, rts on, dtr on, intr
             sta ssccommand
             lda #$1F            ; 19200, 8bits, no parity
@@ -136,24 +136,22 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
-            status waitm
+            status waitm        ; send magic header
             lda #$19
             jsr sscput
             lda #$64
             jsr sscput
             lda #$0
             jsr sscput
-            jsr sscget
+            jsr sscget          ; and wait ack
             cmp #ack
             beq initmain
-
-sscerr      status sscerrorm     ; print error
-            rts
+            jmp sscerr
 
 initmain
-            ;;; init main loop
+            ; init main loop
             lda #0
-            ldy #rplbuf         ; buffer LSB is 0 ($4800)
+            ldy #rplbuf         ; buffer LSB is 0
             sta (rwtsptr),y     ; write it to RWTS
             ldy #rplvol         ; every volume
             sta (rwtsptr),y     ; write it to RWTS
@@ -162,10 +160,8 @@ initmain
             lda #segtotal       ; segment number
             sta segcnt
 
-segloop     ; main loop
-            status readm
-            ldx #diskslot           ; slot #6
-            ; lda motoron,x     ; turn it on
+            ; main loop
+segloop     status readm
             lda #start_page     ; init with data buffer
             sta buffer
             lda #secbyseg
@@ -223,23 +219,26 @@ trkloop
             status waitm
             jsr sscget
             cmp #ack
+            bne sscerr
 
             dec segcnt
             beq done            ; 0, all done with segments
             jmp segloop
 done
+            lda #ack            ; send final ack
+            jsr sscput
             ldx #' '
             jsr draw
             status donem
-            jsr crout
+final       jsr crout
             bit $c010
             rts
 
-diskerror
-            ldx #diskslot            ; slot #6
-            lda motoroff,x       ; turn it off
-            status diskerrorm     ; print error
-            rts
+sscerr      status sscerrorm
+            jmp final
+
+diskerror   status diskerrorm
+            jmp final
 
 clrstatus
             lda #" "            ; space
@@ -275,7 +274,7 @@ _L1         lda (prtptr),y       ;
             iny
             jmp _L1
 
-sscput:     pha                     ; Push A onto the stack
+sscput      pha                     ; Push A onto the stack
 -           lda sscstatus            ; Check status bits
             and #%00010000          ; Test bit 4 = transmit register empty if 1
             beq -                   ; Output register is full, so loop
@@ -283,8 +282,7 @@ sscput:     pha                     ; Push A onto the stack
             sta sscreg              ; Put character
             rts
 
-sscget:
-            lda kbd
+sscget      lda kbd
             cmp #esc
             beq done
             lda sscstatus          ; Check status bits
@@ -293,11 +291,11 @@ sscget:
             lda sscreg              ; Get character
             rts
 
-send:       lda #start_page
+send        lda #start_page
             sta mod1+2
             ldx #$0
-loop:
-mod1:       lda $ffff,X
+loop 
+mod1        lda $ffff,X
             jsr sscput
             inx
             bne loop
