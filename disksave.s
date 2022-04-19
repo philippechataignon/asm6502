@@ -295,7 +295,7 @@ send        lda #start_page
             sta mod1+2
             ldx #$0
 loop 
-mod1        lda $ffff,X
+mod1        lda $FF00,X
             jsr sscput
             inx
             bne loop
