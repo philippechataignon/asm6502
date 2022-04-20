@@ -4,11 +4,11 @@ tmp = $19
 
 * = $803
 
-        ldy start
-        lda #0
+        ldy start       ; get real start
+        lda #0          ; start LSB = 0
         sta start
--       lda #$A5
-        sta (start),Y
+-       lda #$A5        ; constant
+        sta (start),Y   ; store
         iny
         bne +
         inc start+1
