@@ -292,15 +292,16 @@ sscget      lda kbd
             rts
 
 send        lda #start_page
-            sta mod1+2
+            sta mod1
             ldx #$0
 loop 
-mod1        lda $FF00,X
+            lda $FF00,X
+mod1 = * - 1
             jsr sscput
             inx
             bne loop
-            inc mod1+2
-            lda mod1+2
+            inc mod1
+            lda mod1
             cmp #end_page
             blt loop
             rts
