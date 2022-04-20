@@ -272,21 +272,15 @@ _L1         lda (prtptr),y       ;
             jmp _L1
 
 send        lda #start_page
-            sta mod1
-            ldx #$0
-loop 
-            lda $FF00,X
-mod1 = * - 1
-            jsr ssc.putc
-            inx
-            bne loop
-            inc mod1
-            lda mod1
-            cmp #end_page
-            blt loop
-            rts
+            sta ssc.send1h
+            lda #end_page
+            sta ssc.send2h
+            lda #0
+            sta ssc.send1l
+            sta ssc.send2l
+            jmp ssc.send
 
-ssc       .binclude "ssc.s"
+ssc         .binclude "ssc.s"
 
 .if !REAL
 rwts
