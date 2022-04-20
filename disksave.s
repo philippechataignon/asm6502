@@ -80,6 +80,8 @@ sscstatus   = $C089+sscslot
 ssccommand  = $C08A+sscslot
 ssccontrol  = $C08B+sscslot
 
+ssc.exitkbd = done
+
 .include "apple_enc.inc"
 .enc "apple"
 
@@ -90,14 +92,7 @@ status      .macro
             jsr print
             .endm
 
-start
-            ; init ssc
-
-initssc     bit sscreg          ; reset ssc
-            lda #$0B            ; no parity, rts on, dtr on, intr
-            sta ssccommand
-            lda #$1F            ; 19200, 8bits, no parity
-            sta ssccontrol
+start       jsr ssc.init        ; init ssc
 
             jsr clear           ; clear screen
             ldy #<title
@@ -138,12 +133,12 @@ setupiob
 
             status waitm        ; send magic header
             lda #$19
-            jsr sscput
+            jsr ssc.putc
             lda #$64
-            jsr sscput
+            jsr ssc.putc
             lda #$0
-            jsr sscput
-            jsr sscget          ; and wait ack
+            jsr ssc.putc
+            jsr ssc.getc         ; and wait ack
             cmp #ack
             beq initmain
             jmp sscerr
@@ -219,7 +214,7 @@ trkloop
 .fi
             ; wait ack
             status waitm
-            jsr sscget
+            jsr ssc.getc
             cmp #ack
             bne sscerr
 
@@ -228,7 +223,7 @@ trkloop
             jmp segloop
 done
             lda #ack            ; send final ack
-            jsr sscput
+            jsr ssc.putc
             ldx #' '
             jsr draw
             status donem
@@ -276,30 +271,13 @@ _L1         lda (prtptr),y       ;
             iny
             jmp _L1
 
-sscput      pha                     ; Push A onto the stack
--           lda sscstatus            ; Check status bits
-            and #%00010000          ; Test bit 4 = transmit register empty if 1
-            beq -                   ; Output register is full, so loop
-            pla
-            sta sscreg              ; Put character
-            rts
-
-sscget      lda kbd
-            cmp #esc
-            beq done
-            lda sscstatus          ; Check status bits
-            and #%00001000          ; Test bit3 = receive register full if 1
-            beq sscget              ; Input register empty, loop
-            lda sscreg              ; Get character
-            rts
-
 send        lda #start_page
             sta mod1
             ldx #$0
 loop 
             lda $FF00,X
 mod1 = * - 1
-            jsr sscput
+            jsr ssc.putc
             inx
             bne loop
             inc mod1
@@ -307,6 +285,8 @@ mod1 = * - 1
             cmp #end_page
             blt loop
             rts
+
+ssc       .binclude "ssc.s"
 
 .if !REAL
 rwts
