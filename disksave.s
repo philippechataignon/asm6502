@@ -192,9 +192,11 @@ trkloop
             jsr rwts            ; do it!
             lda #0
             sta preg
-            bcs diskerror
-            ldx #"."
-            jsr draw            ; write dot
+            bcc +               ; no disk error
+            ldx #"E"
+            jmp ++
++           ldx #"."
++           jsr draw            ; write dot
             inc buffer          ; next page to write
             inc secnum
             lda secnum
