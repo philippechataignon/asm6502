@@ -16,8 +16,8 @@ PRBYTE      = $FDDA
 INIT:
             jmp ENTRY
 
-START       .word 1
-END         .word 2
+START       .word $d000
+END         .word $ffff
 
 ENTRY       jsr     MAKECRCTABLE
             ldy     START+1     ; init CUR high byte with START high byte
