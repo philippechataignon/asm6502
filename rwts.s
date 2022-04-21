@@ -39,28 +39,22 @@ track = 1
 sector = 2
 adr = $1000
 
+wrwts       .macro
+            lda \2
+            ldy #\1
+            sta (ptr),y     
+            .endm
+
             jsr locrpl         ; locate rwts paramlist
             sty ptr         ; and save ptr
             sta ptr+1
 
-            lda #0
-            ldy #rplvol         ; every volume
-            sta (ptr),y     
-            lda #track          ; track number
-            ldy #rpltrk
-            sta (ptr),y    
-            lda #sector         ; sector number
-            ldy #rplsec
-            sta (ptr),y   
-            lda #<adr
-            ldy #rplbuf         ; buffer LSB
-            sta (ptr),y  
-            lda #>adr           ; buffer MSB
-            ldy #rplbuf+1       ; offset in RWTS
-            sta (ptr),y  
-            lda #cmdread        ; read command
-            ldy #rplcmd         ; offset in RWTS
-            sta (ptr),y 
+            wrwts rpltrk,#track
+            wrwts rplsec,#sector
+            wrwts rplvol,#0
+            wrwts rplbuf,<adr
+            wrwts rplbuf+1,>adr
+            wrwts rplcmd,#cmdread
                                 
             jsr locrpl          ; locate rwts paramlist
             jsr rwts            ; do it!
