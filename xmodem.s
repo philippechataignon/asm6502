@@ -45,23 +45,23 @@
 ; zero page variables (adjust these to suit your needs)
 ;
 ;
-lastblk     =        $35                ; flag for last block
-blkno       =        $36                ; block number 
-errcnt      =        $37                ; error counter 10 is the limit
-bflag       =        $37                ; block flag 
 
-crc         =        $38                ; CRC lo byte  (two byte variable)
-crch        =        $39                ; CRC hi byte  
+lastblk     =        $06                ; flag for last block
+blkno       =        $07                ; block number 
+errcnt      =        $08                ; error counter 10 is the limit
+bflag       =        $09                ; block flag 
 
-ptr         =        $3a                ; data pointer (two byte variable)
-ptrh        =        $3b                ;   "    "
+crc         =        $19                ; CRC lo byte  (two byte variable)
+crch        =        $1a                ; CRC hi byte  
 
-eofp        =        $3c                ; end of file address pointer (2 bytes)
-eofph       =        $3d                ;  "        "        "        "
+ptr         =        $fa                ; data pointer (two byte variable)
+ptrh        =        $fb                ;   "    "
 
-retry       =        $3e                ; retry counter 
-retry2      =        $3f                ; 2nd counter
+eofp        =        $fc                ; end of file address pointer (2 bytes)
+eofph       =        $fd                ;  "        "        "        "
 
+retry       =        $ce                ; retry counter 
+retry2      =        $cf                ; 2nd counter
 ;
 ;
 ; non-zero page variables and buffers
