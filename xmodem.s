@@ -55,21 +55,24 @@ crc     = $19                ; CRC lo byte  (two byte variable)
 crch    = $1a                ; CRC hi byte
 
 ptr     = $fa                ; data pointer (two byte variable)
-ptrh    = $fb                ;   "    "
+ptrh    = $fb
 
 eofp    = $fc                ; end of file address pointer (2 bytes)
-eofph   = $fd                ;  "        "        "        "
+eofph   = $fd
 
 retry   = $ce                ; retry counter
 retry2  = $cf                ; 2nd counter
 
+;temp    = $e3
 
 ; non-zero page variables and buffers
 
 
 Rbuff   =        $8f00              ; temp 132 byte receive buffer
-                                        ;(place anywhere, page aligned)
 
+; monitor
+
+cout = $fded
 
 ;  tables and constants
 
@@ -81,7 +84,7 @@ Rbuff   =        $8f00              ; temp 132 byte receive buffer
 ; then these two labels will need to be un-commented and declared in RAM.
 
 ;crclo                =        $7D00              ; Two 256-byte tables for quick lookup
-;crchi                =         $7E00              ; (should be page-aligned for speed)
+;crchi                =        $7E00              ; (should be page-aligned for speed)
 
 
 
@@ -94,6 +97,19 @@ CAN = $18                ; cancel (not standard, not supported)
 CR  = $0d                ; carriage return
 LF  = $0a                ; line feed
 ESC = $1b                ; ESC to exit
+
+.include "apple_enc.inc"
+.enc "apple"
+
+; macros
+
+print   .macro
+        ldy #<\1
+        lda #>\1
+        jsr printstr
+        rts
+        .endm
+
 
 ; Xmodem/CRC transfer routines
 ; By Daryl Rictor, August 8, 2002
@@ -109,7 +125,9 @@ ESC = $1b                ; ESC to exit
                 jmp XmodemRcv           ; quick jmp table
 
 XModemSend      jsr ACIA_Init
-                jsr PrintMsg            ; send prompt and info
+                jsr msgout
+                .null "XMODEM/CRC SEND. ESC TO ABORT\n"
+
                 lda #$00
                 sta errcnt              ; error counter set to 0
                 sta lastblk             ; set flag to false
@@ -203,12 +221,10 @@ PrtAbort        jsr Flush               ; yes, too many errors, flush buffer,
                 jmp Print_Err           ; print error msg and exit
 Done            jmp Print_Good          ; All Done..Print msg and exit
 
-
-
-
 XModemRcv
                 jsr ACIA_Init
-                jsr PrintMsg            ; send prompt and info
+                jsr msgout
+                .null "XMODEM/CRC RECV. ESC TO ABORT\n"
                 lda #$01
                 sta blkno               ; set block # to 1
                 sta bflag               ; set flag to get address from block 1
@@ -303,8 +319,7 @@ IncBlk          inc blkno               ; done.  Inc the block #
 RDone           lda #ACK                ; last block, send ACK and exit.
                 jsr Put_Chr
                 jsr Flush               ; get leftover characters, if any
-                jsr Print_Good
-                rts                     ;
+                jmp Print_Good
 
 ;  I/O Device Specific Routines
 
@@ -351,6 +366,37 @@ Put_Chr1        lda        ACIA_Status       ; serial port status
                 sta        ACIA_Data         ; put character to Port
                 rts                          ; done
 ; subroutines
+
+msgout      pla                     ; get calling addr in temp
+            sta mod_msgout
+            pla
+            sta mod_msgout+1
+-           inc mod_msgout
+            bne +
+            inc mod_msgout+1
++           lda $1234
+mod_msgout = * - 2
+            beq _exit
+            jsr cout
+            jmp -
+_exit       lda mod_msgout+1              ; temp points on next instr
+            pha
+            lda mod_msgout
+            pha
+            rts                     ; use TEMP as return addr
+
+printstr
+            sty printstr_mod
+            sta printstr_mod+1
+            ldy #0
+-           lda $1234,y
+printstr_mod = * - 2
+            beq +                ; return if 0 = end of string
+            jsr cout
+            iny
+            jmp -
++           rts
+
 GetByte         lda #$00             ; wait for chr input and cycle timing loop
                 sta retry            ; set low value of timing loop
 StartCrcLp      jsr Get_chr          ; get chr from serial port, don't wait
@@ -368,39 +414,19 @@ Flush1          jsr GetByte          ; read the port
                 bcs Flush            ; if chr recvd, wait for another
                 rts                  ; else done
 
-PrintMsg        ldx #$00             ; PRINT starting message
-PrtMsg1         lda Msg,x
-                beq PrtMsg2
-                jsr Put_Chr
-                inx
-                bne PrtMsg1
-PrtMsg2         rts
-Msg             .text "Begin XMODEM/CRC transfer.  Press <Esc> to abort..."
-                .text CR, LF
-                .byte 0
+Print_Err       print ErrMsg
+ErrMsg          .null "TRANSFER ERROR!\n"
 
-Print_Err       ldx #$00             ; PRINT Error message
-PrtErr1         lda ErrMsg,x
-                beq PrtErr2
-                jsr Put_Chr
+Print_Good      ldx #0
+-               lda eotmsg,X
+                jsr Put_chr
                 inx
-                bne PrtErr1
-PrtErr2         rts
-ErrMsg          .text "Transfer Error!"
-                .text CR, LF
-                .byte 0
+                cpx #size(eotmsg)
+                blt -
+                print GoodMsg
+GoodMsg         .null "TRANSFER SUCCESSFUL!\n"
 
-Print_Good      ldx #$00             ; PRINT Good Transfer message
-Prtgood1        lda GoodMsg,x
-                beq Prtgood2
-                jsr Put_Chr
-                inx
-                bne Prtgood1
-Prtgood2        rts
-GoodMsg         .text EOT,CR,LF,EOT,CR,LF,EOT,CR,LF,CR,LF
-                .text "Transfer Successful!"
-                .text CR, LF
-                .byte 0
+eotmsg          .byte EOT,CR,LF,EOT,CR,LF,EOT,CR,LF,CR,LF
 
 ;  CRC subroutines
 CalcCRC         lda #$00             ; yes, calculate the CRC for the 128 bytes
