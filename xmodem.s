@@ -99,7 +99,6 @@ LF  = $0a                ; line feed
 ESC = $1b                ; ESC to exit
 
 .include "apple_enc.inc"
-.enc "apple"
 
 ; macros
 
@@ -125,8 +124,13 @@ print   .macro
                 jmp XmodemRcv           ; quick jmp table
 
 XModemSend      jsr ACIA_Init
+-               jsr GetByte             ; flush the port
+                bcs -                   ; if chr recvd, wait for another
+                jsr flush
                 jsr msgout
-                .null "XMODEM/CRC SEND. ESC TO ABORT\n"
+                .enc "apple"
+                .null "SEND\n"
+                .enc "none"
 
                 lda #$00
                 sta errcnt              ; error counter set to 0
@@ -139,10 +143,9 @@ Wait4CRC        lda #$ff                ; 3 seconds
                 bcc Wait4CRC            ; wait for something to come in...
                 cmp #"C"                ; is it the "C" to start a CRC xfer?
                 beq SetstAddr           ; yes
-                cmp #ESC                ; is it a cancel? <Esc> Key
-                bne Wait4CRC            ; No, wait for another character
                 jmp PrtAbort            ; Print abort msg and exit
-SetstAddr       ldy #$00                ; init data block offset to 0
+SetstAddr       
+                ldy #$00                ; init data block offset to 0
                 ldx #$04                ; preload X to Receive buffer
                 lda #$01                ; manually load blk number
                 sta Rbuff               ; into 1st byte
@@ -156,7 +159,7 @@ SetstAddr       ldy #$00                ; init data block offset to 0
 
 LdBuffer        lda Lastblk             ; Was the last block sent?
                 beq LdBuff0             ; no, send the next one
-                jmp  Done               ; yes, we're done
+                jmp Print_Good          ; yes, we're done
 LdBuff0         ldx #$02                ; init pointers
                 ldy #$00
                 inc Blkno               ; inc block counter
@@ -165,9 +168,9 @@ LdBuff0         ldx #$02                ; init pointers
                 eor #$FF                ;
                 sta Rbuff+1             ; save 1's comp of blkno next
 
-LdBuff1         lda (ptr),y             ; save 128 bytes of data
-                sta Rbuff,x
-LdBuff2         sec     ;
+LdBuff1         lda (ptr),Y             ; save 128 bytes of data
+                sta Rbuff,X
+LdBuff2         sec
                 lda eofp
                 sbc ptr                 ; Are we at the last address?
                 bne LdBuff4             ; no, inc pointer and continue
@@ -188,7 +191,7 @@ LdBuff4         inc ptr                 ; Inc address pointer
 LdBuff5         inx
                 cpx #$82                ; last byte in block?
                 bne LdBuff1             ; no, get the next
-SCalcCRC        jsr  CalcCRC
+SCalcCRC        jsr CalcCRC
                 lda crch                ; save Hi byte of CRC to buffer
                 sta Rbuff,y
                 iny
@@ -215,16 +218,18 @@ SendBlk         lda Rbuff,x             ; Send 132 bytes in buffer to the consol
                                         ; fall through to error counter
 Seterror        inc errcnt              ; Inc error counter
                 lda errcnt              ;
-                cmp #$0A                ; are there 10 errors? (Xmodem spec for failure)
+                cmp #10                 ; are there 10 errors? (Xmodem spec for failure)
                 bne Resend              ; no, resend block
 PrtAbort        jsr Flush               ; yes, too many errors, flush buffer,
                 jmp Print_Err           ; print error msg and exit
-Done            jmp Print_Good          ; All Done..Print msg and exit
 
 XModemRcv
                 jsr ACIA_Init
+                jsr Flush
                 jsr msgout
-                .null "XMODEM/CRC RECV. ESC TO ABORT\n"
+                .enc "apple"
+                .null "RECV\n"
+                .enc "none"
                 lda #$01
                 sta blkno               ; set block # to 1
                 sta bflag               ; set flag to get address from block 1
@@ -243,11 +248,7 @@ StartBlk        lda #$FF                ;
                 sta retry2              ; set loop counter for ~3 sec delay
                 jsr GetByte             ; get first byte of block
                 bcc StartBlk            ; timed out, keep waiting...
-GotByte         cmp #ESC                ; quitting?
-                bne GotByte1            ; no
-;               lda #$FE                ; Error code in "A" of desired
-                brk                     ; YES - do BRK or change to RTS if desired
-GotByte1        cmp #SOH                ; start of block?
+GotByte         cmp #SOH                ; start of block?
                 beq BegBlk              ; yes
                 cmp #EOT
                 bne BadCrc              ; Not SOH or EOT, so flush buffer & send NAK
@@ -354,7 +355,7 @@ Get_Chr         clc                          ; no chr present
                 lda        ACIA_Status       ; get Serial port status
                 and        #$08              ; mask rcvr full bit
                 beq        Get_Chr2          ; if not chr, done
-                Lda        ACIA_Data         ; else get chr
+                lda        ACIA_Data         ; else get chr
                 sec                          ; and set the Carry Flag
 Get_Chr2        rts                          ; done
                                              ; output to OutPut Port
@@ -399,14 +400,16 @@ printstr_mod = * - 2
 
 GetByte         lda #$00             ; wait for chr input and cycle timing loop
                 sta retry            ; set low value of timing loop
-StartCrcLp      jsr Get_chr          ; get chr from serial port, don't wait
+StartCrcLp      
+                jsr Get_chr          ; get chr from serial port, don't wait
                 bcs GetByte1         ; got one, so exit
                 dec retry            ; no character received, so dec counter
                 bne StartCrcLp
                 dec retry2           ; dec hi byte of counter
                 bne StartCrcLp       ; look for character again
                 clc                  ; if loop times out, CLC, else SEC and return
-GetByte1        rts                  ; with character in "A"
+GetByte1        
+                rts                  ; with character in A
 
 Flush           lda #$70             ; flush receive buffer
                 sta retry2           ; flush until empty for ~1 sec.
@@ -415,14 +418,12 @@ Flush1          jsr GetByte          ; read the port
                 rts                  ; else done
 
 Print_Err       print ErrMsg
+                .enc "apple"
 ErrMsg          .null "TRANSFER ERROR!\n"
 
-Print_Good      ldx #0
--               lda eotmsg,X
-                jsr Put_chr
-                inx
-                cpx #size(eotmsg)
-                blt -
+Print_Good      
+-               lda #EOT
+                jsr Put_Chr
                 print GoodMsg
 GoodMsg         .null "TRANSFER SUCCESSFUL!\n"
 

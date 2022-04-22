@@ -1,9 +1,9 @@
 adr=$1000
 slot = $30
 start_page = $10
-end_page = $80
+end_page = $20
 
-* = $900
+* = $300
 
 	        lda #$0B	; COMMAND: NO PARITY, RTS ON,
 	        sta $C08A+slot	; DTR ON, NO INTERRUPTS
