@@ -126,7 +126,6 @@ print   .macro
 XModemSend      jsr ACIA_Init
 -               jsr GetByte             ; flush the port
                 bcs -                   ; if chr recvd, wait for another
-                jsr flush
                 jsr msgout
                 .enc "apple"
                 .null "SEND\n"
