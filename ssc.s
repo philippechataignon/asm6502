@@ -17,9 +17,9 @@ k_end = $5678
 .fi
 
 init        bit sscreg          ; reset ssc
-            lda #$0B            ; no parity, rts on, dtr on, intr
+            lda #%00001011            ; no parity, rts on, dtr on, intr
             sta ssccommand
-            lda #$1F            ; 19200, 8bits, no parity
+            lda #%00011111            ; 19200, 8bits, no parity
             sta ssccontrol
             rts
 
