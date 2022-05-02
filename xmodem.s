@@ -44,8 +44,6 @@
 
 ; zero page variables (adjust these to suit your needs)
 
-
-
 lastblk = $06                ; flag for last block
 blkno   = $07                ; block number
 errcnt  = $08                ; error counter 10 is the limit
@@ -67,12 +65,13 @@ retry2  = $cf                ; 2nd counter
 
 ; non-zero page variables and buffers
 
-
 Rbuff   =        $8f00              ; temp 132 byte receive buffer
+mod = $1200                         ; fake automodified address
 
 ; monitor
 
 cout = $fded
+crout = $fd8e
 
 ; XMODEM Control Character Constants
 SOH = $01                ; start block
@@ -88,12 +87,11 @@ ESC = $1b                ; ESC to exit
 
 ; macros
 
-print   .macro
-        ldy #<\1
-        lda #>\1
-        jsr printstr
-        rts
-        .endm
+print           .macro
+                ldy #<\1
+                lda #>\1
+                jsr printstr
+                .endm
 
 
 ; Xmodem/CRC transfer routines
@@ -107,16 +105,14 @@ print   .macro
 ; pointed to by ptr & ptrh and the ending address stored in the zero page address
 ; pointed to by eofp & eofph.
 
+.enc "none"
+
                 jmp XmodemRcv           ; quick jmp table
 
 XModemSend      jsr ACIA_Init
 -               jsr GetByte             ; flush the port
                 bcs -                   ; if chr recvd, wait for another
-                jsr msgout
-                .enc "apple"
-                .null "SEND\n"
-                .enc "none"
-
+                print SendMsg
                 lda #$00
                 sta errcnt              ; error counter set to 0
                 sta lastblk             ; set flag to false
@@ -144,7 +140,7 @@ SetstAddr
 
 LdBuffer        lda Lastblk             ; Was the last block sent?
                 beq LdBuff0             ; no, send the next one
-                jmp Print_Good          ; yes, we're done
+                jmp Exit_Good          ; yes, we're done
 LdBuff0         ldx #$02                ; init pointers
                 ldy #$00
                 inc Blkno               ; inc block counter
@@ -167,7 +163,7 @@ LdBuff3         inx
                 cpx #$82                ; Are we at the end of the 128 byte block?
                 beq SCalcCRC            ; Yes, calc CRC
                 lda #$00                ; Fill rest of 128 bytes with $00
-                sta Rbuff,x
+                sta Rbuff,X
                 beq LdBuff3             ; Branch always
 
 LdBuff4         inc ptr                 ; Inc address pointer
@@ -178,14 +174,14 @@ LdBuff5         inx
                 bne LdBuff1             ; no, get the next
 SCalcCRC        jsr CalcCRC
                 lda crch                ; save Hi byte of CRC to buffer
-                sta Rbuff,y
+                sta Rbuff,Y
                 iny
                 lda crc                 ; save lo byte of CRC to buffer
-                sta Rbuff,y
+                sta Rbuff,Y
 Resend          ldx #$00
                 lda #SOH
                 jsr Put_chr             ; send SOH
-SendBlk         lda Rbuff,x             ; Send 132 bytes in buffer to the console
+SendBlk         lda Rbuff,X             ; Send 132 bytes in buffer to the console
                 jsr Put_chr
                 inx
                 cpx #$84                ; last byte?
@@ -206,15 +202,12 @@ Seterror        inc errcnt              ; Inc error counter
                 cmp #10                 ; are there 10 errors? (Xmodem spec for failure)
                 bne Resend              ; no, resend block
 PrtAbort        jsr Flush               ; yes, too many errors, flush buffer,
-                jmp Print_Err           ; print error msg and exit
+                jmp Exit_Err           ; print error msg and exit
 
 XModemRcv
                 jsr ACIA_Init
                 jsr Flush
-                jsr msgout
-                .enc "apple"
-                .null "RECV\n"
-                .enc "none"
+                print RecvMsg
                 lda #$01
                 sta blkno               ; set block # to 1
                 sta bflag               ; set flag to get address from block 1
@@ -243,32 +236,32 @@ GetBlk          lda #$ff                ; 3 sec window to receive characters
                 sta  retry2
 GetBlk1         jsr GetByte             ; get next character
                 bcc BadCrc              ; chr rcv error, flush and send NAK
-GetBlk2         sta Rbuff,x             ; good char, save it in the rcv buffer
+GetBlk2         sta Rbuff,X             ; good char, save it in the rcv buffer
                 inx                     ; inc buffer pointer
                 cpx #$84                ; <01> <FE> <128 bytes> <CRCH> <CRCL>
                 bne GetBlk              ; get 132 characters
                 ldx #$00
-                lda Rbuff,x             ; get block # from buffer
+                lda Rbuff,X             ; get block # from buffer
                 cmp blkno               ; compare to expected block #
                 beq GoodBlk1            ; matched!
-                jsr Print_Err           ; Unexpected block number - abort
+                jsr Exit_Err           ; Unexpected block number - abort
                 jsr Flush               ; mismatched - flush buffer and then do BRK
 ;               lda #$FD                ; put error code in "A" if desired
                 brk                     ; unexpected block # - fatal error - BRK or RTS
 GoodBlk1        eor #$ff                ; 1's comp of block #
                 inx
-                cmp Rbuff,x             ; compare with expected 1's comp of block #
+                cmp Rbuff,X             ; compare with expected 1's comp of block #
                 beq GoodBlk2            ; matched!
-                jsr Print_Err           ; Unexpected block number - abort
-                jsr  Flush              ; mismatched - flush buffer and then do BRK
+                jsr Exit_Err           ; Unexpected block number - abort
+                jsr Flush               ; mismatched - flush buffer and then do BRK
 ;               lda #$FC                ; put error code in "A" if desired
                 brk                     ; bad 1's comp of block#
 GoodBlk2        jsr CalcCRC             ; calc CRC
-                lda Rbuff,y             ; get hi CRC from buffer
+                lda Rbuff,Y             ; get hi CRC from buffer
                 cmp crch                ; compare to calculated hi CRC
                 bne BadCrc              ; bad crc, send NAK
                 iny
-                lda Rbuff,y             ; get lo CRC from buffer
+                lda Rbuff,Y             ; get lo CRC from buffer
                 cmp crc                 ; compare to calculated lo CRC
                 beq GoodCrc             ; good CRC
 BadCrc          jsr Flush               ; flush the input port
@@ -281,16 +274,16 @@ GoodCrc         ldx #$02
                 bne CopyBlk             ; no, copy all 128 bytes
                 lda bflag               ; is it really block 1, not block 257, 513 etc.
                 beq CopyBlk             ; no, copy all 128 bytes
-                lda Rbuff,x             ; get target address from 1st 2 bytes of blk 1
+                lda Rbuff,X             ; get target address from 1st 2 bytes of blk 1
                 sta ptr                 ; save lo address
                 inx
-                lda Rbuff,x             ; get hi address
+                lda Rbuff,X             ; get hi address
                 sta ptr+1               ; save it
                 inx                     ; point to first byte of data
                 dec bflag               ; set the flag so we won't get another address
 CopyBlk         ldy #$00                ; set offset to zero
-CopyBlk3        lda Rbuff,x             ; get data byte from buffer
-                sta (ptr),y             ; save to target
+CopyBlk3        lda Rbuff,X             ; get data byte from buffer
+                sta (ptr),Y             ; save to target
                 inc ptr                 ; point to next address
                 bne CopyBlk4            ; did it step over page boundary?
                 inc ptr+1               ; adjust high address for page crossing
@@ -305,7 +298,7 @@ IncBlk          inc blkno               ; done.  Inc the block #
 RDone           lda #ACK                ; last block, send ACK and exit.
                 jsr Put_Chr
                 jsr Flush               ; get leftover characters, if any
-                jmp Print_Good
+                jmp Exit_Good
 
 ;  I/O Device Specific Routines
 
@@ -353,35 +346,18 @@ Put_Chr1        lda        ACIA_Status       ; serial port status
                 rts                          ; done
 ; subroutines
 
-msgout      pla                     ; get calling addr in temp
-            sta mod_msgout
-            pla
-            sta mod_msgout+1
--           inc mod_msgout
-            bne +
-            inc mod_msgout+1
-+           lda $1234
-mod_msgout = * - 2
-            beq _exit
-            jsr cout
-            jmp -
-_exit       lda mod_msgout+1              ; temp points on next instr
-            pha
-            lda mod_msgout
-            pha
-            rts                     ; use TEMP as return addr
-
 printstr
-            sty printstr_mod
-            sta printstr_mod+1
-            ldy #0
--           lda $1234,y
+                sty printstr_mod
+                sta printstr_mod+1
+                ldy #0
+-               lda mod,Y
 printstr_mod = * - 2
-            beq +                ; return if 0 = end of string
-            jsr cout
-            iny
-            jmp -
-+           rts
+                beq +                ; return if 0 = end of string
+                jsr cout
+                iny
+                jmp -
++               jsr crout
+                rts
 
 GetByte         lda #$00             ; wait for chr input and cycle timing loop
                 sta retry            ; set low value of timing loop
@@ -402,24 +378,27 @@ Flush1          jsr GetByte          ; read the port
                 bcs Flush            ; if chr recvd, wait for another
                 rts                  ; else done
 
-Print_Err       print ErrMsg
-                .enc "apple"
-ErrMsg          .null "TRANSFER ERROR!\n"
+Exit_Err       print ErrMsg
+                rts
 
-Print_Good      
+Exit_Good      
 -               lda #EOT
                 jsr Put_Chr
                 print GoodMsg
-GoodMsg         .null "TRANSFER SUCCESSFUL!\n"
-
-eotmsg          .byte EOT,CR,LF,EOT,CR,LF,EOT,CR,LF,CR,LF
+                rts
+                .enc "apple"
+GoodMsg         .null "TRANSFER SUCCESSFUL!"
+ErrMsg          .null "TRANSFER ERROR!"
+SendMsg         .null "SEND"
+RecvMsg         .null "RECV"
+                .enc "none"
 
 ;  CRC subroutines
 CalcCRC         lda #$00             ; yes, calculate the CRC for the 128 bytes
                 sta crc
                 sta crch
                 ldy #$02
-CalcCRC1        lda Rbuff,y
+CalcCRC1        lda Rbuff,Y
                 eor crc+1            ; Quick CRC computation with lookup tables
                 tax                  ; updates the two bytes at crc & crc+1
                 lda crc              ; with the byte send in the "A" register
