@@ -93,7 +93,6 @@ print           .macro
                 jsr printstr
                 .endm
 
-
 ; Xmodem/CRC transfer routines
 ; By Daryl Rictor, August 8, 2002
 
@@ -136,12 +135,12 @@ SetstAddr
                 sta Rbuff+2             ; into 3rd byte
                 lda ptrh                ; load hi byte of start address
                 sta Rbuff+3             ; into 4th byte
-                jmp Ldbuff1             ; jump into buffer load routine
+                jmp Ldbuff              ; jump into buffer load routine
 
 LdBuffer        lda Lastblk             ; Was the last block sent?
-                beq LdBuff0             ; no, send the next one
+                beq +             ; no, send the next one
                 jmp Exit_Good          ; yes, we're done
-LdBuff0         ldx #$02                ; init pointers
++               ldx #$02                ; init pointers
                 ldy #$00
                 inc Blkno               ; inc block counter
                 lda Blkno               ;
@@ -149,29 +148,28 @@ LdBuff0         ldx #$02                ; init pointers
                 eor #$FF                ;
                 sta Rbuff+1             ; save 1's comp of blkno next
 
-LdBuff1         lda (ptr),Y             ; save 128 bytes of data
+LdBuff          lda (ptr),Y             ; save 128 bytes of data
                 sta Rbuff,X
-LdBuff2         sec
+                sec
                 lda eofp
                 sbc ptr                 ; Are we at the last address?
-                bne LdBuff4             ; no, inc pointer and continue
+                bne +                   ; no, inc pointer and continue
                 lda eofph
                 sbc ptrh
-                bne LdBuff4             ;
+                bne +                   ;
                 inc LastBlk             ; Yes, Set last byte flag
-LdBuff3         inx
+-               inx
                 cpx #$82                ; Are we at the end of the 128 byte block?
                 beq SCalcCRC            ; Yes, calc CRC
                 lda #$00                ; Fill rest of 128 bytes with $00
                 sta Rbuff,X
-                beq LdBuff3             ; Branch always
-
-LdBuff4         inc ptr                 ; Inc address pointer
-                bne LdBuff5
+                beq -                   ; Branch always
++               inc ptr                 ; Inc address pointer
+                bne +
                 inc ptrh
-LdBuff5         inx
++               inx
                 cpx #$82                ; last byte in block?
-                bne LdBuff1             ; no, get the next
+                bne LdBuff              ; no, get the next
 SCalcCRC        jsr CalcCRC
                 lda crch                ; save Hi byte of CRC to buffer
                 sta Rbuff,Y
@@ -227,36 +225,36 @@ StartBlk        lda #$FF                ;
                 jsr GetByte             ; get first byte of block
                 bcc StartBlk            ; timed out, keep waiting...
 GotByte         cmp #SOH                ; start of block?
-                beq BegBlk              ; yes
+                beq +                   ; yes
                 cmp #EOT
                 bne BadCrc              ; Not SOH or EOT, so flush buffer & send NAK
                 jmp RDone               ; EOT - all done!
-BegBlk          ldx #$00
++               ldx #$00
 GetBlk          lda #$ff                ; 3 sec window to receive characters
-                sta  retry2
-GetBlk1         jsr GetByte             ; get next character
+                sta retry2
+                jsr GetByte             ; get next character
                 bcc BadCrc              ; chr rcv error, flush and send NAK
-GetBlk2         sta Rbuff,X             ; good char, save it in the rcv buffer
+                sta Rbuff,X             ; good char, save it in the rcv buffer
                 inx                     ; inc buffer pointer
                 cpx #$84                ; <01> <FE> <128 bytes> <CRCH> <CRCL>
                 bne GetBlk              ; get 132 characters
                 ldx #$00
                 lda Rbuff,X             ; get block # from buffer
                 cmp blkno               ; compare to expected block #
-                beq GoodBlk1            ; matched!
-                jsr Exit_Err           ; Unexpected block number - abort
+                beq +                   ; matched!
+                jsr Exit_Err            ; Unexpected block number - abort
                 jsr Flush               ; mismatched - flush buffer and then do BRK
-;               lda #$FD                ; put error code in "A" if desired
+                lda #$FD                ; put error code in "A" if desired
                 brk                     ; unexpected block # - fatal error - BRK or RTS
-GoodBlk1        eor #$ff                ; 1's comp of block #
++               eor #$ff                ; 1's comp of block #
                 inx
                 cmp Rbuff,X             ; compare with expected 1's comp of block #
-                beq GoodBlk2            ; matched!
-                jsr Exit_Err           ; Unexpected block number - abort
+                beq +                   ; matched!
+                jsr Exit_Err            ; Unexpected block number - abort
                 jsr Flush               ; mismatched - flush buffer and then do BRK
-;               lda #$FC                ; put error code in "A" if desired
+                lda #$FC                ; put error code in "A" if desired
                 brk                     ; bad 1's comp of block#
-GoodBlk2        jsr CalcCRC             ; calc CRC
++               jsr CalcCRC             ; calc CRC
                 lda Rbuff,Y             ; get hi CRC from buffer
                 cmp crch                ; compare to calculated hi CRC
                 bne BadCrc              ; bad crc, send NAK
@@ -282,15 +280,15 @@ GoodCrc         ldx #$02
                 inx                     ; point to first byte of data
                 dec bflag               ; set the flag so we won't get another address
 CopyBlk         ldy #$00                ; set offset to zero
-CopyBlk3        lda Rbuff,X             ; get data byte from buffer
+-               lda Rbuff,X             ; get data byte from buffer
                 sta (ptr),Y             ; save to target
                 inc ptr                 ; point to next address
-                bne CopyBlk4            ; did it step over page boundary?
+                bne +                   ; did it step over page boundary?
                 inc ptr+1               ; adjust high address for page crossing
-CopyBlk4        inx                     ; point to next data byte
++               inx                     ; point to next data byte
                 cpx #$82                ; is it the last byte
-                bne CopyBlk3            ; no, get the next one
-IncBlk          inc blkno               ; done.  Inc the block #
+                bne -                   ; no, get the next one
+                inc blkno               ; done.  Inc the block #
                 lda #ACK                ; send ACK
                 jsr Put_Chr
                 jmp StartBlk            ; get next block
@@ -332,19 +330,37 @@ ACIA_Init       lda        #$1F              ; 19.2K/8/1
 Get_Chr         clc                          ; no chr present
                 lda        ACIA_Status       ; get Serial port status
                 and        #$08              ; mask rcvr full bit
-                beq        Get_Chr2          ; if not chr, done
+                beq        +                 ; if not chr, done
                 lda        ACIA_Data         ; else get chr
                 sec                          ; and set the Carry Flag
-Get_Chr2        rts                          ; done
++               rts                          ; done
                                              ; output to OutPut Port
 Put_Chr         pha                          ; save registers
-Put_Chr1        lda        ACIA_Status       ; serial port status
+-               lda        ACIA_Status       ; serial port status
                 and        #$10              ; is tx buffer empty
-                beq        Put_Chr1          ; no, go back and test it again
+                beq        -                 ; no, go back and test it again
                 pla                          ; yes, get chr to send
                 sta        ACIA_Data         ; put character to Port
                 rts                          ; done
+
 ; subroutines
+
+GetByte         lda #$00             ; wait for chr input and cycle timing loop
+                sta retry            ; set low value of timing loop
+-               jsr Get_chr          ; get chr from serial port, don't wait
+                bcs +                ; got one, so exit
+                dec retry            ; no character received, so dec counter
+                bne -
+                dec retry2           ; dec hi byte of counter
+                bne -
+                clc                  ; if loop times out, CLC, else SEC and return
++               rts                  ; with character in A
+
+Flush           lda #$70             ; flush receive buffer
+                sta retry2           ; flush until empty for ~1 sec.
+                jsr GetByte          ; read the port
+                bcs Flush            ; if chr recvd, wait for another
+                rts                  ; else done
 
 printstr
                 sty printstr_mod
@@ -359,24 +375,6 @@ printstr_mod = * - 2
 +               jsr crout
                 rts
 
-GetByte         lda #$00             ; wait for chr input and cycle timing loop
-                sta retry            ; set low value of timing loop
-StartCrcLp      
-                jsr Get_chr          ; get chr from serial port, don't wait
-                bcs GetByte1         ; got one, so exit
-                dec retry            ; no character received, so dec counter
-                bne StartCrcLp
-                dec retry2           ; dec hi byte of counter
-                bne StartCrcLp       ; look for character again
-                clc                  ; if loop times out, CLC, else SEC and return
-GetByte1        
-                rts                  ; with character in A
-
-Flush           lda #$70             ; flush receive buffer
-                sta retry2           ; flush until empty for ~1 sec.
-Flush1          jsr GetByte          ; read the port
-                bcs Flush            ; if chr recvd, wait for another
-                rts                  ; else done
 
 Exit_Err       print ErrMsg
                 rts
