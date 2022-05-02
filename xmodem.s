@@ -74,20 +74,6 @@ Rbuff   =        $8f00              ; temp 132 byte receive buffer
 
 cout = $fded
 
-;  tables and constants
-
-
-; The crclo & crchi labels are used to point to a lookup table to calculate
-; the CRC for the 128 byte data blocks.  There are two implementations of these
-; tables.  One is to use the tables included (defined towards the end of this
-; file) and the other is to build them at run-time.  If building at run-time,
-; then these two labels will need to be un-commented and declared in RAM.
-
-;crclo                =        $7D00              ; Two 256-byte tables for quick lookup
-;crchi                =        $7E00              ; (should be page-aligned for speed)
-
-
-
 ; XMODEM Control Character Constants
 SOH = $01                ; start block
 EOT = $04                ; end of text marker
@@ -445,45 +431,6 @@ CalcCRC1        lda Rbuff,y
                 cpy #$82             ; done yet?
                 bne CalcCRC1         ; no, get next
                 rts                  ; y=82 on exit
-
-; Alternate solution is to build the two lookup tables at run-time.  This might
-; be desirable if the program is running from ram to reduce binary upload time.
-; The following code generates the data for the lookup tables.  You would need to
-; un-comment the variable declarations for crclo & crchi in the Tables and Constants
-; section above and call this routine to build the tables before calling the
-; "xmodem" routine.
-
-;MAKECRCTABLE
-;                ldx #$00
-;                lda #$00
-;zeroloop        sta crclo,x
-;                sta crchi,x
-;                inx
-;                bne zeroloop
-;                ldx #$00
-;fetch           txa
-;                eor crchi,x
-;                sta crchi,x
-;                ldy #$08
-;fetch1          asl crclo,x
-;                rol crchi,x
-;                bcc fetch2
-;                lda crchi,x
-;                eor #$10
-;                sta crchi,x
-;                lda crclo,x
-;                eor #$21
-;                sta crclo,x
-;fetch2          dey
-;                bne fetch1
-;                inx
-;                bne fetch
-;                rts
-
-; The following tables are used to calculate the CRC for the 128 bytes
-; in the xmodem data blocks.  You can use these tables if you plan to
-; store this program in ROM.  If you choose to build them at run-time,
-; then just delete them and define the two labels: crclo & crchi.
 
 ; low byte CRC lookup table (should be page aligned)
 .align $100
