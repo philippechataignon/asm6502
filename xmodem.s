@@ -159,7 +159,7 @@ LdBuff          lda (ptr),Y             ; save 128 bytes of data
                 bne +                   ;
                 inc LastBlk             ; Yes, Set last byte flag
 -               inx
-                cpx #$82                ; Are we at the end of the 128 byte block?
+                cpx #130                ; Are we at the end of the 128 byte block?
                 beq SCalcCRC            ; Yes, calc CRC
                 lda #$00                ; Fill rest of 128 bytes with $00
                 sta Rbuff,X
@@ -168,7 +168,7 @@ LdBuff          lda (ptr),Y             ; save 128 bytes of data
                 bne +
                 inc ptrh
 +               inx
-                cpx #$82                ; last byte in block?
+                cpx #130                ; last byte in block?
                 bne LdBuff              ; no, get the next
 SCalcCRC        jsr CalcCRC
                 lda crch                ; save Hi byte of CRC to buffer
@@ -182,7 +182,7 @@ Resend          ldx #$00
 SendBlk         lda Rbuff,X             ; Send 132 bytes in buffer to the console
                 jsr Put_chr
                 inx
-                cpx #$84                ; last byte?
+                cpx #132                ; last byte?
                 bne SendBlk             ; no, get next
                 lda #$FF                ; yes, set 3 second delay
                 sta retry2              ; and
@@ -206,7 +206,7 @@ XModemRcv
                 jsr ACIA_Init
                 jsr Flush
                 print RecvMsg
-                lda #$01
+                lda #1
                 sta blkno               ; set block # to 1
                 sta bflag               ; set flag to get address from block 1
 StartCrc        lda #"C"                ; "C" start with CRC mode
@@ -236,7 +236,7 @@ GetBlk          lda #$ff                ; 3 sec window to receive characters
                 bcc BadCrc              ; chr rcv error, flush and send NAK
                 sta Rbuff,X             ; good char, save it in the rcv buffer
                 inx                     ; inc buffer pointer
-                cpx #$84                ; <01> <FE> <128 bytes> <CRCH> <CRCL>
+                cpx #132                ; <01> <FE> <128 bytes> <CRCH> <CRCL>
                 bne GetBlk              ; get 132 characters
                 ldx #$00
                 lda Rbuff,X             ; get block # from buffer
@@ -244,7 +244,7 @@ GetBlk          lda #$ff                ; 3 sec window to receive characters
                 beq +                   ; matched!
                 jsr Exit_Err            ; Unexpected block number - abort
                 jsr Flush               ; mismatched - flush buffer and then do BRK
-                lda #$FD                ; put error code in "A" if desired
+                lda #-3                 ; put error code in "A" if desired
                 brk                     ; unexpected block # - fatal error - BRK or RTS
 +               eor #$ff                ; 1's comp of block #
                 inx
@@ -252,7 +252,7 @@ GetBlk          lda #$ff                ; 3 sec window to receive characters
                 beq +                   ; matched!
                 jsr Exit_Err            ; Unexpected block number - abort
                 jsr Flush               ; mismatched - flush buffer and then do BRK
-                lda #$FC                ; put error code in "A" if desired
+;               lda #$-4                ; put error code in "A" if desired
                 brk                     ; bad 1's comp of block#
 +               jsr CalcCRC             ; calc CRC
                 lda Rbuff,Y             ; get hi CRC from buffer
@@ -286,7 +286,7 @@ CopyBlk         ldy #$00                ; set offset to zero
                 bne +                   ; did it step over page boundary?
                 inc ptr+1               ; adjust high address for page crossing
 +               inx                     ; point to next data byte
-                cpx #$82                ; is it the last byte
+                cpx #130                ; is it the last byte
                 bne -                   ; no, get the next one
                 inc blkno               ; done.  Inc the block #
                 lda #ACK                ; send ACK
@@ -329,7 +329,7 @@ ACIA_Init       lda        #$1F              ; 19.2K/8/1
                                              ; input chr from ACIA (no waiting)
 Get_Chr         clc                          ; no chr present
                 lda        ACIA_Status       ; get Serial port status
-                and        #$08              ; mask rcvr full bit
+                and        #%00001000              ; mask rcvr full bit
                 beq        +                 ; if not chr, done
                 lda        ACIA_Data         ; else get chr
                 sec                          ; and set the Carry Flag
@@ -337,13 +337,11 @@ Get_Chr         clc                          ; no chr present
                                              ; output to OutPut Port
 Put_Chr         pha                          ; save registers
 -               lda        ACIA_Status       ; serial port status
-                and        #$10              ; is tx buffer empty
+                and        #%00010000              ; is tx buffer empty
                 beq        -                 ; no, go back and test it again
                 pla                          ; yes, get chr to send
                 sta        ACIA_Data         ; put character to Port
                 rts                          ; done
-
-; subroutines
 
 GetByte         lda #$00             ; wait for chr input and cycle timing loop
                 sta retry            ; set low value of timing loop
@@ -405,7 +403,7 @@ CalcCRC1        lda Rbuff,Y
                 lda CRCLO,X
                 sta crc
                 iny
-                cpy #$82             ; done yet?
+                cpy #130             ; done yet?
                 bne CalcCRC1         ; no, get next
                 rts                  ; y=82 on exit
 
