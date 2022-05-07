@@ -110,6 +110,8 @@ print           .macro
 XModemRcv       jsr ACIA_Init
                 jsr Flush
                 print RecvMsg
+                lda #0
+                sta chksum
                 lda #1
                 sta blkno               ; set block # to 1
 -               lda #NAK                ; NAK start with chksum mode
