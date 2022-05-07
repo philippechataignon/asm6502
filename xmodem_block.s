@@ -47,8 +47,7 @@
 lastblk = $06                ; flag for last block
 blkno   = $07                ; block number
 errcnt  = $08                ; error counter 10 is the limit
-
-chksum     = $19                ; chksum lo byte  (two byte variable)
+chksum  = $19                ; chksum
 
 ptr     = $fa                ; data pointer (two byte variable)
 ptrh    = $fb
@@ -59,12 +58,10 @@ eofph   = $fd
 retry   = $ce                ; retry counter
 retry2  = $cf                ; 2nd counter
 
-;temp    = $e3
-
 ; non-zero page variables and buffers
 
-Rbuff   =        $8f00              ; temp 132 byte receive buffer
-mod = $1200                         ; fake automodified address
+Rbuff   = $240               ; 128 bytes buffer
+automod = $1200              ; fake automodified address
 
 ; monitor
 
@@ -76,10 +73,6 @@ SOH = $01                ; start block
 EOT = $04                ; end of text marker
 ACK = $06                ; good block acknowledged
 NAK = $15                ; bad block acknowledged
-CAN = $18                ; cancel (not standard, not supported)
-CR  = $0d                ; carriage return
-LF  = $0a                ; line feed
-ESC = $1b                ; ESC to exit
 
 ; ACIA variables
 slot = 3
@@ -244,7 +237,7 @@ printstr
                 sty printstr_mod
                 sta printstr_mod+1
                 ldy #0
--               lda mod,Y
+-               lda automod,Y
 printstr_mod = * - 2
                 beq +                ; return if 0 = end of string
                 jsr cout
