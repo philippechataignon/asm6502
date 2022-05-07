@@ -111,107 +111,119 @@ print           .macro
 
 .enc "none"
 
-XModemSend      jsr ACIA_Init
--               jsr GetByte             ; flush the port
-                bcs -                   ; if chr recvd, wait for another
-                print SendMsg
-                lda #0
-                sta errcnt              ; error counter set to 0
-                sta lastblk             ; set flag to false
+XModemRcv       jsr ACIA_Init
+                jsr Flush
+                print RecvMsg
+                lda #1
                 sta blkno               ; set block # to 1
-                ldy #0                  ; init data block offset to 0
--               lda #$ff                ; 3 seconds
-                sta retry2
-                jsr GetByte
-                bcc -                   ; wait for something to come in...
-                cmp #NAK                ; is it the NAK to start a chksum xfer?
-                bne PrtAbort            ; not "C", print abort msg and exit
+StartCrc        lda #NAK                ; NAK start with chksum mode
+                jsr Put_Chr             ; send it
+                lda #0
+                sta chksum
+                jsr GetByte3s           ; wait for input
+                bcs GotByte             ; byte received, process it
+                bcc StartCrc            ; resend NAK
 
-LdBuffer                                ; start block
-                ldx #0                  ; init pointers
-                stx chksum
-                ldy #0                  ; Y always = 0
-                inc blkno               ; inc block counter
-
-LdBuff          lda (ptr),Y             ; save 128 bytes of data
-                sta Rbuff,X
-                clc
-                adc chksum
-                lda eofp
-                cmp ptr                 ; Are we at the last address?
-                bne +                   ; no, inc pointer and continue
-                lda eofph
-                cmp ptrh
-                bne +                   ; No last byte, continue
-                inc lastblk             ; Yes, Set last byte flag
--               inx
-                cpx #128                ; Are we at the end of the 128 byte block?
-                beq SendBlock           ; Yes, send the block 
-                lda #0                  ; Fill rest of 128 bytes with $00
-                sta Rbuff,X
-                beq -                   ; Branch always
-+               inc ptr                 ; Inc address pointer
-                bne +
-                inc ptrh
-+               inx
-                cpx #128                ; last byte in block?
-                bne LdBuff              ; no, get the next
-
-       
-SendBlock       ldx #0
-                lda #SOH
-                jsr Put_chr             ; send SOH = start of header
-                lda blkno
-                jsr Put_chr             ; send block number
-                eor #$FF
-                jsr Put_chr             ; send block number 1's complement
--               lda Rbuff,X             ; Send 128 bytes in buffer to the console
-                jsr Put_chr
+StartBlk        jsr GetByte3s           ; get first byte of block
+                bcc StartBlk            ; timed out, keep waiting...
+GotByte         cmp #SOH                ; start of block?
+                beq +                   ; yes
+                cmp #EOT
+                bne BadChksum           ; Not SOH or EOT, so flush buffer & send NAK
+                jmp RDone               ; EOT - all done!
++               ldx #0
+GetBlk          jsr GetByte3s           ; get next character
+                bcc BadChksum           ; chr rcv error, flush and send NAK
+                sta Rbuff,X             ; good char, save it in the rcv buffer
+                inx                     ; inc buffer pointer
+                cpx #131                ; <no> <-no> <128 bytes> <chksum>
+                bne GetBlk              ; get 131 characters
+                ldx #0
+                lda Rbuff,X             ; get block # from buffer
+                cmp blkno               ; compare to expected block #
+                beq +                   ; matched!
+                jsr Exit_Err            ; Unexpected block number - abort
+                jsr Flush               ; mismatched - flush buffer and then do BRK
+                lda #-3                 ; put error code in "A"
+                brk                     ; err -3 = unexpected block # - fatal error - BRK or RTS
++               eor #$ff                ; 1's comp of block #
                 inx
-                cpx #128                ; last byte?
-                bne -                   ; no, get next
-                lda chksum
-                jsr Put_chr             ; send chksum 
+                cmp Rbuff,X             ; compare with expected 1's comp of block #
+                beq +                   ; matched!
+                jsr Exit_Err            ; Unexpected block number - abort
+                jsr Flush               ; mismatched - flush buffer and then do BRK
+                lda #-4                 ; put error code in "A"
+                brk                     ; err -4 = bad 1's comp of block#
++               lda Rbuff,Y             ; get hi chksum from buffer
+                cmp chksum              ; compare to calculated checksum
+                beq GoodCrc             ; good chksum
+BadChksum       jsr Flush               ; flush the input port
+                lda #NAK
+                jsr Put_Chr             ; send NAK to resend block
+                jmp StartBlk            ; start over, get the block again
+GoodCrc         ldx #$02
+                lda blkno               ; get the block number
+CopyBlk         ldy #$00                ; set offset to zero
+-               lda Rbuff,X             ; get data byte from buffer
+                sta (ptr),Y             ; save to target
+                inc ptr                 ; point to next address
+                bne +                   ; did it step over page boundary?
+                inc ptr+1               ; adjust high address for page crossing
++               inx                     ; point to next data byte
+                cpx #130                ; is it the last byte
+                bne -                   ; no, get the next one
+                inc blkno               ; done.  Inc the block #
+                lda #ACK                ; send ACK
+                jsr Put_Chr
+                jmp StartBlk            ; get next block
 
-                lda #$FF                ; yes, set 3 second delay
-                sta retry2              ; and
-                jsr GetByte             ; Wait for Ack/Nack
-                bcc Seterror            ; No chr received after 3 seconds, resend
-                cmp #ACK                ; Chr received... is it:
-                bne SetError            ; No ACK => error 
-                                        ; ACK, send next bloc
-                lda lastblk             ; Was the last block sent?
-                bne LdBuffer            ; no, send the next one
-                jmp Exit_Good           ; yes, we're done
-Seterror        inc errcnt              ; Inc error counter
-                lda errcnt              ;
-                cmp #10                 ; are there 10 errors? (Xmodem spec for failure)
-                bne SendBlock           ; no, resend block
-PrtAbort        jsr Flush               ; yes, too many errors, flush buffer,
-                jmp Exit_Err            ; print error msg and exit
+RDone           lda #ACK                ; last block, send ACK and exit.
+                jsr Put_Chr
+                jsr Flush               ; get leftover characters, if any
+                jmp Exit_Good
 
-ACIA_Init       lda #$1F              ; 19.2K/8/1
-                sta ACIA_Control      ; control reg
-                lda #$0B              ; N parity/echo off/rx int off/ dtr active low
-                sta ACIA_Command      ; command reg
-                rts                   ; done
-                                      ; input chr from ACIA (no waiting)
-Get_Chr         clc                   ; no chr present
-                lda ACIA_Status       ; get Serial port status
-                and #%00001000              ; mask rcvr full bit
-                beq +                 ; if not chr, done
-                lda ACIA_Data         ; else get chr
-                sec                   ; and set the Carry Flag
-+               rts                   ; done
-                                      ; output to OutPut Port
-Put_Chr         pha                   ; save registers
--               lda ACIA_Status       ; serial port status
-                and #%00010000              ; is tx buffer empty
-                beq -                 ; no, go back and test it again
-                pla                   ; yes, get chr to send
-                sta ACIA_Data         ; put character to Port
-                rts                   ; done
+;  I/O Device Specific Routines
 
+;  Two routines are used to communicate with the I/O device.
+
+; "Get_Chr" routine will scan the input port for a character.  It will
+; return without waiting with the Carry flag CLEAR if no character is
+; present or return with the Carry flag SET and the character in the "A"
+; register if one was present.
+
+; "Put_Chr" routine will write one byte to the output port.  Its alright
+; if this routine waits for the port to be ready.  its assumed that the
+; character was send upon return from this routine.
+
+; Here is an example of the routines used for a standard 6551 ACIA.
+; You would call the ACIA_Init prior to running the xmodem transfer
+; routine.
+
+
+ACIA_Init       lda        #$1F              ; 19.2K/8/1
+                sta        ACIA_Control      ; control reg
+                lda        #$0B              ; N parity/echo off/rx int off/ dtr active low
+                sta        ACIA_Command      ; command reg
+                rts                          ; done
+                                             ; input chr from ACIA (no waiting)
+Get_Chr         clc                          ; no chr present
+                lda        ACIA_Status       ; get Serial port status
+                and        #%00001000              ; mask rcvr full bit
+                beq        +                 ; if not chr, done
+                lda        ACIA_Data         ; else get chr
+                sec                          ; and set the Carry Flag
++               rts                          ; done
+                                             ; output to OutPut Port
+Put_Chr         pha                          ; save registers
+-               lda        ACIA_Status       ; serial port status
+                and        #%00010000              ; is tx buffer empty
+                beq        -                 ; no, go back and test it again
+                pla                          ; yes, get chr to send
+                sta        ACIA_Data         ; put character to Port
+                rts                          ; done
+
+GetByte3s       lda #$ff             ; wait 3s
+                sta retry2
 GetByte         lda #$00             ; wait for chr input and cycle timing loop
                 sta retry            ; set low value of timing loop
 -               jsr Get_chr          ; get chr from serial port, don't wait
@@ -252,7 +264,8 @@ printstr_mod = * - 2
                 jmp -
 +               jsr crout
                 rts
+
                 .enc "apple"
 GoodMsg         .null "TRANSFER SUCCESSFUL!"
 ErrMsg          .null "TRANSFER ERROR!"
-SendMsg         .null "XMODEM SEND"
+RecvMsg         .null "XMODEM RECV"
