@@ -8,7 +8,7 @@ end = $FC
         lda start+1
         sta mod+1
 
-loop    lda $3412
+loop    lda $1234
 mod =   * - 2
         inc mod
         bne +
