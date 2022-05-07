@@ -48,7 +48,7 @@ lastblk = $06                ; flag for last block
 blkno   = $07                ; block number
 errcnt  = $08                ; error counter 10 is the limit
 
-chksum     = $19                ; chksum lo byte  (two byte variable)
+chksum  = $19                ; chksum lo byte  (two byte variable)
 
 ptr     = $fa                ; data pointer (two byte variable)
 ptrh    = $fb
@@ -59,12 +59,12 @@ eofph   = $fd
 retry   = $ce                ; retry counter
 retry2  = $cf                ; 2nd counter
 
-;temp    = $e3
+temp = $e3
 
 ; non-zero page variables and buffers
 
-Rbuff   =        $8f00              ; temp 132 byte receive buffer
-mod = $1200                         ; fake automodified address
+Rbuff = $240                 ; 128 bytes receive buffer
+mod = $1200                  ; fake automodified address
 
 ; monitor
 
@@ -76,13 +76,9 @@ SOH = $01                ; start block
 EOT = $04                ; end of text marker
 ACK = $06                ; good block acknowledged
 NAK = $15                ; bad block acknowledged
-CAN = $18                ; cancel (not standard, not supported)
-CR  = $0d                ; carriage return
-LF  = $0a                ; line feed
-ESC = $1b                ; ESC to exit
 
 ; ACIA variables
-slot = 3
+slot = $3
 ACIA_Data    = $c088 + slot * $10
 ACIA_Status  = $c089 + slot * $10
 ACIA_Command = $c08a + slot * $10
@@ -116,61 +112,62 @@ XModemRcv       jsr ACIA_Init
                 print RecvMsg
                 lda #1
                 sta blkno               ; set block # to 1
-StartCrc        lda #NAK                ; NAK start with chksum mode
+-               lda #NAK                ; NAK start with chksum mode
                 jsr Put_Chr             ; send it
-                lda #0
-                sta chksum
                 jsr GetByte3s           ; wait for input
                 bcs GotByte             ; byte received, process it
-                bcc StartCrc            ; resend NAK
+                bcc -                   ; resend NAK
 
-StartBlk        jsr GetByte3s           ; get first byte of block
-                bcc StartBlk            ; timed out, keep waiting...
+StartBlk        lda #0
+                sta chksum
+-               jsr GetByte3s           ; get first byte of block
+                bcc -                   ; timed out, keep waiting...
 GotByte         cmp #SOH                ; start of block?
-                beq +                   ; yes
+                beq GetBlk              ; yes
                 cmp #EOT
-                bne BadChksum           ; Not SOH or EOT, so flush buffer & send NAK
+                bne BadRecv             ; Not SOH or EOT, so flush buffer & send NAK
                 jmp RDone               ; EOT - all done!
-+               ldx #0
-GetBlk          jsr GetByte3s           ; get next character
-                bcc BadChksum           ; chr rcv error, flush and send NAK
-                sta Rbuff,X             ; good char, save it in the rcv buffer
-                inx                     ; inc buffer pointer
-                cpx #131                ; <no> <-no> <128 bytes> <chksum>
-                bne GetBlk              ; get 131 characters
-                ldx #0
-                lda Rbuff,X             ; get block # from buffer
+
+GetBlk          lda blkno
+                eor #$ff
+                sta temp                ; store expected blkno 1's compl
+                jsr GetByte3s           ; get blkno
+                bcc BadRecv             ; chr rcv error, flush and send NAK
                 cmp blkno               ; compare to expected block #
                 beq +                   ; matched!
-                jsr Exit_Err            ; Unexpected block number - abort
-                jsr Flush               ; mismatched - flush buffer and then do BRK
-                lda #-3                 ; put error code in "A"
-                brk                     ; err -3 = unexpected block # - fatal error - BRK or RTS
-+               eor #$ff                ; 1's comp of block #
-                inx
-                cmp Rbuff,X             ; compare with expected 1's comp of block #
+                jmp Exit_Err            ; Unexpected block number - abort
++               jsr GetByte3s           ; get blkno 1's compl
+                bcc BadRecv             ; chr rcv error, flush and send NAK
+                cmp temp                ; compare to expected
                 beq +                   ; matched!
-                jsr Exit_Err            ; Unexpected block number - abort
-                jsr Flush               ; mismatched - flush buffer and then do BRK
-                lda #-4                 ; put error code in "A"
-                brk                     ; err -4 = bad 1's comp of block#
-+               lda Rbuff,Y             ; get hi chksum from buffer
+                jmp Exit_Err            ; Unexpected block number - abort
+Recvloop
++               ldx #0                  ; 
+-               jsr GetByte3s           ; get next byte
+                bcc BadRecv             ; chr rcv error, flush and send NAK
+                sta Rbuff,X             ; good char, save it in the rcv buffer
+                clc                     ; update chksum
+                adc chksum              
+                inx                     ; inc buffer pointer
+                cpx #128                ; <no> <-no> <128 bytes> <chksum>
+                bne -                   ; get 128 characters
+                jsr GetByte3s           ; get chksum
+                bcc BadRecv             ; chr rcv error, flush and send NAK
                 cmp chksum              ; compare to calculated checksum
-                beq GoodCrc             ; good chksum
-BadChksum       jsr Flush               ; flush the input port
+                beq GoodChksum          ; good chksum
+BadRecv         jsr Flush               ; flush the input port
                 lda #NAK
                 jsr Put_Chr             ; send NAK to resend block
                 jmp StartBlk            ; start over, get the block again
-GoodCrc         ldx #$02
-                lda blkno               ; get the block number
-CopyBlk         ldy #$00                ; set offset to zero
+GoodChksum      ldx #0
+                ldy #0                  ; set offset to zero
 -               lda Rbuff,X             ; get data byte from buffer
                 sta (ptr),Y             ; save to target
                 inc ptr                 ; point to next address
                 bne +                   ; did it step over page boundary?
                 inc ptr+1               ; adjust high address for page crossing
 +               inx                     ; point to next data byte
-                cpx #130                ; is it the last byte
+                cpx #128                ; is it the last byte
                 bne -                   ; no, get the next one
                 inc blkno               ; done.  Inc the block #
                 lda #ACK                ; send ACK
@@ -181,24 +178,6 @@ RDone           lda #ACK                ; last block, send ACK and exit.
                 jsr Put_Chr
                 jsr Flush               ; get leftover characters, if any
                 jmp Exit_Good
-
-;  I/O Device Specific Routines
-
-;  Two routines are used to communicate with the I/O device.
-
-; "Get_Chr" routine will scan the input port for a character.  It will
-; return without waiting with the Carry flag CLEAR if no character is
-; present or return with the Carry flag SET and the character in the "A"
-; register if one was present.
-
-; "Put_Chr" routine will write one byte to the output port.  Its alright
-; if this routine waits for the port to be ready.  its assumed that the
-; character was send upon return from this routine.
-
-; Here is an example of the routines used for a standard 6551 ACIA.
-; You would call the ACIA_Init prior to running the xmodem transfer
-; routine.
-
 
 ACIA_Init       lda        #$1F              ; 19.2K/8/1
                 sta        ACIA_Control      ; control reg
