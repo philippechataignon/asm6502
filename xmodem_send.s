@@ -109,16 +109,12 @@ XModemSend      jsr ACIA_Init
                 bcs -                   ; if chr recvd, wait for another
                 print SendMsg
                 lda #0
-                sta errcnt              ; error counter set to 0
                 sta lastblk             ; set flag to false
                 sta blkno               ; set block # to 1
-                ldy #0                  ; init data block offset to 0
--               lda #$ff                ; 3 seconds
-                sta retry2
-                jsr GetByte
+                jsr GetByte3s
                 bcc -                   ; wait for something to come in...
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
-                bne PrtAbort            ; not "C", print abort msg and exit
+                bne PrtAbort            ; not NAK, print abort msg and exit
 
 LdBuffer                                ; start block
                 ldx #0                  ; init pointers
@@ -139,7 +135,7 @@ LdBuff          lda (ptr),Y             ; save 128 bytes of data
                 inc lastblk             ; Yes, Set last byte flag
 -               inx
                 cpx #128                ; Are we at the end of the 128 byte block?
-                beq SendBlock           ; Yes, send the block 
+                beq SendBlock           ; Yes, send the block
                 lda #0                  ; Fill rest of 128 bytes with $00
                 sta Rbuff,X
                 beq -                   ; Branch always
@@ -150,36 +146,33 @@ LdBuff          lda (ptr),Y             ; save 128 bytes of data
                 cpx #128                ; last byte in block?
                 bne LdBuff              ; no, get the next
 
-       
+
+                lda #10                 ; error counter set to
+                sta errcnt              ; 10 max retries
 SendBlock       ldx #0
                 lda #SOH
                 jsr Put_chr             ; send SOH = start of header
-                lda blkno
-                jsr Put_chr             ; send block number
-                eor #$FF
-                jsr Put_chr             ; send block number 1's complement
--               lda Rbuff,X             ; Send 128 bytes in buffer to the console
+                lda blkno               ; send block number
+                jsr Put_chr
+                eor #$FF                ; send block number 1's complement
+                jsr Put_chr
+-               lda Rbuff,X             ; send 128 bytes in buffer
                 jsr Put_chr
                 inx
                 cpx #128                ; last byte?
-                bne -                   ; no, get next
+                blt -                   ; no, get next
                 lda chksum
-                jsr Put_chr             ; send chksum 
-
-                lda #$FF                ; yes, set 3 second delay
-                sta retry2              ; and
-                jsr GetByte             ; Wait for Ack/Nack
+                jsr Put_chr             ; send chksum
+                jsr GetByte3s             ; Wait for Ack/Nack
                 bcc Seterror            ; No chr received after 3 seconds, resend
                 cmp #ACK                ; Chr received... is it:
-                bne SetError            ; No ACK => error 
+                bne SetError            ; No ACK => error
                                         ; ACK, send next bloc
                 lda lastblk             ; Was the last block sent?
                 bne LdBuffer            ; no, send the next one
                 jmp Exit_Good           ; yes, we're done
-Seterror        inc errcnt              ; Inc error counter
-                lda errcnt              ;
-                cmp #10                 ; are there 10 errors? (Xmodem spec for failure)
-                bne SendBlock           ; no, resend block
+Seterror        dec errcnt              ; decr error counter
+                bne SendBlock           ; if not null, resend block
 PrtAbort        jsr Flush               ; yes, too many errors, flush buffer,
                 jmp Exit_Err            ; print error msg and exit
 
@@ -205,6 +198,8 @@ Put_Chr         pha                   ; save registers
                 sta ACIA_Data         ; put character to Port
                 rts                   ; done
 
+GetByte3s       lda #$ff                ; 3 seconds
+                sta retry2
 GetByte         lda #$00             ; wait for chr input and cycle timing loop
                 sta retry            ; set low value of timing loop
 -               jsr Get_chr          ; get chr from serial port, don't wait
@@ -245,6 +240,7 @@ printstr_mod = * - 2
                 jmp -
 +               jsr crout
                 rts
+
                 .enc "apple"
 GoodMsg         .null "TRANSFER SUCCESSFUL!"
 ErrMsg          .null "TRANSFER ERROR!"
