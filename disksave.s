@@ -74,12 +74,6 @@ esc        = $9b        ; ESCAPE KEY
 ack        = $06        ; ACKNOWLEDGE
 nak        = $15        ; NEGATIVE ACKNOWLEDGE
 
-sscslot     = $30               ; slot 3
-sscreg      = $C088+sscslot
-sscstatus   = $C089+sscslot
-ssccommand  = $C08A+sscslot
-ssccontrol  = $C08B+sscslot
-
 ssc.exitkbd = done
 
 .include "apple_enc.inc"
@@ -272,15 +266,16 @@ _L1         lda (prtptr),y       ;
             jmp _L1
 
 send        lda #start_page
-            sta ssc.send1h
+            sta sscsr.send1h
             lda #end_page
-            sta ssc.send2h
+            sta sscsr.send2h
             lda #0
-            sta ssc.send1l
-            sta ssc.send2l
-            jmp ssc.send
+            sta sscsr.send1l
+            sta sscsr.send2l
+            jmp sscsr.send
 
 ssc         .binclude "ssc.s"
+sscsr       .binclude "ssc_sendrec.s"
 
 .if !REAL
 rwts
