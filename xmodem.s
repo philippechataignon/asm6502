@@ -128,7 +128,7 @@ XModemSend      jsr ssc.flush
                 lda #0
                 sta lastblk           ; set flag to false
                 sta blkno             ; set block # to 1
-                jsr ssc.getc3s
+-               jsr ssc.getc3s
                 bcc -                 ; wait for something to come in...
                 cmp #NAK              ; is it the NAK to start a chksum xfer?
                 bne PrtAbort          ; not NAK, print abort msg and exit
