@@ -19,8 +19,6 @@ ptrh    = $fb
 eofp    = $fc                ; end of file address pointer (2 bytes)
 eofph   = $fd
 
-retry   = $ce                ; retry counter
-retry2  = $cf                ; 2nd counter
 
 temp = $e3
 
@@ -38,13 +36,6 @@ EOT = $04                ; end of text marker
 ACK = $06                ; good block acknowledged
 NAK = $15                ; bad block acknowledged
 
-; ACIA variables
-slot = 3
-ACIA_Data    = $c088 + slot * $10
-ACIA_Status  = $c089 + slot * $10
-ACIA_Command = $c08a + slot * $10
-ACIA_Control = $c08b + slot * $10
-
 .include "apple_enc.inc"
 .enc "none"
 
@@ -59,22 +50,22 @@ print           .macro
 
                 jmp XModemSend
 ;;; recv
-XModemRecv      jsr ACIA_Init
-                jsr Flush
+XModemRecv      jsr ssc.init
+                jsr ssc.flush
                 print RecvMsg
                 lda #0                ; init chksum
                 sta chksum
                 lda #1                ; set block # to 1
                 sta blkno
 -               lda #NAK              ; NAK start with chksum mode
-                jsr Put_Chr           ; send it
-                jsr GetByte3s         ; wait for input
+                jsr ssc.putc           ; send it
+                jsr ssc.getc3s         ; wait for input
                 bcs GotByte           ; byte received, process it
                 bcc -                 ; resend NAK
 
 StartBlk        lda #0
                 sta chksum
--               jsr GetByte3s         ; get first byte of block
+-               jsr ssc.getc3s         ; get first byte of block
                 bcc -                 ; timed out, keep waiting...
 GotByte         cmp #SOH              ; start of block?
                 beq GetBlk            ; yes
@@ -85,19 +76,19 @@ GotByte         cmp #SOH              ; start of block?
 GetBlk          lda blkno
                 eor #$ff
                 sta temp              ; store expected blkno 1's compl
-                jsr GetByte3s         ; get blkno
+                jsr ssc.getc3s         ; get blkno
                 bcc BadRecv           ; chr rcv error, flush and send NAK
                 cmp blkno             ; compare to expected block #
                 beq +                 ; matched!
                 jmp Exit_Err          ; Unexpected block number - abort
-+               jsr GetByte3s         ; get blkno 1's compl
++               jsr ssc.getc3s         ; get blkno 1's compl
                 bcc BadRecv           ; chr rcv error, flush and send NAK
                 cmp temp              ; compare to expected
                 beq +                 ; matched!
                 jmp Exit_Err          ; Unexpected block number - abort
 Recvloop
 +               ldx #0                ;
--               jsr GetByte3s         ; get next byte
+-               jsr ssc.getc3s         ; get next byte
                 bcc BadRecv           ; chr rcv error, flush and send NAK
                 sta Rbuff,X           ; good char, save it in the rcv buffer
                 clc                   ; update chksum
@@ -105,13 +96,13 @@ Recvloop
                 inx                   ; inc buffer pointer
                 cpx #128              ; <no> <-no> <128 bytes> <chksum>
                 bne -                 ; get 128 characters
-                jsr GetByte3s         ; get chksum
+                jsr ssc.getc3s         ; get chksum
                 bcc BadRecv           ; chr rcv error, flush and send NAK
                 cmp chksum            ; compare to calculated checksum
                 beq GoodChksum        ; good chksum
-BadRecv         jsr Flush             ; flush the input port
+BadRecv         jsr ssc.flush             ; flush the input port
                 lda #NAK
-                jsr Put_Chr           ; send NAK to resend block
+                jsr ssc.putc           ; send NAK to resend block
                 jmp StartBlk          ; start over, get the block again
 GoodChksum      ldx #0
                 ldy #0                ; set offset to zero
@@ -123,23 +114,21 @@ GoodChksum      ldx #0
                 bne -                 ; no, get the next one
                 inc blkno             ; done.  Inc the block #
                 lda #ACK              ; send ACK
-                jsr Put_Chr
+                jsr ssc.putc
                 jmp StartBlk          ; get next block
 
 RDone           lda #ACK              ; last block, send ACK and exit.
-                jsr Put_Chr
-                jsr Flush             ; get leftover characters, if any
+                jsr ssc.putc
+                jsr ssc.flush             ; get leftover characters, if any
                 jmp Exit_Good
 
 ;;; send
-XModemSend      jsr ACIA_Init
--               jsr GetByte           ; flush the port
-                bcs -                 ; if chr recvd, wait for another
+XModemSend      jsr ssc.flush
                 print SendMsg
                 lda #0
                 sta lastblk           ; set flag to false
                 sta blkno             ; set block # to 1
-                jsr GetByte3s
+                jsr ssc.getc3s
                 bcc -                 ; wait for something to come in...
                 cmp #NAK              ; is it the NAK to start a chksum xfer?
                 bne PrtAbort          ; not NAK, print abort msg and exit
@@ -178,19 +167,19 @@ LdBuff          lda (ptr),Y           ; save 128 bytes of data
                 sta errcnt            ; 10 max retries
 SendBlock       ldx #0
                 lda #SOH
-                jsr Put_chr           ; send SOH = start of header
+                jsr ssc.putc          ; send SOH = start of header
                 lda blkno             ; send block number
-                jsr Put_chr
+                jsr ssc.putc
                 eor #$FF              ; send block number 1's complement
-                jsr Put_chr
+                jsr ssc.putc
 -               lda Rbuff,X           ; send 128 bytes in buffer
-                jsr Put_chr
+                jsr ssc.putc
                 inx
                 cpx #128              ; last byte?
                 blt -                 ; no, get next
                 lda chksum
-                jsr Put_chr           ; send chksum
-                jsr GetByte3s           ; Wait for Ack/Nack
+                jsr ssc.putc           ; send chksum
+                jsr ssc.getc3s           ; Wait for Ack/Nack
                 bcc Seterror          ; No chr received after 3 seconds, resend
                 cmp #ACK              ; Chr received... is it:
                 bne SetError          ; No ACK => error
@@ -200,57 +189,17 @@ SendBlock       ldx #0
                 jmp Exit_Good         ; yes, we're done
 Seterror        dec errcnt            ; decr error counter
                 bne SendBlock         ; if not null, resend block
-PrtAbort        jsr Flush             ; yes, too many errors, flush buffer,
+PrtAbort        jsr ssc.flush             ; yes, too many errors, flush buffer,
                 jmp Exit_Err          ; print error msg and exit
 
-; SSC routines
-ACIA_Init       lda #$1F              ; 19.2K/8/1
-                sta ACIA_Control      ; control reg
-                lda #$0B              ; N parity/echo off/rx int off/ dtr active low
-                sta ACIA_Command      ; command reg
-                rts                   ; done
-                                      ; input chr from ACIA (no waiting)
-Get_Chr         clc                   ; no chr present
-                lda ACIA_Status       ; get Serial port status
-                and #%00001000        ; mask rcvr full bit
-                beq +                 ; if not chr, done
-                lda ACIA_Data         ; else get chr
-                sec                   ; and set the Carry Flag
-+               rts                   ; done
-                                      ; output to OutPut Port
-Put_Chr         pha                   ; save registers
--               lda ACIA_Status       ; serial port status
-                and #%00010000              ; is tx buffer empty
-                beq -                 ; no, go back and test it again
-                pla                   ; yes, get chr to send
-                sta ACIA_Data         ; put character to Port
-                rts                   ; done
-
-GetByte3s       lda #$ff              ; 3 seconds
-                sta retry2
-GetByte         lda #$00              ; wait for chr input and cycle timing loop
-                sta retry             ; set low value of timing loop
--               jsr Get_chr           ; get chr from serial port, don't wait
-                bcs +                 ; got one, so exit
-                dec retry             ; no character received, so dec counter
-                bne -
-                dec retry2            ; dec hi byte of counter
-                bne -
-                clc                   ; if loop times out, CLC, else SEC and return
-+               rts                   ; with character in A
-
-Flush           lda #$ff/3            ; flush receive buffer
-                sta retry2            ; flush until empty for ~1 sec.
-                jsr GetByte           ; read the port
-                bcs Flush             ; if chr recvd, wait for another
-                rts                   ; else done
+ssc             .binclude "ssc.s"
 
 ; exits
 Exit_Err        print ErrMsg
                 rts
 
 Exit_Good       lda #EOT
-                jsr Put_Chr
+                jsr ssc.putc
                 print GoodMsg
                 rts
 
