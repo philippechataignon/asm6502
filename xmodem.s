@@ -65,7 +65,7 @@ XModemRecv      jsr ACIA_Init
                 lda #0                ; init chksum
                 sta chksum
                 lda #1                ; set block # to 1
-                sta blkno             
+                sta blkno
 -               lda #NAK              ; NAK start with chksum mode
                 jsr Put_Chr           ; send it
                 jsr GetByte3s         ; wait for input
@@ -96,12 +96,12 @@ GetBlk          lda blkno
                 beq +                 ; matched!
                 jmp Exit_Err          ; Unexpected block number - abort
 Recvloop
-+               ldx #0                ; 
++               ldx #0                ;
 -               jsr GetByte3s         ; get next byte
                 bcc BadRecv           ; chr rcv error, flush and send NAK
                 sta Rbuff,X           ; good char, save it in the rcv buffer
                 clc                   ; update chksum
-                adc chksum            
+                adc chksum
                 inx                   ; inc buffer pointer
                 cpx #128              ; <no> <-no> <128 bytes> <chksum>
                 bne -                 ; get 128 characters
@@ -117,10 +117,8 @@ GoodChksum      ldx #0
                 ldy #0                ; set offset to zero
 -               lda Rbuff,X           ; get data byte from buffer
                 sta (ptr),Y           ; save to target
-                inc ptr               ; point to next address
-                bne +                 ; did it step over page boundary?
-                inc ptr+1             ; adjust high address for page crossing
-+               inx                   ; point to next data byte
+                inx                   ; point to next data byte
+                iny                   ; point to next address
                 cpx #128              ; is it the last byte
                 bne -                 ; no, get the next one
                 inc blkno             ; done.  Inc the block #
@@ -214,7 +212,7 @@ ACIA_Init       lda #$1F              ; 19.2K/8/1
                                       ; input chr from ACIA (no waiting)
 Get_Chr         clc                   ; no chr present
                 lda ACIA_Status       ; get Serial port status
-                and #%00001000              ; mask rcvr full bit
+                and #%00001000        ; mask rcvr full bit
                 beq +                 ; if not chr, done
                 lda ACIA_Data         ; else get chr
                 sec                   ; and set the Carry Flag
