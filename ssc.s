@@ -24,6 +24,7 @@ init        bit sscreg              ; reset ssc
             sta ssccontrol
             rts
 
+; blocking put routine : send A
 putc        pha                     ; Push A onto the stack
 -           lda sscstatus           ; Check status bits
             and #%00010000          ; Test bit 4 = transmit register empty if 1
@@ -33,7 +34,7 @@ putc        pha                     ; Push A onto the stack
             rts
 
 ; non blocking get routine
-; carry set if char present
+; carry set if char received in A
 
 getc_nb
             lda kbd
@@ -49,12 +50,19 @@ getc_nb
             sec                     ; and set the Carry Flag
 +           rts                     ; done
 
+; blocking get routine
+; char received in A
+
 getc        jsr getc_nb
             bcc getc
             rts
 
+; non blocking get routine timeout = 3s
+; carry set if char received in A
+
 getc3s      lda #$ff              ; 3 seconds
             sta retry
+                                  ; internal loop ~ 11.7 ms
 getcwait    ldx #0                ; wait for chr input and cycle timing loop
             sta retry             ; set low value of timing loop
 -           jsr getc_nb           ; get chr from serial port, don't wait
@@ -65,6 +73,8 @@ getcwait    ldx #0                ; wait for chr input and cycle timing loop
             bne -
             clc                   ; if loop times out, CLC, else SEC and return
 +           rts                   ; with character in A
+
+; flush buffer, wait received chars for 1s
 
 flush       lda #$ff/3            ; flush receive buffer
             sta retry             ; flush until empty for ~1 sec.
