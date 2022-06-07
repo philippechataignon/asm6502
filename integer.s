@@ -27,13 +27,13 @@ _L2         bit IOADR           ; key down?
             cmp #$8D            ; return ?
             beq EXIT            ; yes, exit input loop
             cmp #$88            ; backspace ?
-            bne _L3             ; no, continue
+            bne +               ; no, continue
             cpx #$FF            ; yes, is first char ?
             beq _L2             ; yes, do nothing
             dec CH              ; no, point to previous char
             inx
             jmp _L2
-_L3         cmp #'0'+$80        ; test if num else pass
++           cmp #'0'+$80        ; test if num else pass
             blt _L2             ; if < '0', pass
             cmp #'9'+$80+1
             bge _L2             ; if > '9', pass
@@ -56,7 +56,7 @@ _L0         lda (PTR),Y         ; get char (PTR is fixed)
             and #$0F            ; keep low nibble
             tax                 ; X = index loop
             clc
-_L1         beq _L2             ; if X > 0, add POWER to NUM (32 bits)
+-           beq +               ; if X > 0, add POWER to NUM (32 bits)
             lda NUM
             adc POWER0,Y
             sta NUM
@@ -70,8 +70,8 @@ _L1         beq _L2             ; if X > 0, add POWER to NUM (32 bits)
             adc POWER3,Y
             sta NUM+3
             dex
-            jmp _L1             ; next add iteration
-_L2         iny
+            jmp -               ; next add iteration
++           iny
             cpy TEMP
             bcc _L0             ; next digit/char
             rts
@@ -94,30 +94,30 @@ PRINTNUM
             dex
             stx TEMP                ; 0,1,3 for 8/16/32 bits
 
-_L0         lda NUM,X               ; saves NUM in SAVE
+-           lda NUM,X               ; saves NUM in SAVE
             sta SAVE,X
             dex
-            bpl _L0
+            bpl -
             bit FLAG                ; test bit 7 = S
-            bpl _L3                 ; bpl -> N = bit7 = S = 0
+            bpl pr_unsigned         ; bpl -> N = bit7 = S = 0
             ldx TEMP
             lda NUM,X               ; high order byte
-            bpl _L3                 ; with bit7 = 0 -> unsigned
-_L1         lda NUM,X               ; negate x and output '-'
+            bpl pr_unsigned         ; with bit7 = 0 -> unsigned
+-           lda NUM,X               ; negate x and output '-'
             eor #$ff
             sta NUM,X
             dex
-            bpl _L1
+            bpl -
             inc NUM
-            bne _L2
+            bne +
             inc NUM+1
-            bne _L2
+            bne +
             inc NUM+2
-            bne _L2
+            bne +
             inc NUM+3
-_L2         lda #'-'+$C0            ; '-' screen code
++           lda #'-'+$C0            ; '-' screen code
             jsr COUT1
-_L3
+pr_unsigned
             ldx TEMP
             ldy NBLOOP,X            ; Offset to nb loop
             lda #%00000001
@@ -132,42 +132,37 @@ _L3
             jmp RESTORE
 
 PRINT8
-_L1
             ldx #$FF
             sec                     ; Start with digit=-1
-_L2
-            lda NUM
+
+-           lda NUM
             sbc POWER0,Y
             sta NUM                 ; Subtract current tens
             inx
-            bcs _L2                 ; Loop until <0
+            bcs -                   ; Loop until <0
             lda NUM
             adc POWER0,Y
             sta NUM                 ; Add current tens back in
             txa
-            bne _L3                 ; >0 -> print
+            bne +                   ; >0 -> print
             bit FLAG                ; bit 7 = N
-            bvc _L4                 ; if V==0 -> initial 0
-_L3
-            jsr PRXDIGIT            ; Print this digit
-_L4
-            dey
-            bpl _L1                 ; Loop for next digit
+            bvc pr8_next            ; if V==0 -> initial 0
++           jsr PRXDIGIT            ; Print this digit
+pr8_next    dey
+            bpl PRINT8                 ; Loop for next digit
             jmp RESTORE
 
 PRINT16
-_L1
             ldx #$FF
             sec                     ; Start with digit=-1
-_L2
-            lda NUM
+-           lda NUM
             sbc POWER0,Y
             sta NUM                 ; Subtract current tens
             lda NUM+1
             sbc POWER1,Y
             sta NUM+1
             inx
-            bcs _L2                 ; Loop until <0
+            bcs -                   ; Loop until <0
             lda NUM
             adc POWER0,Y
             sta NUM                 ; Add current tens back in
@@ -175,22 +170,18 @@ _L2
             adc POWER1,Y
             sta NUM+1
             txa
-            bne _L3                 ; >0 -> print
+            bne +                   ; >0 -> print
             bit FLAG                ; bit 7 = N
-            bvc _L4                 ; if V==0 -> initial 0
-_L3
-            jsr PRXDIGIT            ; Print this digit
-_L4
-            dey
-            bpl _L1                 ; Loop for next digit
+            bvc pr16_next           ; if V==0 -> initial 0
++           jsr PRXDIGIT            ; Print this digit
+pr16_next   dey
+            bpl PRINT16             ; Loop for next digit
             jmp RESTORE
 
 PRINT32
-_L1
             ldx #$FF
             sec                     ; Start with digit=-1
-_L2
-            lda NUM
+-           lda NUM
             sbc POWER0,Y
             sta NUM                 ; Subtract current tens
             lda NUM+1
@@ -203,7 +194,7 @@ _L2
             sbc POWER3,Y
             sta NUM+3
             inx
-            bcs _L2                 ; Loop until <0
+            bcs -                   ; Loop until <0
             lda NUM
             adc POWER0,Y
             sta NUM                 ; Add current tens back in
@@ -217,20 +208,18 @@ _L2
             adc POWER3,Y
             sta NUM+3
             txa
-            bne _L3                 ; >0 -> print
+            bne +                   ; >0 -> print
             bit FLAG                ; bit 7 = N
-            bvc _L4                 ; if V==0 -> initial 0
-_L3
-            jsr PRXDIGIT            ; Print this digit
-_L4
-            dey
-            bpl _L1                 ; Loop for next digit
+            bvc pr32_next           ; if V==0 -> initial 0
++           jsr PRXDIGIT            ; Print this digit
+pr32_next   dey
+            bpl PRINT32             ; Loop for next digit
 RESTORE
             ldx TEMP
-_L0         lda SAVE,X
+-           lda SAVE,X
             sta NUM,X
             dex
-            bpl _L0
+            bpl -
             rts
 
 PRXDIGIT                            ; output digit in X
