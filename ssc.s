@@ -17,6 +17,7 @@ retry   = $ce                ; retry counter
 exitkbd = $3D0
 .fi
 
+; ssc init routine
 init        bit sscreg              ; reset ssc
             lda #%00001011          ; 7-5 no parity, 4 no echo, 3-2 disable transmit intr
             sta ssccommand          ; rts low, 1 irq disabled, 0dtr enable
@@ -35,9 +36,8 @@ putc        pha                     ; Push A onto the stack
 
 ; non blocking get routine
 ; carry set if char received in A
-
 getc_nb
-            lda kbd
+            lda kbd                 ; non-blocking get routine
             cmp #esc
             bne +
             bit kbdstrobe
@@ -52,14 +52,12 @@ getc_nb
 
 ; blocking get routine
 ; char received in A
-
-getc        jsr getc_nb
+getc        jsr getc_nb             ; blocking get routine
             bcc getc
             rts
 
 ; non blocking get routine timeout = 3s
 ; carry set if char received in A
-
 getc3s      lda #$ff              ; 3 seconds
             sta retry
                                   ; internal loop ~ 11.7 ms
@@ -75,7 +73,6 @@ getcwait    ldx #0                ; wait for chr input and cycle timing loop
 +           rts                   ; with character in A
 
 ; flush buffer, wait received chars for 1s
-
 flush       lda #$ff/3            ; flush receive buffer
             sta retry             ; flush until empty for ~1 sec.
             jsr getcwait          ; read the port

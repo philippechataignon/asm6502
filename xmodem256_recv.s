@@ -1,27 +1,26 @@
 ; XMODEM Receiver for the 6502
 
 ; zero page variables
-blknum  = $06                ; block number
-errcnt  = $08                ; error counter 10 is the limit
-blksum  = $19                ; blksum
+blknum  = $06                   ; block number
+nblknum = $e3                   ; negative block number
+blksum  = $19                   ; blksum
 
-; start addr of buffer
+; buffer: $1000 -> max $95FF
 start   = $1000
-limit = $96                 ; don't write after $9600
+limit = $96                     ; don't write after $9600
 
-temp = $e3
 
-automod = $1234              ; fake automodified address
+automod = $1234                 ; fake automodified address
 
 ; monitor
 cout = $fded
 crout = $fd8e
 
 ; XMODEM Control Character Constants
-SOH = $01                ; start block
-EOT = $04                ; end of text marker
-ACK = $06                ; good block acknowledged
-NAK = $15                ; bad block acknowledged
+SOH = $01                       ; start block
+EOT = $04                       ; end of text marker
+ACK = $06                       ; good block acknowledged
+NAK = $15                       ; bad block acknowledged
 
 .include "apple_enc.inc"
 .enc "none"
@@ -33,61 +32,70 @@ print           .macro
                 jsr printstr
                 .endm
 
+move            .macro
+                lda <\1
+                sta \2
+                lda >\1
+                sta \2+1
+                .endm
+
+safe_getc        .macro
+                jsr ssc.getc3s          ; get blksum
+                bcc SendNack            ; chr recv error, flush and send NAK
+                .endm
+
 *       =  $900
 
 XModemRecv      jsr ssc.init
                 jsr ssc.flush
                 print RecvMsg
-                lda #>start
-                sta ptr+1               ; set ptr to start
-                lda #<start
-                sta ptr
-                inx                     ; set block # to 1
-                stx blknum
+                move #start,ptr         ; set ptr to start
+                lda #1                  ; set block # to 1
+                sta blknum
 -               lda #NAK                ; NAK start with blksum mode
                 jsr ssc.putc            ; send it
                 jsr ssc.getc3s          ; wait for input
                 bcc -                   ; resend NAK
-                bcs +
+                bcs +                   ; receive a byte !
 StartBlk        lda #0                  ; init blksum
                 sta blksum
 -               jsr ssc.getc3s          ; wait for input
                 bcc -                   ; timed out, keep waiting...
 +               cmp #SOH                ; start of block?
                 beq GetBlk              ; yes
-                cmp #EOT
-                bne BadRecv             ; Not SOH or EOT, so flush buffer & send NAK
-                jmp RDone               ; EOT - all done!
+                cmp #EOT                ; end of transmission ?
+                bne SendNack            ; Not SOH or EOT, so flush buffer & send NAK
+EndRecv         lda #ACK                ; last block, send ACK and exit.
+                jsr ssc.putc
+                jsr ssc.flush           ; get leftover characters, if any
+                print GoodMsg
+                rts
 
 GetBlk          lda blknum
                 eor #$ff
-                sta temp                ; store expected blknum 1's compl
-                jsr ssc.getc3s          ; get blknum
-                bcc BadRecv             ; chr rcv error, flush and send NAK
+                sta nblknum             ; store expected blknum 1's compl
+                safe_getc
                 cmp blknum              ; compare to expected block #
                 beq +                   ; matched!
                 jmp PrtAbort            ; Unexpected block number - abort
-+               jsr ssc.getc3s          ; get blknum 1's compl
-                bcc BadRecv             ; chr rcv error, flush and send NAK
-                cmp temp                ; compare to expected
+                safe_getc
+                cmp nblknum             ; compare to expected
                 beq +                   ; matched!
                 jmp PrtAbort            ; Unexpected block number - abort
 Recvloop
 +               ldx #0
--               jsr ssc.getc3s          ; get next byte
-                bcc BadRecv             ; chr rcv error, flush and send NAK
-                sta automod,X           ; good char, save it in the rcv buffer
+                safe_getc
+                sta automod,X           ; good char, save it in the recv buffer
 ptr = * - 2
                 clc                     ; update blksum
                 adc blksum
                 inx                     ; inc buffer pointer
-                bpl -                   ; continue until $80
-                jsr ssc.getc3s          ; get blksum
-                bcc BadRecv             ; chr rcv error, flush and send NAK
+                bpl -                   ; continue until $80=128 bits
+                safe_getc
                 cmp blksum              ; compare to calculated checksum
                 beq EndBlock            ; good blksum
 
-BadRecv         jsr ssc.flush           ; flush the input port
+SendNack        jsr ssc.flush           ; flush the input port
                 lda #NAK
                 jsr ssc.putc            ; send NAK to resend block
                 jmp StartBlk            ; start over, get the block again
@@ -105,11 +113,6 @@ EndBlock        inc blknum              ; done.  Inc the block #
                 jsr ssc.putc
                 jmp StartBlk            ; get next block
 
-RDone           lda #ACK                ; last block, send ACK and exit.
-                jsr ssc.putc
-                jsr ssc.flush           ; get leftover characters, if any
-                print GoodMsg
-                rts
 
 PrtAbort        jsr ssc.flush           ; yes, too many errors, flush buffer,
                 print ErrMsg
