@@ -15,7 +15,6 @@ blksum  = $19                ; chksum
 
 start   = $fa                ; data pointer (two byte variable)
 end     = $fb
-temp = $e3
 
 automod = $1200              ; fake automodified address
 
@@ -55,7 +54,7 @@ XModemSend      jsr ssc.flush           ; flush ssc buffer
                 lda start
                 sta ptr+1               ; ptrH = start
                 lda #0
-                sta ptr                 ; ptrL = 0
+                sta ptr                 ; ptrL = 0 (always)
 
 StartBlk        lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
@@ -74,39 +73,37 @@ Loop            lda automod,Y           ; send 128 bytes of data
 ptr             = * - 2
                 jsr ssc.putc            ; send current byte
                 clc
-                adc blksum
+                adc blksum              ; add mod 256 to blksum
+                sta blksum
                 iny
-                beq EndLoop
-                bpl Loop                ; Y : 0 -> 7F
-                cpy #$80                ; end of loop1 -> send blksum
-                bne Loop
-EndLoop         lda blksum
+                beq EndLoop             ; if end of loop2, EndLoop
+                bpl Loop                ; if in loop1, then Loop
+                cpy #$80                ; end of loop1 == start of loop2
+                bne Loop                ; if in loop2, then Loop
+EndLoop         lda blksum              ; end of loop1 (y==$80) or loop2 (y==$0)
                 jsr ssc.putc            ; send chksum
                 jsr ssc.getc3s          ; Wait for Ack/Nack
                 bcc Seterror            ; No chr received after 3 seconds, resend
                 cmp #ACK                ; Chr received... is it:
                 bne SetError            ; No ACK => error
+                cpy #$80                ; if end of loop1, return to Loop
+                beq Loop                ; after blksum sending
                 inc ptr+1               ; next page
                 lda ptr+1
                 cmp end                 ; if < end, Loop again
                 blt Loop
-                jmp Exit_Good           ; yes, we're done
+ExitSend        lda #EOT                ; send final EOT
+                jsr ssc.putc
+                print GoodMsg
+                rts
 
 Seterror        dec errcnt              ; decr error counter
                 bne StartBlk            ; if not null, resend block
 PrtAbort        jsr ssc.flush           ; yes, too many errors, flush buffer,
-                jmp Exit_Err            ; print error msg and exit
-
-ssc             .binclude "ssc.s"
-
-; exits
 Exit_Err        print ErrMsg
                 rts
 
-Exit_Good       lda #EOT
-                jsr ssc.putc
-                print GoodMsg
-                rts
+ssc             .binclude "ssc.s"
 
 ; print subroutine
 printstr
