@@ -15,11 +15,7 @@ blksum  = $19                ; chksum
 start   = $fa                ; data pointer (two byte variable)
 end     = $fb
 
-automod = $1200              ; fake automodified address
-
-; monitor
-cout = $fded
-crout = $fd8e
+automod = $1234
 
 ; XMODEM Control Character Constants
 SOH = $01                ; start block
@@ -41,7 +37,7 @@ XModemSend      jsr ssc.flush           ; flush ssc buffer
 -               jsr ssc.getc3s
                 bcc -                   ; wait for something to come in...
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
-                bne PrtAbort            ; not NAK, print abort msg and exit
+                bne Abort               ; not NAK, abort
 
                 lda start
                 sta ptr+1               ; ptrH = start
@@ -90,25 +86,14 @@ ExitSend        lda #EOT                ; send final EOT
 
 Seterror        dec errcnt              ; decr error counter
                 bne StartBlk            ; if not null, resend block
-PrtAbort        jsr ssc.flush           ; yes, too many errors, flush buffer,
+Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
 Exit_Err        print ErrMsg
                 rts
 
 ssc             .binclude "ssc.s"
 
 ; print subroutine
-printstr
-                sty printstr_mod
-                sta printstr_mod+1
-                ldy #0
--               lda automod,Y
-printstr_mod = * - 2
-                beq +                ; return if 0 = end of string
-                jsr cout
-                iny
-                jmp -
-+               jsr crout
-                rts
+printstr .binclude "printstr.s"
 
                 .enc "apple"
 GoodMsg         .null "TRANSFER OK"

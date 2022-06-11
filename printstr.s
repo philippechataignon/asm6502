@@ -1,14 +1,18 @@
-PRINTPTR    = $CE
-COUT        = $FDED
+automod = $1234
 
-PRINTSTR:
-            sta PRINTPTR+1         ; store A=MSB
-            sty PRINTPTR           ; store Y=LSB
-            ldy #0
-_L1         lda (PRINTPTR),y       ;
-            beq _L2              ; return if 0 = end of string
-            jsr COUT
-            iny
-            jmp _L1
-_L2         rts
+; monitor
+cout = $fded
+crout = $fd8e
 
+; print subroutine
+main            sty addr_mod
+                sta addr_mod+1
+                ldy #0
+-               lda automod,Y
+addr_mod = * - 2
+                beq +                ; return if 0 = end of string
+                jsr cout
+                iny
+                jmp -
++               jsr crout
+                rts

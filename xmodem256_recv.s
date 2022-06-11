@@ -100,23 +100,7 @@ PrtAbort        jsr ssc.flush           ; yes, too many errors, flush buffer,
                 rts
 
 ssc             .binclude "ssc.s"
-
-; exits
-
-
-; print subroutine
-printstr
-                sty printstr_mod
-                sta printstr_mod+1
-                ldy #0
--               lda automod,Y
-printstr_mod = * - 2
-                beq +                   ; return if 0 = end of string
-                jsr cout
-                iny
-                jmp -
-+               jsr crout
-                rts
+printstr        .binclude "printstr.s"
 
                 .enc "apple"
 GoodMsg         .null "TRANSFER OK"

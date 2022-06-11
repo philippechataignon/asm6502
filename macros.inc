@@ -1,7 +1,7 @@
 print           .macro
                 ldy #<\1
                 lda #>\1
-                jsr printstr
+                jsr printstr.main
                 .endm
 
 move            .macro
