@@ -1,4 +1,5 @@
 ; XMODEM Receiver for the 6502
+DIRECT := false
 
 ; zero page variables
 blknum  = $06                   ; block number
@@ -20,6 +21,8 @@ SOH = $01                       ; start block
 EOT = $04                       ; end of text marker
 ACK = $06                       ; good block acknowledged
 NAK = $15                       ; bad block acknowledged
+
+ssc.exitkbd := Abort
 
 .include "apple_enc.inc"
 .enc "none"
@@ -61,11 +64,11 @@ EndRecv         lda #ACK                ; last block, send ACK and exit.
 
 StartBlk        safe_getc               ; get byte and send nack if timeout
                 cmp blknum              ; compare to expected block #
-                bne PrtAbort            ; Unexpected block number - abort
+                bne Abort               ; Unexpected block number - abort
                 safe_getc
                 eor #$ff                ; neg block number
                 cmp blknum              ; compare to expected
-                bne PrtAbort            ; Unexpected block number - abort
+                bne Abort               ; Unexpected block number - abort
                 ldx #0
 -               safe_getc
                 sta automod,X           ; good char, save it in the recv buffer
@@ -85,7 +88,7 @@ ptr_mod = * - 2
                 inc ptr_mod+1           ; increment ptr_modH
                 lda ptr_mod+1           ; test if ptr_mod >= limit
                 cmp #limit
-                bge PrtAbort            ; yes, abort
+                bge Abort               ; yes, abort
 +               lda #ACK                ; send ACK
                 jsr ssc.putc
                 jmp StartRecv           ; get next block
@@ -95,7 +98,7 @@ SendNack        jsr ssc.flush           ; flush the input port
                 jsr ssc.putc            ; send NAK to resend block
                 jmp StartRecv           ; start over, get the block again
 
-PrtAbort        jsr ssc.flush           ; yes, too many errors, flush buffer,
+Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
                 print AbortMsg
                 rts
 

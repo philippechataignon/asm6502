@@ -1,5 +1,7 @@
 ; XMODEM/chksum Sender/Receiver for the 6502
 
+DIRECT := false
+
 ; By Daryl Rictor Aug 2002
 
 ; A simple file transfer program to allow transfers between the SBC and a
@@ -18,6 +20,8 @@ ptrh    = $fb
 
 eofp    = $fc                ; end of file address pointer (2 bytes)
 eofph   = $fd
+
+ssc.exitkbd := Abort
 
 
 temp = $e3
@@ -126,7 +130,7 @@ XModemSend      jsr ssc.flush
 -               jsr ssc.getc3s
                 bcc -                 ; wait for something to come in...
                 cmp #NAK              ; is it the NAK to start a chksum xfer?
-                bne PrtAbort          ; not NAK, print abort msg and exit
+                bne Abort             ; not NAK, print abort msg and exit
 
 LdBuffer                              ; start block
                 ldx #0                ; init pointers
@@ -173,8 +177,8 @@ SendBlock       ldx #0
                 cpx #128              ; last byte?
                 blt -                 ; no, get next
                 lda chksum
-                jsr ssc.putc           ; send chksum
-                jsr ssc.getc3s           ; Wait for Ack/Nack
+                jsr ssc.putc          ; send chksum
+                jsr ssc.getc3s        ; Wait for Ack/Nack
                 bcc Seterror          ; No chr received after 3 seconds, resend
                 cmp #ACK              ; Chr received... is it:
                 bne SetError          ; No ACK => error
@@ -184,7 +188,7 @@ SendBlock       ldx #0
                 jmp Exit_Good         ; yes, we're done
 Seterror        dec errcnt            ; decr error counter
                 bne SendBlock         ; if not null, resend block
-PrtAbort        jsr ssc.flush             ; yes, too many errors, flush buffer,
+Abort           jsr ssc.flush             ; yes, too many errors, flush buffer,
                 jmp Exit_Err          ; print error msg and exit
 
 ssc             .binclude "ssc.s"

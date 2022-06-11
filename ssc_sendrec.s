@@ -3,7 +3,9 @@ k_end = $5678
 
 .if DIRECT
 * = $900
+ssc.exitkbd := exit
 .fi
+
 
 send        lda k_start
             jsr ssc.putc
@@ -37,7 +39,7 @@ recv2h = * - 1
             cmp #<k_end
 recv2l = * - 2
             bne recv
-            rts
+exit        rts
 
 .if DIRECT
 ssc         .binclude "ssc.s"

@@ -14,7 +14,7 @@ retry   = $ce                ; retry counter
 .if DIRECT
 * = $900
 ; exit_kbd must be assigned to exit jsr when escape
-exitkbd = $3D0
+exitkbd := $3D0
 .fi
 
 ; ssc init routine

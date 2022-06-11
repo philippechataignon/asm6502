@@ -1,11 +1,6 @@
-; XMODEM/chksum Sender/Receiver for the 6502
+; XMODEM Sender for the 6502
 
-; By Daryl Rictor Aug 2002
-
-; A simple file transfer program to allow transfers between the SBC and a
-; console device utilizing the x-modem/chksum transfer protocol.  Requires
-; ~1200 bytes of either RAM or ROM, 132 bytes of RAM for the receive buffer,
-; and 12 bytes of zero page RAM for variable storage.
+DIRECT := false
 
 ; zero page variables
 blknum  = $06                ; block number
@@ -22,6 +17,8 @@ SOH = $01                ; start block
 EOT = $04                ; end of text marker
 ACK = $06                ; good block acknowledged
 NAK = $15                ; bad block acknowledged
+
+ssc.exitkbd := Abort
 
 .include "apple_enc.inc"
 .enc "none"
@@ -93,7 +90,7 @@ Exit_Err        print ErrMsg
 ssc             .binclude "ssc.s"
 
 ; print subroutine
-printstr .binclude "printstr.s"
+printstr        .binclude "printstr.s"
 
                 .enc "apple"
 GoodMsg         .null "TRANSFER OK"
