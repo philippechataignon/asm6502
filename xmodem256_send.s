@@ -119,4 +119,3 @@ printstr_mod = * - 2
 GoodMsg         .null "TRANSFER SUCCESSFUL!"
 ErrMsg          .null "TRANSFER ERROR!"
 SendMsg         .null "XMODEM SEND"
-RecvMsg         .null "XMODEM RECV"
