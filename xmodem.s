@@ -39,12 +39,7 @@ NAK = $15                ; bad block acknowledged
 .include "apple_enc.inc"
 .enc "none"
 
-; macros
-print           .macro
-                ldy #<\1
-                lda #>\1
-                jsr printstr
-                .endm
+.include "macros.inc"
 
 *       =  $900
 

@@ -14,7 +14,7 @@ all:	hex apple
 bin:	$(target_bin)
 hex:	$(target_hex)
 
-$(target_hex): apple_enc.inc
+$(target_hex): apple_enc.inc macros.inc
 
 diskload.hex: delay.s unlz4.s load8000.s
 libint.hex: mult32.s div32.s integer.s

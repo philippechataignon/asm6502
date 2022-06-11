@@ -24,21 +24,10 @@ NAK = $15                       ; bad block acknowledged
 .include "apple_enc.inc"
 .enc "none"
 
+.include "macros.inc"
+
 ; macros
-print           .macro
-                ldy #<\1
-                lda #>\1
-                jsr printstr
-                .endm
-
-move            .macro
-                lda <\1
-                sta \2
-                lda >\1
-                sta \2+1
-                .endm
-
-safe_getc        .macro
+safe_getc       .macro
                 jsr ssc.getc3s          ; get blksum
                 bcc SendNack            ; chr recv error, flush and send NAK
                 .endm
