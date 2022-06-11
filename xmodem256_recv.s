@@ -2,7 +2,6 @@
 
 ; zero page variables
 blknum  = $06                   ; block number
-nblknum = $e3                   ; negative block number
 blksum  = $19                   ; blksum
 
 ; buffer: $1000 -> max $95FF
@@ -49,7 +48,7 @@ safe_getc        .macro
 XModemRecv      jsr ssc.init
                 jsr ssc.flush
                 print RecvMsg
-                move #start,ptr         ; set ptr to start
+                move #start,ptr_mod     ; set ptr_mod to start
                 lda #1                  ; set block # to 1
                 sta blknum
 -               lda #NAK                ; NAK start with blksum mode
@@ -57,12 +56,12 @@ XModemRecv      jsr ssc.init
                 jsr ssc.getc3s          ; wait for input
                 bcc -                   ; resend NAK
                 bcs +                   ; receive a byte !
-StartBlk        lda #0                  ; init blksum
+StartRecv       lda #0                  ; init blksum
                 sta blksum
 -               jsr ssc.getc3s          ; wait for input
                 bcc -                   ; timed out, keep waiting...
 +               cmp #SOH                ; start of block?
-                beq GetBlk              ; yes
+                beq StartBlk            ; yes
                 cmp #EOT                ; end of transmission ?
                 bne SendNack            ; Not SOH or EOT, so flush buffer & send NAK
 EndRecv         lda #ACK                ; last block, send ACK and exit.
@@ -71,51 +70,44 @@ EndRecv         lda #ACK                ; last block, send ACK and exit.
                 print GoodMsg
                 rts
 
-GetBlk          lda blknum
-                eor #$ff
-                sta nblknum             ; store expected blknum 1's compl
-                safe_getc
+StartBlk        safe_getc               ; get byte and send nack if timeout
                 cmp blknum              ; compare to expected block #
-                beq +                   ; matched!
-                jmp PrtAbort            ; Unexpected block number - abort
+                bne PrtAbort            ; Unexpected block number - abort
                 safe_getc
-                cmp nblknum             ; compare to expected
-                beq +                   ; matched!
-                jmp PrtAbort            ; Unexpected block number - abort
-Recvloop
-+               ldx #0
-                safe_getc
+                eor #$ff                ; neg block number
+                cmp blknum              ; compare to expected
+                bne PrtAbort            ; Unexpected block number - abort
+                ldx #0
+-               safe_getc
                 sta automod,X           ; good char, save it in the recv buffer
-ptr = * - 2
+ptr_mod = * - 2
                 clc                     ; update blksum
                 adc blksum
                 inx                     ; inc buffer pointer
                 bpl -                   ; continue until $80=128 bits
                 safe_getc
                 cmp blksum              ; compare to calculated checksum
-                beq EndBlock            ; good blksum
-
-SendNack        jsr ssc.flush           ; flush the input port
-                lda #NAK
-                jsr ssc.putc            ; send NAK to resend block
-                jmp StartBlk            ; start over, get the block again
-
-EndBlock        inc blknum              ; done.  Inc the block #
-                lda ptr                 ; ptrL $0 <-> $80
+                bne SendNack            ; uncorrect chksum, send nack
+                inc blknum              ; done.  Inc the block #
+                lda ptr_mod             ; ptr_modL $0 <-> $80
                 ora #$80
-                sta ptr
+                sta ptr_mod
                 bne +                   ; if $0, next page so
-                inc ptr+1               ; increment ptrH
-                lda ptr+1               ; test if ptr >= limit
+                inc ptr_mod+1           ; increment ptr_modH
+                lda ptr_mod+1           ; test if ptr_mod >= limit
                 cmp #limit
                 bge PrtAbort            ; yes, abort
 +               lda #ACK                ; send ACK
                 jsr ssc.putc
-                jmp StartBlk            ; get next block
+                jmp StartRecv           ; get next block
 
+SendNack        jsr ssc.flush           ; flush the input port
+                lda #NAK
+                jsr ssc.putc            ; send NAK to resend block
+                jmp StartRecv           ; start over, get the block again
 
 PrtAbort        jsr ssc.flush           ; yes, too many errors, flush buffer,
-                print ErrMsg
+                print AbortMsg
                 rts
 
 ssc             .binclude "ssc.s"
@@ -138,6 +130,6 @@ printstr_mod = * - 2
                 rts
 
                 .enc "apple"
-GoodMsg         .null "TRANSFER SUCCESSFUL!"
-ErrMsg          .null "TRANSFER ERROR!"
-RecvMsg         .null "XMODEM RECV"
+GoodMsg         .null "TRANSFER OK"
+AbortMsg        .null "TRANSFER ABORTED!"
+RecvMsg         .null "XMODEM256 RECV"

@@ -116,6 +116,6 @@ printstr_mod = * - 2
                 rts
 
                 .enc "apple"
-GoodMsg         .null "TRANSFER SUCCESSFUL!"
-ErrMsg          .null "TRANSFER ERROR!"
-SendMsg         .null "XMODEM SEND"
+GoodMsg         .null "TRANSFER OK"
+ErrMsg          .null "TRANSFER ABORTED!"
+SendMsg         .null "XMODEM256 SEND"
