@@ -9,7 +9,6 @@
 
 ; zero page variables
 blknum  = $06                ; block number
-nblknum = $07                ; 255 - block number
 errcnt  = $08                ; error counter 10 is the limit
 blksum  = $19                ; chksum
 
@@ -44,8 +43,6 @@ XModemSend      jsr ssc.flush           ; flush ssc buffer
                 print SendMsg
                 lda #0
                 sta blknum              ; set block counter to 0
-                lda #255                ; blknum + nblknum always 255
-                sta nblknum             ; set neg block counter to 255
 -               jsr ssc.getc3s
                 bcc -                   ; wait for something to come in...
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
@@ -59,12 +56,11 @@ XModemSend      jsr ssc.flush           ; flush ssc buffer
 StartBlk        lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
                 inc blknum              ; inc block counter
-                dec nblknum             ; dec neg block counter
                 lda #SOH
                 jsr ssc.putc            ; send SOH = start of header
                 lda blknum
                 jsr ssc.putc            ; send count
-                lda nblknum
+                eor #$FF
                 jsr ssc.putc            ; send neg count
                 ldy #0                  ; Y =  0
                 sty blksum              ; init blksum
