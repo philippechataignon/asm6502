@@ -73,7 +73,7 @@ ploop:
 
 
 store:                          ; warning: automodified code in store+1/store+2
-            rol $FFFF,X            ; 7, roll carry bit 1/0 into store
+            rol $FFFF,x            ; 7, roll carry bit 1/0 into store
             asl                 ; 2 at bit 7, A = 0
             bne next_bit        ; 2(3)
             inx                 ; 2 cycles

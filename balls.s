@@ -67,13 +67,13 @@ balls       jsr hclear
 
             ldx #NBALLS * 4 - 1
             lda #0
-init0       sta BALLXL,X
-            sta BALLXH,X
-            sta BALLYL,X
-            sta BALLYH,X
-            sta BALLDX,X
-            sta BALLDYL,X
-            sta BALLDYH,X
+init0       sta BALLXL,x
+            sta BALLXH,x
+            sta BALLYL,x
+            sta BALLYH,x
+            sta BALLDX,x
+            sta BALLDYL,x
+            sta BALLDYH,x
             dex
             bpl init0
 

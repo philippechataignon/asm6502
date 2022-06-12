@@ -37,7 +37,7 @@ _L2         bit IOADR           ; key down?
             blt _L2             ; if < '0', pass
             cmp #'9'+$80+1
             bge _L2             ; if > '9', pass
-            sta BUFF,X          ; else store in BUFF
+            sta BUFF,x          ; else store in BUFF
             jsr COUT1
             jmp _L1
 EXIT        txa                 ; copy X to A to compute nb digits in Y
@@ -52,22 +52,22 @@ EXIT        txa                 ; copy X to A to compute nb digits in Y
             sty NUM+1
             sty NUM+2
             sty NUM+3
-_L0         lda (PTR),Y         ; get char (PTR is fixed)
+_L0         lda (PTR),y         ; get char (PTR is fixed)
             and #$0F            ; keep low nibble
             tax                 ; X = index loop
             clc
 -           beq +               ; if X > 0, add POWER to NUM (32 bits)
             lda NUM
-            adc POWER0,Y
+            adc POWER0,y
             sta NUM
             lda NUM+1
-            adc POWER1,Y
+            adc POWER1,y
             sta NUM+1
             lda NUM+2
-            adc POWER2,Y
+            adc POWER2,y
             sta NUM+2
             lda NUM+3
-            adc POWER3,Y
+            adc POWER3,y
             sta NUM+3
             dex
             jmp -               ; next add iteration
@@ -94,18 +94,18 @@ PRINTNUM
             dex
             stx TEMP                ; 0,1,3 for 8/16/32 bits
 
--           lda NUM,X               ; saves NUM in SAVE
-            sta SAVE,X
+-           lda NUM,x               ; saves NUM in SAVE
+            sta SAVE,x
             dex
             bpl -
             bit FLAG                ; test bit 7 = S
             bpl pr_unsigned         ; bpl -> N = bit7 = S = 0
             ldx TEMP
-            lda NUM,X               ; high order byte
+            lda NUM,x               ; high order byte
             bpl pr_unsigned         ; with bit7 = 0 -> unsigned
--           lda NUM,X               ; negate x and output '-'
+-           lda NUM,x               ; negate x and output '-'
             eor #$ff
-            sta NUM,X
+            sta NUM,x
             dex
             bpl -
             inc NUM
@@ -119,7 +119,7 @@ PRINTNUM
             jsr COUT1
 pr_unsigned
             ldx TEMP
-            ldy NBLOOP,X            ; Offset to nb loop
+            ldy NBLOOP,x            ; Offset to nb loop
             lda #%00000001
             bit FLAG
             bne PRINT8
@@ -136,12 +136,12 @@ PRINT8
             sec                     ; Start with digit=-1
 
 -           lda NUM
-            sbc POWER0,Y
+            sbc POWER0,y
             sta NUM                 ; Subtract current tens
             inx
             bcs -                   ; Loop until <0
             lda NUM
-            adc POWER0,Y
+            adc POWER0,y
             sta NUM                 ; Add current tens back in
             txa
             bne +                   ; >0 -> print
@@ -156,18 +156,18 @@ PRINT16
             ldx #$FF
             sec                     ; Start with digit=-1
 -           lda NUM
-            sbc POWER0,Y
+            sbc POWER0,y
             sta NUM                 ; Subtract current tens
             lda NUM+1
-            sbc POWER1,Y
+            sbc POWER1,y
             sta NUM+1
             inx
             bcs -                   ; Loop until <0
             lda NUM
-            adc POWER0,Y
+            adc POWER0,y
             sta NUM                 ; Add current tens back in
             lda NUM+1
-            adc POWER1,Y
+            adc POWER1,y
             sta NUM+1
             txa
             bne +                   ; >0 -> print
@@ -182,30 +182,30 @@ PRINT32
             ldx #$FF
             sec                     ; Start with digit=-1
 -           lda NUM
-            sbc POWER0,Y
+            sbc POWER0,y
             sta NUM                 ; Subtract current tens
             lda NUM+1
-            sbc POWER1,Y
+            sbc POWER1,y
             sta NUM+1
             lda NUM+2
-            sbc POWER2,Y
+            sbc POWER2,y
             sta NUM+2
             lda NUM+3
-            sbc POWER3,Y
+            sbc POWER3,y
             sta NUM+3
             inx
             bcs -                   ; Loop until <0
             lda NUM
-            adc POWER0,Y
+            adc POWER0,y
             sta NUM                 ; Add current tens back in
             lda NUM+1
-            adc POWER1,Y
+            adc POWER1,y
             sta NUM+1
             lda NUM+2
-            adc POWER2,Y
+            adc POWER2,y
             sta NUM+2
             lda NUM+3
-            adc POWER3,Y
+            adc POWER3,y
             sta NUM+3
             txa
             bne +                   ; >0 -> print
@@ -216,8 +216,8 @@ pr32_next   dey
             bpl PRINT32             ; Loop for next digit
 RESTORE
             ldx TEMP
--           lda SAVE,X
-            sta NUM,X
+-           lda SAVE,x
+            sta NUM,x
             dex
             bpl -
             rts

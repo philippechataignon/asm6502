@@ -89,7 +89,7 @@ Recvloop
 +               ldx #0                ;
 -               jsr ssc.getc3s         ; get next byte
                 bcc BadRecv           ; chr rcv error, flush and send NAK
-                sta Rbuff,X           ; good char, save it in the rcv buffer
+                sta Rbuff,x           ; good char, save it in the rcv buffer
                 clc                   ; update chksum
                 adc chksum
                 inx                   ; inc buffer pointer
@@ -105,8 +105,8 @@ BadRecv         jsr ssc.flush             ; flush the input port
                 jmp StartBlk          ; start over, get the block again
 GoodChksum      ldx #0
                 ldy #0                ; set offset to zero
--               lda Rbuff,X           ; get data byte from buffer
-                sta (ptr),Y           ; save to target
+-               lda Rbuff,x           ; get data byte from buffer
+                sta (ptr),y           ; save to target
                 inx                   ; point to next data byte
                 iny                   ; point to next address
                 cpx #128              ; is it the last byte
@@ -138,8 +138,8 @@ LdBuffer                              ; start block
                 ldy #0                ; Y always = 0
                 inc blkno             ; inc block counter
 
-LdBuff          lda (ptr),Y           ; save 128 bytes of data
-                sta Rbuff,X
+LdBuff          lda (ptr),y           ; save 128 bytes of data
+                sta Rbuff,x
                 clc
                 adc chksum
                 lda eofp
@@ -153,7 +153,7 @@ LdBuff          lda (ptr),Y           ; save 128 bytes of data
                 cpx #128              ; Are we at the end of the 128 byte block?
                 beq SendBlock         ; Yes, send the block
                 lda #0                ; Fill rest of 128 bytes with $00
-                sta Rbuff,X
+                sta Rbuff,x
                 beq -                 ; Branch always
 +               inc ptr               ; Inc address pointer
                 bne +
@@ -171,7 +171,7 @@ SendBlock       ldx #0
                 jsr ssc.putc
                 eor #$FF              ; send block number 1's complement
                 jsr ssc.putc
--               lda Rbuff,X           ; send 128 bytes in buffer
+-               lda Rbuff,x           ; send 128 bytes in buffer
                 jsr ssc.putc
                 inx
                 cpx #128              ; last byte?
@@ -179,14 +179,14 @@ SendBlock       ldx #0
                 lda chksum
                 jsr ssc.putc          ; send chksum
                 jsr ssc.getc3s        ; Wait for Ack/Nack
-                bcc Seterror          ; No chr received after 3 seconds, resend
+                bcc SetError          ; No chr received after 3 seconds, resend
                 cmp #ACK              ; Chr received... is it:
                 bne SetError          ; No ACK => error
                                       ; ACK, send next bloc
                 lda lastblk           ; Was the last block sent?
                 bne LdBuffer          ; no, send the next one
                 jmp Exit_Good         ; yes, we're done
-Seterror        dec errcnt            ; decr error counter
+SetError        dec errcnt            ; decr error counter
                 bne SendBlock         ; if not null, resend block
 Abort           jsr ssc.flush             ; yes, too many errors, flush buffer,
                 jmp Exit_Err          ; print error msg and exit

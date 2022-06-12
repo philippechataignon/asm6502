@@ -65,9 +65,9 @@ UPDCRC
             eor     CRC+1       ; Quick CRC computation with lookup tables
             tax
             lda     CRC
-            eor     TBLCRCH,X
+            eor     TBLCRCH,x
             sta     CRC+1
-            lda     TBLCRCL,X
+            lda     TBLCRCL,x
             sta     CRC
             rts
 
@@ -87,9 +87,9 @@ BITLOOP     asl
             pla                 ; Restore low byte
 NOADD       dey
             bne     BITLOOP     ; Do next bit
-            sta     TBLCRCL,X     ; Save CRC into table, low byte
+            sta     TBLCRCL,x     ; Save CRC into table, low byte
             lda     CRC         ; then high byte
-            sta     TBLCRCH,X
+            sta     TBLCRCH,x
             inx
             bne     BYTELOOP    ; Do next byte
             rts

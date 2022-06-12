@@ -8,7 +8,7 @@ tmp = $19
         lda #0          ; start LSB = 0
         sta start
 -       lda #$A5        ; constant
-        sta (start),Y   ; store
+        sta (start),y   ; store
         iny
         bne +
         inc start+1

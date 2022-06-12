@@ -76,5 +76,5 @@ getcwait    ldx #0                ; wait for chr input and cycle timing loop
 flush       lda #$ff/3            ; flush receive buffer
             sta retry             ; flush until empty for ~1 sec.
             jsr getcwait          ; read the port
-            bcs Flush             ; if chr recvd, wait for another
+            bcs flush             ; if chr recvd, wait for another
             rts                   ; else done

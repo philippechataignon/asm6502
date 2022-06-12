@@ -21,8 +21,8 @@ CHR2SCR     .macro
 
 PRINTMSG    .macro
             ldx #size(\1)-1
--           lda \1,X
-            sta LINE0,X
+-           lda \1,x
+            sta LINE0,x
             dex
             bpl -
             .endm

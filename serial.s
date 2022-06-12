@@ -15,7 +15,7 @@ end_page = $20
 
 loop0:      ldx #$0
 loop:
-mod1:       lda adr,X
+mod1:       lda adr,x
             jsr sscput
             inx
             bne loop

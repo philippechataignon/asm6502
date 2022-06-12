@@ -31,7 +31,7 @@ ENTRY       ldy     START+1     ; init CUR high byte with START high byte
             iny                 ; Y = 0
             sty     CUR         ; CUR = HH00
             ldy     START
-MAINLOOP    lda     $ffff,Y     ; load current byte
+MAINLOOP    lda     $ffff,y     ; load current byte
             eor     CRC         ; Quick CRC computation with lookup tables
             jsr     CRCVALUE
             lda     CRC+1
@@ -45,20 +45,20 @@ MAINLOOP    lda     $ffff,Y     ; load current byte
             sta     CRC+2
             lda     WORK+3
             sta     CRC+3
-            iny                 ; increment (CUR),Y
+            iny                 ; increment (CUR),y
             bne     +
             inc     CUR+1
             beq     EXIT        ; if $0000, exit
-+           sty     TMP         ; END>=CUR,Y=TMP
++           sty     TMP         ; END>=CUR,y=TMP
             lda     END
             cmp     TMP
             lda     END+1
             sbc     CUR+1
             bge     MAINLOOP    ; yes, continue
 EXIT        ldy     #3          ; eor $FFFFFFFF for CRC at the end
--           lda     CRC,Y
+-           lda     CRC,y
             eor     #$FF
-            sta     CRC,Y
+            sta     CRC,y
             jsr     PRBYTE      ; and display
             dey
             bpl     -

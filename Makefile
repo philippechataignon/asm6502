@@ -1,4 +1,4 @@
-TOPT=--intel-hex -B -q -m --tab-size=4 --line-numbers -Wall -Wlong-branch -Wno-implied-reg -Wno-shadow -D DIRECT:=true
+TOPT=--intel-hex -C -B -q -m --tab-size=4 --line-numbers -Wall -Wlong-branch -Wno-implied-reg -Wno-shadow -D DIRECT:=true
 
 %.bin: %.s
 	64tass $(TOPT) -b -L $(<:.s=.lst) -o "$@" "$<"

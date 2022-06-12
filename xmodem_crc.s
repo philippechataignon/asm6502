@@ -106,7 +106,7 @@ print           .macro
 
 .enc "none"
 
-                jmp XmodemRcv           ; quick jmp table
+                jmp XModemRcv           ; quick jmp table
 
 XModemSend      jsr ACIA_Init
 -               jsr GetByte             ; flush the port
@@ -124,7 +124,7 @@ Wait4CRC        lda #$ff                ; 3 seconds
                 cmp #"C"                ; is it the "C" to start a CRC xfer?
                 beq SetstAddr           ; yes
                 jmp PrtAbort            ; Print abort msg and exit
-SetstAddr       
+SetstAddr
                 ldy #$00                ; init data block offset to 0
                 ldx #$04                ; preload X to Receive buffer
                 lda #$01                ; manually load blk number
@@ -135,21 +135,21 @@ SetstAddr
                 sta Rbuff+2             ; into 3rd byte
                 lda ptrh                ; load hi byte of start address
                 sta Rbuff+3             ; into 4th byte
-                jmp Ldbuff              ; jump into buffer load routine
+                jmp LdBuff              ; jump into buffer load routine
 
-LdBuffer        lda Lastblk             ; Was the last block sent?
+LdBuffer        lda lastblk             ; Was the last block sent?
                 beq +             ; no, send the next one
                 jmp Exit_Good          ; yes, we're done
 +               ldx #$02                ; init pointers
                 ldy #$00
-                inc Blkno               ; inc block counter
-                lda Blkno               ;
+                inc blkno               ; inc block counter
+                lda blkno               ;
                 sta Rbuff               ; save in 1st byte of buffer
                 eor #$FF                ;
                 sta Rbuff+1             ; save 1's comp of blkno next
 
-LdBuff          lda (ptr),Y             ; save 128 bytes of data
-                sta Rbuff,X
+LdBuff          lda (ptr),y             ; save 128 bytes of data
+                sta Rbuff,x
                 sec
                 lda eofp
                 sbc ptr                 ; Are we at the last address?
@@ -157,12 +157,12 @@ LdBuff          lda (ptr),Y             ; save 128 bytes of data
                 lda eofph
                 sbc ptrh
                 bne +                   ;
-                inc LastBlk             ; Yes, Set last byte flag
+                inc lastblk             ; Yes, Set last byte flag
 -               inx
                 cpx #130                ; Are we at the end of the 128 byte block?
                 beq SCalcCRC            ; Yes, calc CRC
                 lda #$00                ; Fill rest of 128 bytes with $00
-                sta Rbuff,X
+                sta Rbuff,x
                 beq -                   ; Branch always
 +               inc ptr                 ; Inc address pointer
                 bne +
@@ -172,15 +172,15 @@ LdBuff          lda (ptr),Y             ; save 128 bytes of data
                 bne LdBuff              ; no, get the next
 SCalcCRC        jsr CalcCRC
                 lda crch                ; save Hi byte of CRC to buffer
-                sta Rbuff,Y
+                sta Rbuff,y
                 iny
                 lda crc                 ; save lo byte of CRC to buffer
-                sta Rbuff,Y
+                sta Rbuff,y
 Resend          ldx #$00
                 lda #SOH
-                jsr Put_chr             ; send SOH
-SendBlk         lda Rbuff,X             ; Send 132 bytes in buffer to the console
-                jsr Put_chr
+                jsr Put_Chr             ; send SOH
+SendBlk         lda Rbuff,x             ; Send 132 bytes in buffer to the console
+                jsr Put_Chr
                 inx
                 cpx #132                ; last byte?
                 bne SendBlk             ; no, get next
@@ -234,12 +234,12 @@ GetBlk          lda #$ff                ; 3 sec window to receive characters
                 sta retry2
                 jsr GetByte             ; get next character
                 bcc BadCrc              ; chr rcv error, flush and send NAK
-                sta Rbuff,X             ; good char, save it in the rcv buffer
+                sta Rbuff,x             ; good char, save it in the rcv buffer
                 inx                     ; inc buffer pointer
                 cpx #132                ; <01> <FE> <128 bytes> <CRCH> <CRCL>
                 bne GetBlk              ; get 132 characters
                 ldx #$00
-                lda Rbuff,X             ; get block # from buffer
+                lda Rbuff,x             ; get block # from buffer
                 cmp blkno               ; compare to expected block #
                 beq +                   ; matched!
                 jsr Exit_Err            ; Unexpected block number - abort
@@ -248,18 +248,18 @@ GetBlk          lda #$ff                ; 3 sec window to receive characters
                 brk                     ; unexpected block # - fatal error - BRK or RTS
 +               eor #$ff                ; 1's comp of block #
                 inx
-                cmp Rbuff,X             ; compare with expected 1's comp of block #
+                cmp Rbuff,x             ; compare with expected 1's comp of block #
                 beq +                   ; matched!
                 jsr Exit_Err            ; Unexpected block number - abort
                 jsr Flush               ; mismatched - flush buffer and then do BRK
 ;               lda #$-4                ; put error code in "A" if desired
                 brk                     ; bad 1's comp of block#
 +               jsr CalcCRC             ; calc CRC
-                lda Rbuff,Y             ; get hi CRC from buffer
+                lda Rbuff,y             ; get hi CRC from buffer
                 cmp crch                ; compare to calculated hi CRC
                 bne BadCrc              ; bad crc, send NAK
                 iny
-                lda Rbuff,Y             ; get lo CRC from buffer
+                lda Rbuff,y             ; get lo CRC from buffer
                 cmp crc                 ; compare to calculated lo CRC
                 beq GoodCrc             ; good CRC
 BadCrc          jsr Flush               ; flush the input port
@@ -272,16 +272,16 @@ GoodCrc         ldx #$02
                 bne CopyBlk             ; no, copy all 128 bytes
                 lda bflag               ; is it really block 1, not block 257, 513 etc.
                 beq CopyBlk             ; no, copy all 128 bytes
-                lda Rbuff,X             ; get target address from 1st 2 bytes of blk 1
+                lda Rbuff,x             ; get target address from 1st 2 bytes of blk 1
                 sta ptr                 ; save lo address
                 inx
-                lda Rbuff,X             ; get hi address
+                lda Rbuff,x             ; get hi address
                 sta ptr+1               ; save it
                 inx                     ; point to first byte of data
                 dec bflag               ; set the flag so we won't get another address
 CopyBlk         ldy #$00                ; set offset to zero
--               lda Rbuff,X             ; get data byte from buffer
-                sta (ptr),Y             ; save to target
+-               lda Rbuff,x             ; get data byte from buffer
+                sta (ptr),y             ; save to target
                 inc ptr                 ; point to next address
                 bne +                   ; did it step over page boundary?
                 inc ptr+1               ; adjust high address for page crossing
@@ -345,7 +345,7 @@ Put_Chr         pha                          ; save registers
 
 GetByte         lda #$00             ; wait for chr input and cycle timing loop
                 sta retry            ; set low value of timing loop
--               jsr Get_chr          ; get chr from serial port, don't wait
+-               jsr Get_Chr          ; get chr from serial port, don't wait
                 bcs +                ; got one, so exit
                 dec retry            ; no character received, so dec counter
                 bne -
@@ -364,7 +364,7 @@ printstr
                 sty printstr_mod
                 sta printstr_mod+1
                 ldy #0
--               lda mod,Y
+-               lda mod,y
 printstr_mod = * - 2
                 beq +                ; return if 0 = end of string
                 jsr cout
@@ -377,7 +377,7 @@ printstr_mod = * - 2
 Exit_Err       print ErrMsg
                 rts
 
-Exit_Good      
+Exit_Good
 -               lda #EOT
                 jsr Put_Chr
                 print GoodMsg
@@ -394,13 +394,13 @@ CalcCRC         lda #$00             ; yes, calculate the CRC for the 128 bytes
                 sta crc
                 sta crch
                 ldy #$02
-CalcCRC1        lda Rbuff,Y
+CalcCRC1        lda Rbuff,y
                 eor crc+1            ; Quick CRC computation with lookup tables
                 tax                  ; updates the two bytes at crc & crc+1
                 lda crc              ; with the byte send in the "A" register
-                eor CRCHI,X
+                eor crchi,x
                 sta crc+1
-                lda CRCLO,X
+                lda crclo,x
                 sta crc
                 iny
                 cpy #130             ; done yet?

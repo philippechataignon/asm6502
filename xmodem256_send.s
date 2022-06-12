@@ -35,12 +35,7 @@ XModemSend      jsr ssc.flush           ; flush ssc buffer
                 bcc -                   ; wait for something to come in...
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
                 bne Abort               ; not NAK, abort
-
-                lda start
-                sta ptr+1               ; ptrH = start
-                lda #0
-                sta ptr                 ; ptrL = 0 (always)
-
+                move3 start,#0,ptr      ; write start00 to ptr
 StartBlk        lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
                 inc blknum              ; inc block counter
@@ -53,7 +48,7 @@ StartBlk        lda #10                 ; error counter set to
                 ldy #0                  ; Y =  0
                 sty blksum              ; init blksum
 
-Loop            lda automod,Y           ; send 128 bytes of data
+Loop            lda automod,y           ; send 128 bytes of data
 ptr             = * - 2
                 jsr ssc.putc            ; send current byte
                 clc
@@ -64,10 +59,10 @@ ptr             = * - 2
                 bpl Loop                ; if in loop1, then Loop
                 cpy #$80                ; end of loop1 == start of loop2
                 bne Loop                ; if in loop2, then Loop
-EndLoop         lda blksum              ; end of loop1 (y==$80) or loop2 (y==$0)
+EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 jsr ssc.putc            ; send chksum
                 jsr ssc.getc3s          ; Wait for Ack/Nack
-                bcc Seterror            ; No chr received after 3 seconds, resend
+                bcc SetError            ; No chr received after 3 seconds, resend
                 cmp #ACK                ; Chr received... is it:
                 bne SetError            ; No ACK => error
                 cpy #$80                ; if end of loop1, return to Loop
@@ -81,7 +76,7 @@ ExitSend        lda #EOT                ; send final EOT
                 print GoodMsg
                 rts
 
-Seterror        dec errcnt              ; decr error counter
+SetError        dec errcnt              ; decr error counter
                 bne StartBlk            ; if not null, resend block
 Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
 Exit_Err        print ErrMsg

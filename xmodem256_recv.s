@@ -71,7 +71,7 @@ StartBlk        safe_getc               ; get byte and send nack if timeout
                 bne Abort               ; Unexpected block number - abort
                 ldx #0
 -               safe_getc
-                sta automod,X           ; good char, save it in the recv buffer
+                sta automod,x           ; good char, save it in the recv buffer
 ptr_mod = * - 2
                 clc                     ; update blksum
                 adc blksum

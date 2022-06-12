@@ -234,7 +234,7 @@ diskerror   status diskerrorm
 clrstatus
             lda #" "            ; space
             ldx #linewidth-1    ; clear line
--           sta line21,X
+-           sta line21,x
             dex
             bpl -
             lda #statusline      ; vert
@@ -286,7 +286,7 @@ rwts
             lda #0
             sta ch
             ldy #0
--           lda (rwtsptr),Y
+-           lda (rwtsptr),y
             jsr prbyte
             lda #" "
             jsr cout

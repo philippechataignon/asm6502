@@ -19,8 +19,8 @@ inline      pla              ; get calling addr + 2 in ptr
 -           inc ptr
             bne +
             inc ptr+1
-+           lda (ptr),Y      ; get param
-            sta param,X
++           lda (ptr),y      ; get param
+            sta param,x
             inx
             cpx #paramsize
             bne -

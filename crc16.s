@@ -7,8 +7,8 @@ ptr = loop + 1          ; auto-modifying addr
 
         jmp ENTRY
 
-START   .word 1
-END     .word 2
+start   .word 1
+end     .word 2
 
 ENTRY   ldy start
         lda start+1
@@ -18,7 +18,7 @@ ENTRY   ldy start
         stx crch
         inx             ; X = 0
         stx ptr
-loop    lda $ffff,Y
+loop    lda $ffff,y
 crc16   eor crch        ; A contained the data
         sta crch        ; XOR it into high byte
         lsr             ; right shift A 4 bits

@@ -47,8 +47,8 @@ prtptr      = $CE               ; pointer LSB
 ;             monitor vars
 ch          = $24               ; cursor horizontal
 basl        = $28               ; line addr form bascalc LSB
-A1          = $3C               ; for read
-A2          = $3E               ; for read
+a1          = $3C               ; for read
+a2          = $3E               ; for read
 preg        = $48
 
 ;            other vars
@@ -148,11 +148,11 @@ segloop     ; main loop
             status loadm
 
             ldx segcnt          ; get #segment
-            lda segh,X          ; get load end MSB
+            lda segh,x          ; get load end MSB
             sta load8000.endload+1
             sta inflate.end+1
             jsr prbyte
-            lda segl,X          ; get load end LSB
+            lda segl,x          ; get load end LSB
             sta load8000.endload
             sta inflate.end
             jsr prbyte
@@ -245,7 +245,7 @@ diskerror
 clrstatus
             lda #" "            ; space
             ldx #linewidth-1    ; clear line
--           sta line21,X
+-           sta line21,x
             dex
             bpl -
             lda #statusline      ; vert

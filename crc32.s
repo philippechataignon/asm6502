@@ -30,34 +30,34 @@ ENTRY       jsr     MAKECRCTABLE
             iny                 ; Y = 0
             sty     CUR         ; CUR = HH00
             ldy     START
-MAINLOOP    lda     (CUR),Y     ; current = HH00 + Y
+MAINLOOP    lda     (CUR),y     ; current = HH00 + Y
             eor     CRC         ; Quick CRC computation with lookup tables
             tax                 ; update CRC
             lda     CRC+1
-            eor     CRCT0,X
+            eor     CRCT0,x
             sta     CRC
             lda     CRC+2
-            eor     CRCT1,X
+            eor     CRCT1,x
             sta     CRC+1
             lda     CRC+3
-            eor     CRCT2,X
+            eor     CRCT2,x
             sta     CRC+2
-            lda     CRCT3,X
+            lda     CRCT3,x
             sta     CRC+3
-            iny                 ; increment (CUR),Y
+            iny                 ; increment (CUR),y
             bne     +
             inc     CUR+1
             beq     EXIT        ; if $0000, exit
-+           sty     TMP         ; END>=CUR,Y=TMP
++           sty     TMP         ; END>=CUR,y=TMP
             lda     END
             cmp     TMP
             lda     END+1
             sbc     CUR+1
             bge     MAINLOOP    ; yes, continue
 EXIT        ldy     #3          ; eor $FFFFFFFF for CRC at the end
--           lda     CRC,Y
+-           lda     CRC,y
             eor     #$FF
-            sta     CRC,Y
+            sta     CRC,y
             jsr     PRBYTE      ; and display
             dey
             bpl     -
@@ -90,13 +90,13 @@ _BITLOOP:   lsr                 ; The CRC-32 algorithm is similar to CRC-16
             pla                 ; Restore high byte
 _NOADD:     dey
             bne     _BITLOOP    ; Do next bit
-            sta     CRCT3,X     ; Save CRC into table, high to low bytes
+            sta     CRCT3,x     ; Save CRC into table, high to low bytes
             lda     CRC+2
-            sta     CRCT2,X
+            sta     CRCT2,x
             lda     CRC+1
-            sta     CRCT1,X
+            sta     CRCT1,x
             lda     CRC
-            sta     CRCT0,X
+            sta     CRCT0,x
             inx
             bne     _BYTELOOP    ; Do next byte
             rts

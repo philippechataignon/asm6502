@@ -27,7 +27,7 @@ SCREEN = $0583
 
 
 * = $2B00
-            JMP START
+            jmp START
 
 ;***********************
 ;                      *
@@ -65,7 +65,7 @@ START       jsr HOME
             jsr VTAB
             jsr TIRET
             ldx #$00
-ST1         lda TABLE2,X
+ST1         lda TABLE2,x
             beq ST2
             jsr COUT
             inx
@@ -78,7 +78,7 @@ ST2         jsr CROUT
             sta $25
             jsr VTAB
             ldx #$00
-ST3         lda TABLE1,X
+ST3         lda TABLE1,x
             beq ST4
             jsr COUT
             inx
@@ -116,18 +116,18 @@ INIT        lda #$00 ;PISTE DEPART
 
 ECRIT       lda #$02
             jsr SEEK0
-            lda DRVON,X
+            lda DRVON,x
             ldy #$05
 ECR1        lda #$FF
             jsr WAIT
             dey
             bne ECR1
             ldy #$FF
-            lda OUTBYT,X
-            lda DRVCTL1,X
+            lda OUTBYT,x
+            lda DRVCTL1,x
             lda #$FF
-            sta DRVCTL2,X
-            ora INBYT,X
+            sta DRVCTL2,x
+            ora INBYT,x
             clc
             clc
             clc
@@ -137,22 +137,22 @@ ECR1        lda #$FF
             jsr WAIT12
 ECR2        pha
             pla
-            sta OUTBYT,X
-            ora INBYT,X
+            sta OUTBYT,x
+            ora INBYT,x
             dey
             beq ECR3
             jsr WAIT12
             lda #$FF
             stx $60
             jmp ECR2
-ECR3        lda TEST,Y
+ECR3        lda TEST,y
             clc
             clc
             iny
             pha
             pla
             jmp ECR5
-ECR4        lda TEST,Y
+ECR4        lda TEST,y
 PTR = *-1
             iny
             beq ECR7
@@ -162,14 +162,14 @@ PTR = *-1
             clc
             clc
 ECR5        clc
-ECR6        sta OUTBYT,X
-            ora INBYT,X
+ECR6        sta OUTBYT,x
+            ora INBYT,x
             jmp ECR4
 ECR7        inc PTR
             clc
             jmp ECR6
-ECR8        lda DRVCTL1,X
-            lda DRVOFF,X
+ECR8        lda DRVCTL1,x
+            lda DRVOFF,x
             lda #$70
             sta PTR
 WAIT12      rts
@@ -186,19 +186,19 @@ SEEK0       pha
             sta $01
             pla
             ldy #$02
-            sta ($00),Y
+            sta ($00),y
             lda $02
             ldy #$04
-            sta ($00),Y
+            sta ($00),y
             lda #$00
             ldy #$0C
-            sta ($00),Y
+            sta ($00),y
             jsr GETIOB
             jsr RWTS
             lda #$00
             sta $48
             ldy #$01
-            lda ($00),Y
+            lda ($00),y
             tax
             rts
 
@@ -211,23 +211,23 @@ SEEK0       pha
 LECTURE     lda #$01
             jsr SEEK0
 LECT1       ldx #$60
-            lda DRVON,X
-            lda DRVCTL1,X
+            lda DRVON,x
+            lda DRVCTL1,x
             lda #$00
             sta $00
             lda #$30
             sta $01
             ldy #$00
-LECT2       lda INBYT,X
+LECT2       lda INBYT,x
             bpl LECT2
-            sta ($00),Y
+            sta ($00),y
             inc $00
             bne LECT2
             inc $01
             lda $01
             cmp #$6F
             bcc LECT2
-            lda DRVOFF,X
+            lda DRVOFF,x
             rts
 
 ;***********************
@@ -249,8 +249,8 @@ PGM02       jsr LECTURE
             sty $FC
             lda #$70
             sta $FD
-PGM03       lda ($FA),Y
-            sta ($FC),Y
+PGM03       lda ($FA),y
+            sta ($FC),y
             iny
             bne PGM03
             inc $FB
@@ -279,8 +279,8 @@ PGM03       lda ($FA),Y
             ldy #$00
             ldx #$00
             stx $FE
-PGM04       lda ($FC),Y
-            cmp TEST,X
+PGM04       lda ($FC),y
+            cmp TEST,x
             beq PGM06
 PGM05       iny
             bne PGM04
@@ -300,8 +300,8 @@ PGM07       inx
             iny
             bne PGM08
             inc $FD
-PGM08       lda ($FC),Y
-            cmp TEST,X
+PGM08       lda ($FC),y
+            cmp TEST,x
             beq PGM07
             pla
             sta $FD
@@ -342,7 +342,7 @@ PGM15       pla
             pla
             tay
             lda #$00
-            sta ($FC),Y
+            sta ($FC),y
 PGM16       lda #'W'
             jsr AFFICH
             jsr ECRIT
@@ -356,8 +356,8 @@ PGM16       lda #'W'
             ldy #$00
             sta $FC
             ldx #$00
-PGM17       lda ($FC),Y
-            cmp TEST,X
+PGM17       lda ($FC),y
+            cmp TEST,x
             bne PGM18
             inx
             cpx #$10
@@ -391,7 +391,7 @@ ANALYSE     lda #$00
             sta $FA
             lda #$30
             sta $FB
-ANA01       lda ($FA),Y
+ANA01       lda ($FA),y
             cmp $F9
             beq ANA03
 ANA02       iny
@@ -408,13 +408,13 @@ ANA03       tya
             iny
             bne ANA04
             inc $FB
-ANA04       lda ($FA),Y
+ANA04       lda ($FA),y
             cmp $05
             bne ANA07
             iny
             bne ANA05
             inc $FB
-ANA05       lda ($FA),Y
+ANA05       lda ($FA),y
             cmp $F8
             beq ANA06
             cmp $F7
@@ -443,7 +443,7 @@ ANA08       lda #$00
             sta $FB
 ANA09       jsr SYNCR
             bcs ANA12
-            lda ($FA),Y
+            lda ($FA),y
             cmp $F9
             bne ANA09
             lda $FB
@@ -451,7 +451,7 @@ ANA09       jsr SYNCR
             iny
             bne ANA10
             inc $FB
-ANA10       lda ($FA),Y
+ANA10       lda ($FA),y
             cmp $05
             bne ANA11
             pla
@@ -468,7 +468,7 @@ ANA12       lda #$00
             sta $FB
 ANA13       jsr SYNCR
             bcs ANA14
-            lda ($FA),Y
+            lda ($FA),y
             cmp $F9
             bne ANA13
             clc
@@ -488,7 +488,7 @@ ANA14       lda #$00
 ;***********************
 
 SYNCR       ldx #$00
-SYN01       lda ($FA),Y
+SYN01       lda ($FA),y
             cmp #$FF
             bne SYN03
             inx
@@ -511,7 +511,7 @@ SYN05       iny
             lda $FB
             cmp #$4F
             beq SYN04
-SYN06       lda ($FA),Y
+SYN06       lda ($FA),y
             cmp #$FF
             beq SYN05
             clc
@@ -532,10 +532,10 @@ SYN06       lda ($FA),Y
 ;***********************
 
 AFFICH      ldx $02
-            sta SCREEN,X
+            sta SCREEN,x
             rts
 AFFTRK      ldx #$00
-AFF1        lda TEXTE,X
+AFF1        lda TEXTE,x
             cmp #$00
             beq AFFRTS
             jsr COUT

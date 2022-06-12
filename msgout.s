@@ -19,7 +19,7 @@ msgout      pla                     ; get calling addr in TEMP
 -           inc TEMP
             bne +
             inc TEMP+1
-+           lda (TEMP),Y
++           lda (TEMP),y
             beq _exit
             jsr COUT
             jmp -
