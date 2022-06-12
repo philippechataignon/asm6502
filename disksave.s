@@ -29,7 +29,8 @@ rplvol = 3
 rpltrk = 4
 rplsec = 5
 rpldct = 6
-rplbuf = 8
+rplbufl = 8
+rplbufh = 9
 rplsiz = $b
 rplcmd = $c
 rplret = $e
@@ -79,31 +80,25 @@ ssc.exitkbd := done
 .include "apple_enc.inc"
 .enc "apple"
 
+.include "macros.inc"
+
 status      .macro
             jsr clrstatus
-            ldy #<\1
-            lda #>\1
-            jsr print
+            print \1
             .endm
 
 start       jsr ssc.init        ; init ssc
 
             jsr clear           ; clear screen
-            ldy #<title
-            lda #>title         ; print title
-            jsr print
+            print title
                                 ; TRACK
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
             jsr bascalc
-            ldy #<track
-            lda #>track         ; print track
-            jsr print
+            print track
 
-            ldy #<header
-            lda #>header        ; print header
-            jsr print
+            print header
             ldx #linewidth-5    ; length of line
             lda #'-'
 -           jsr cout
@@ -111,9 +106,7 @@ start       jsr ssc.init        ; init ssc
             bne -
             jsr crout
 
-            ldy #<left
-            lda #>left          ; print left side of grid
-            jsr print
+            print left
 
 setupiob
 .if REAL
@@ -139,13 +132,11 @@ setupiob
 
 initmain
             ; init main loop
+            st_rwts rwtsptr,#0,rplbufl
+            st_rwts rwtsptr,#0,rplvol       ; every volume
             lda #0
-            ldy #rplbuf         ; buffer LSB is 0
-            sta (rwtsptr),y     ; write it to RWTS
-            ldy #rplvol         ; every volume
-            sta (rwtsptr),y     ; write it to RWTS
-            sta trknum          ; track 0
-            sta secnum          ; sector 0
+            sta trknum       ; track 0
+            sta secnum       ; sector 0
             lda #segtotal       ; segment number
             sta segcnt
 
@@ -158,19 +149,10 @@ segloop     status readm
 trkloop
             ldx #'R'-$C0
             jsr draw
-
-            lda trknum          ; track number
-            ldy #rpltrk         ; offset in RWTS
-            sta (rwtsptr),y     ; write it to RWTS
-            lda secnum          ; sector number
-            ldy #rplsec         ; offset in RWTS
-            sta (rwtsptr),y     ; write it to RWTS
-            lda buffer          ; buffer MSB
-            ldy #rplbuf+1       ; offset in RWTS
-            sta (rwtsptr),y     ; write it to RWTS
-            lda #cmdread        ; read command
-            ldy #rplcmd         ; offset in RWTS
-            sta (rwtsptr),y     ; write it to RWTS
+            st_rwts rwtsptr,trknum,rpltrk
+            st_rwts rwtsptr,secnum,rplsec
+            st_rwts rwtsptr,buffer,rplbufh
+            st_rwts rwtsptr,#cmdread,rplcmd
 
 .if REAL
             jsr locrpl         ; locate rwts paramlist
@@ -255,15 +237,8 @@ draw
             txa
             sta (basl),y        ; store char in screen ram
 -           rts
-print
-            sta prtptr+1         ; store A=MSB
-            sty prtptr           ; store Y=LSB
-            ldy #0
-_L1         lda (prtptr),y       ;
-            beq -                ; return if 0 = end of string
-            jsr cout
-            iny
-            jmp _L1
+
+printstr    .binclude "printstr.s"
 
 send        lda #start_page
             sta sscsr.send1h
