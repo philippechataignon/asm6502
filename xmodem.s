@@ -206,7 +206,7 @@ Exit_Good       lda #EOT
 printstr        .binclude "printstr.s"
 
                 .enc "apple"
-GoodMsg         .null "TRANSFER SUCCESSFUL!"
-ErrMsg          .null "TRANSFER ERROR!"
-SendMsg         .null "XMODEM SEND"
-RecvMsg         .null "XMODEM RECV"
+GoodMsg         .null "TRANSFER SUCCESSFUL!\n"
+ErrMsg          .null "TRANSFER ERROR!\n"
+SendMsg         .null "XMODEM SEND\n"
+RecvMsg         .null "XMODEM RECV\n"

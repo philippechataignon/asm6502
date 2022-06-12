@@ -383,10 +383,10 @@ Exit_Good
                 print GoodMsg
                 rts
                 .enc "apple"
-GoodMsg         .null "TRANSFER SUCCESSFUL!"
-ErrMsg          .null "TRANSFER ERROR!"
-SendMsg         .null "SEND"
-RecvMsg         .null "RECV"
+GoodMsg         .null "TRANSFER SUCCESSFUL!\n"
+ErrMsg          .null "TRANSFER ERROR!\n"
+SendMsg         .null "SEND\n"
+RecvMsg         .null "RECV\n"
                 .enc "none"
 
 ;  CRC subroutines
