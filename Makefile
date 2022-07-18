@@ -22,7 +22,7 @@ print_hello.s: printstr.s
 loadlz.hex: load8000.s unlz4.s
 unlz4_example.hex: unlz4.s integer.s.lz4
 inc.hex: inc1.s inc2.s
-disksave.hex: delay.s ssc.s
+disksave.hex: delay.s ssc.s ssc_sendrec.s
 xmodem.hex xmodem256_recv.hex xmodem256_send.hex ssc_sendrec.hex: ssc.s
 
 apple:

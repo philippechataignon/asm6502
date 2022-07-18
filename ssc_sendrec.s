@@ -1,5 +1,4 @@
-k_start = $1234
-k_end = $5678
+automod = $1234
 
 .if DIRECT
 * = $900
@@ -7,37 +6,37 @@ ssc.exitkbd := exit
 .fi
 
 
-send        lda k_start
-            jsr ssc.putc
+send        lda automod
 send1l = * - 2
 send1h = * - 1
+            jsr ssc.putc
             inc send1l
             bne +
             inc send1h
 +           lda send1h
-            cmp #>k_end
+            cmp #>automod
 send2h = * - 1
             bne send
             lda send1l
-            cmp #<k_end
-send2l = * - 2
+            cmp #<automod
+send2l = * - 1
             bne send
             rts
 
 recv        jsr ssc.getc
-            sta k_start
+            sta automod
 recv1l = * - 2
 recv1h = * - 1
             inc recv1l
             bne +
             inc recv1h
 +           lda recv1h
-            cmp #>k_end
+            cmp #>automod
 recv2h = * - 1
             bne recv
             lda recv1l
-            cmp #<k_end
-recv2l = * - 2
+            cmp #<automod
+recv2l = * - 1
             bne recv
 exit        rts
 
