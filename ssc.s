@@ -58,18 +58,17 @@ getc        jsr getc_nb             ; blocking get routine
 
 ; non blocking get routine timeout = 3s
 ; carry set if char received in A
-getc3s      lda #$ff              ; 3 seconds
-            sta retry
+getc3s      ldx #$0              ; 3 seconds
+            stx retry             ; set low value of timing loop
                                   ; internal loop ~ 11.7 ms
-getcwait    ldx #0                ; wait for chr input and cycle timing loop
-            sta retry             ; set low value of timing loop
+getcwait    
 -           jsr getc_nb           ; get chr from serial port, don't wait
-            bcs +                 ; got one, so exit
+            bcs +                 ; got one, so exit with SEC
             dex                   ; no character received, so dec counter
             bne -
             dec retry             ; dec counter
             bne -
-            clc                   ; if loop times out, CLC, else SEC and return
+            clc                   ; if loop times out, CLC and return
 +           rts                   ; with character in A
 
 ; flush buffer, wait received chars for 1s
