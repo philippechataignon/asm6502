@@ -3,11 +3,12 @@ cout = $fded
 crout = $fd8e
 
 ; print subroutine
-main    pha
-        tya
-        pha
+main
         sty addr_mod
         sta addr_mod+1
+        pha
+        tya
+        pha
         ldy #0
 -       lda automod,y
 addr_mod = * - 2
@@ -16,6 +17,6 @@ addr_mod = * - 2
         iny
         jmp -
 +       pla
-        tya
+        tay
         pla
         rts
