@@ -35,9 +35,11 @@ XModemSend      jsr ssc.init            ; init serial card 19200 8n1
 -               jsr ssc.getc3s
                 bcc -                   ; wait for something to come in...
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
-                bne Abort               ; not NAK, abort
-                print GetNAK
+                beq +
+                jmp Abort               ; not NAK, abort
++               print GetNAK
                 move3 start,#0,ptr      ; write start00 to ptr
+                ldy #0
 NextBlk         inc blknum              ; inc block counter
                 lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
@@ -47,8 +49,8 @@ StartBlk        lda #SOH
                 jsr ssc.putc            ; send count
                 eor #$FF
                 jsr ssc.putc            ; send neg count
-                ldy #0                  ; Y =  0
-                sty blksum              ; init blksum
+                lda #0                  ; Y =  0
+                sta blksum              ; init blksum
 -               lda automod,y           ; send 128 bytes of data
 ptr             = * - 2
                 jsr ssc.putc            ; send current byte
@@ -62,7 +64,6 @@ ptr             = * - 2
                 bne -                   ; in loop2
 EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 jsr ssc.putc            ; send chksum
-                print WaitACK
                 jsr ssc.getc3s          ; Wait for Ack/Nack
                 bcc SetError            ; No chr received after 3 seconds, resend
                 cmp #ACK                ; Chr received... is it:
@@ -72,7 +73,7 @@ EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 inc ptr+1               ; next page
                 lda ptr+1
                 cmp end                 ; if < end, Loop again
-                blt NextBlk
+                bne NextBlk
 ExitSend        lda #EOT                ; send final EOT
                 jsr ssc.putc
                 print GoodMsg
@@ -94,6 +95,5 @@ printstr        .binclude "printstr.s"
 TitleMsg         .null "XMODEM256 SEND\n"
 GoodMsg         .null "TRANSFER OK\n"
 ErrMsg          .null "TRANSFER ABORTED!\n"
-GetNAK          .null "GET NAK\n"
-WaitACK         .null "WAIT ACK\n"
+GetNAK          .null "START\n"
 Retry           .null "RETRY\n"
