@@ -1,7 +1,13 @@
 print       .macro
+            pha
+            tya
+            pha
             ldy #<\1
             lda #>\1
             jsr printstr.main
+            pla
+            tay
+            pla
             .endm
 
 printl      .macro

@@ -6,9 +6,6 @@ crout = $fd8e
 main
         sty addr_mod
         sta addr_mod+1
-        pha
-        tya
-        pha
         ldy #0
 -       lda automod,y
 addr_mod = * - 2
@@ -16,7 +13,4 @@ addr_mod = * - 2
         jsr cout
         iny
         jmp -
-+       pla
-        tay
-        pla
-        rts
++       rts
