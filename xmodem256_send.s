@@ -29,7 +29,7 @@ ssc.exitkbd := Abort
 
 XModemSend      jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
-                print SendMsg
+                print TitleMsg
                 lda #0
                 sta blknum              ; set block counter to 0
 -               jsr ssc.getc3s
@@ -38,10 +38,10 @@ XModemSend      jsr ssc.init            ; init serial card 19200 8n1
                 bne Abort               ; not NAK, abort
                 print GetNAK
                 move3 start,#0,ptr      ; write start00 to ptr
-StartBlk        lda #10                 ; error counter set to
+NextBlk         inc blknum              ; inc block counter
+                lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
-                inc blknum              ; inc block counter
-                lda #SOH
+StartBlk        lda #SOH
                 jsr ssc.putc            ; send SOH = start of header
                 lda blknum
                 jsr ssc.putc            ; send count
@@ -49,18 +49,17 @@ StartBlk        lda #10                 ; error counter set to
                 jsr ssc.putc            ; send neg count
                 ldy #0                  ; Y =  0
                 sty blksum              ; init blksum
-
-Loop            lda automod,y           ; send 128 bytes of data
+-               lda automod,y           ; send 128 bytes of data
 ptr             = * - 2
                 jsr ssc.putc            ; send current byte
                 clc
                 adc blksum              ; add mod 256 to blksum
                 sta blksum
                 iny
-                beq EndLoop             ; if end of loop2, EndLoop
-                bpl Loop                ; if in loop1, then Loop
+                beq EndLoop             ; end of loop2
+                bpl -                   ; in loop1
                 cpy #$80                ; end of loop1 == start of loop2
-                bne Loop                ; if in loop2, then Loop
+                bne -                   ; in loop2
 EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 jsr ssc.putc            ; send chksum
                 print WaitACK
@@ -68,12 +67,12 @@ EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 bcc SetError            ; No chr received after 3 seconds, resend
                 cmp #ACK                ; Chr received... is it:
                 bne SetError            ; No ACK => error
-                cpy #$80                ; if end of loop1, return to Loop
-                beq Loop                ; after blksum sending
+                cpy #$80                ; if end of loop1, next block
+                beq NextBlk             ; after blksum sending
                 inc ptr+1               ; next page
                 lda ptr+1
                 cmp end                 ; if < end, Loop again
-                blt Loop
+                blt NextBlk
 ExitSend        lda #EOT                ; send final EOT
                 jsr ssc.putc
                 print GoodMsg
@@ -92,11 +91,9 @@ ssc             .binclude "ssc.s"
 printstr        .binclude "printstr.s"
 
                 .enc "apple"
+TitleMsg         .null "XMODEM256 SEND\n"
 GoodMsg         .null "TRANSFER OK\n"
 ErrMsg          .null "TRANSFER ABORTED!\n"
-SendMsg         .null "XMODEM256 SEND\n"
-
-
 GetNAK          .null "GET NAK\n"
 WaitACK         .null "WAIT ACK\n"
 Retry           .null "RETRY\n"

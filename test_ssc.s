@@ -35,7 +35,7 @@ ssc.exitkbd := norecv
                 jmp -
 norecv          print msg_norecv
                 rts
-getack          print getack
+getack          print msg_getack
                 rts
 
 ssc             .binclude "ssc.s"
