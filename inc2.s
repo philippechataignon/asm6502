@@ -21,12 +21,7 @@ addrs = ($D000, $FDED, $FA62)
 Cwhite = 1
 Cred = 2
 Cblue = 3
-screen_param = (
-    (1, 2, Cblue, "Texte1"),
-    (3, 1, Cred, "Texte2"),
-    (5, 3, Cblue, "Texte3"),
-    (7, 0, Cwhite, "Texte4"),
-)
+screen_param := ((1, 2, Cblue, "Texte1"), (3, 1, Cred, "Texte2"), (5, 3, Cblue, "Texte3"), (7, 0, Cwhite, "Texte4"))
 
 * = $1000
 txtptrs := [screen_text]   ; first offset
