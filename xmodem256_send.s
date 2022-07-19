@@ -27,7 +27,8 @@ ssc.exitkbd := Abort
 
 *       =  $900
 
-XModemSend      jsr ssc.flush           ; flush ssc buffer
+XModemSend      jsr ssc.init            ; init serial card 19200 8n1
+                jsr ssc.flush           ; flush ssc buffer
                 print SendMsg
                 lda #0
                 sta blknum              ; set block counter to 0
@@ -35,6 +36,7 @@ XModemSend      jsr ssc.flush           ; flush ssc buffer
                 bcc -                   ; wait for something to come in...
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
                 bne Abort               ; not NAK, abort
+                print GetNAK
                 move3 start,#0,ptr      ; write start00 to ptr
 StartBlk        lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
@@ -61,6 +63,7 @@ ptr             = * - 2
                 bne Loop                ; if in loop2, then Loop
 EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 jsr ssc.putc            ; send chksum
+                print WaitACK
                 jsr ssc.getc3s          ; Wait for Ack/Nack
                 bcc SetError            ; No chr received after 3 seconds, resend
                 cmp #ACK                ; Chr received... is it:
@@ -77,6 +80,7 @@ ExitSend        lda #EOT                ; send final EOT
                 rts
 
 SetError        dec errcnt              ; decr error counter
+                print Retry
                 bne StartBlk            ; if not null, resend block
 Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
 Exit_Err        print ErrMsg
@@ -91,3 +95,8 @@ printstr        .binclude "printstr.s"
 GoodMsg         .null "TRANSFER OK\n"
 ErrMsg          .null "TRANSFER ABORTED!\n"
 SendMsg         .null "XMODEM256 SEND\n"
+
+
+GetNAK          .null "GET NAK\n"
+WaitACK         .null "WAIT ACK\n"
+Retry           .null "RETRY\n"
