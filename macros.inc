@@ -1,4 +1,10 @@
 print       .macro
+            ldy #<\1
+            lda #>\1
+            jsr printstr.main
+            .endm
+
+prints      .macro
             pha
             tya
             pha
