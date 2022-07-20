@@ -37,12 +37,7 @@ putc        pha                     ; Push A onto the stack
 ; non blocking get routine
 ; carry set if char received in A
 getc_nb
-            lda kbd                 ; non-blocking get routine
-            cmp #esc
-            bne +
-            bit kbdstrobe
-            jmp exitkbd
-+           clc                     ; no chr present
+            clc                     ; no chr present
             lda sscstatus           ; get Serial port status
             and #%00001000          ; Test bit 3 recv full
             beq +                   ; if no char, done
@@ -61,7 +56,6 @@ getc        jsr getc_nb             ; blocking get routine
 getc3s      ldx #$0              ; 3 seconds
             stx retry             ; set low value of timing loop
                                   ; internal loop ~ 11.7 ms
-getcwait    
 -           jsr getc_nb           ; get chr from serial port, don't wait
             bcs +                 ; got one, so exit with SEC
             dex                   ; no character received, so dec counter
@@ -71,9 +65,8 @@ getcwait
             clc                   ; if loop times out, CLC and return
 +           rts                   ; with character in A
 
-; flush buffer, wait received chars for 1s
-flush       lda #$ff/3            ; flush receive buffer
-            sta retry             ; flush until empty for ~1 sec.
-            jsr getcwait          ; read the port
-            bcs flush             ; if chr recvd, wait for another
+; flush buffer
+flush
+-           jsr getc_nb
+            bcs -                 ; get char, get next
             rts                   ; else done
