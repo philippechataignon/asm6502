@@ -31,9 +31,9 @@ NAK = $15                       ; bad block acknowledged
 .include "macros.inc"
 
 ; macros
-safe_getc       .macro
+getc_nak       .macro
                 jsr ssc.getc3s          ; get chksum
-                bcc TimeoutAbort        ; chr recv error, flush and send NAK
+                bcc SendNak             ; chr recv error, flush and send NAK
                 sta endofline1
                 .endm
 
@@ -78,25 +78,20 @@ Blk2Abort       ldy #$12
                 bne Abort
 ChkAbort        ldy #$13
                 bne Abort
-TimeoutAbort    ldy #$14
+ProcAbort       ldy #$14
                 bne Abort
-ProcAbort       ldy #$15
-                bne Abort
-LimAbort        ldy #$16
+LimAbort        ldy #$15
 Abort           brk
-                ;jsr ssc.flush           ; yes, too many errors, flush buffer,
-                ;print AbortMsg
-                ;rts
 
-StartBlk        safe_getc               ; get byte and send nak if timeout
+StartBlk        getc_nak                ; get byte and send nak if timeout
                 cmp blknum              ; compare to expected block #
                 bne Blk1Abort
-+               safe_getc
++               getc_nak
                 eor #$ff                ; neg block number
                 cmp blknum              ; compare to expected
                 bne Blk2Abort
 +               ldy #0
--               safe_getc
+-               getc_nak
                 sta automod,y           ; good char, save it in the recv buffer
 ptr_mod = * - 2
                 clc                     ; update chksum
@@ -104,7 +99,7 @@ ptr_mod = * - 2
                 sta chksum
                 iny                     ; inc buffer pointer
                 bpl -                   ; continue until $80=128 bits
-                safe_getc
+                getc_nak
                 cmp chksum              ; compare to calculated checksum
                 bne ChkAbort            ; uncorrect chksum, abort
                 inc blknum              ; done.  Inc the block #
@@ -127,5 +122,4 @@ ssc             .binclude "ssc.s"
 printstr        .binclude "printstr.s"
 
 GoodMsg         .null "\nOK\n"
-AbortMsg        .null "ABORTED!\n"
 RecvMsg         .null "XMODEM256 RECV\n"
