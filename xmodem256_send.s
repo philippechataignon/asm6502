@@ -20,8 +20,6 @@ EOT = $04                ; end of text marker
 ACK = $06                ; good block acknowledged
 NAK = $15                ; bad block acknowledged
 
-ssc.exitkbd := Abort
-
 .include "apple_enc.inc"
 .enc "none"
 

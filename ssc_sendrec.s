@@ -2,7 +2,6 @@ automod = $1234
 
 .if DIRECT
 * = $900
-ssc.exitkbd := exit
 .fi
 
 

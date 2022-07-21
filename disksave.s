@@ -75,7 +75,6 @@ esc        = $9b        ; ESCAPE KEY
 ack        = $06        ; ACKNOWLEDGE
 nak        = $15        ; NEGATIVE ACKNOWLEDGE
 
-ssc.exitkbd := done
 
 .include "apple_enc.inc"
 .enc "apple"

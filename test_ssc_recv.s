@@ -11,7 +11,6 @@ NAK = $15                ; bad block acknowledged
 home = $fc58
 endofline1 = $427
 
-ssc.exitkbd := exit
 
 .include "apple_enc.inc"
 .enc "none"
