@@ -12,6 +12,8 @@ end     = $fb
 
 automod = $1234
 
+cout = $fded
+
 ; XMODEM Control Character Constants
 SOH = $01                ; start block
 EOT = $04                ; end of text marker
@@ -25,7 +27,7 @@ ssc.exitkbd := Abort
 
 .include "macros.inc"
 
-*       =  $900
+*       =  $B00
 
 XModemSend      jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
@@ -37,13 +39,14 @@ XModemSend      jsr ssc.init            ; init serial card 19200 8n1
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
                 beq +
                 jmp Abort               ; not NAK, abort
-+               print GetNAK
-                move3 start,#0,ptr      ; write start00 to ptr
++               move3 start,#0,ptr      ; write start00 to ptr
                 ldy #0
 NextBlk         inc blknum              ; inc block counter
                 lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
-StartBlk        lda #SOH
+StartBlk        lda #'.'+$80
+                jsr cout
+                lda #SOH
                 jsr ssc.putc            ; send SOH = start of header
                 lda blknum
                 jsr ssc.putc            ; send count
@@ -90,7 +93,6 @@ ssc             .binclude "ssc.s"
 
                 .enc "apple"
 TitleMsg        .null "XMODEM256 SEND\n"
-GoodMsg         .null "TRANSFER OK\n"
-ErrMsg          .null "TRANSFER ABORTED!\n"
-GetNAK          .null "START\n"
-Retry           .null "RETRY\n"
+GoodMsg         .null "\nOK\n"
+ErrMsg          .null "\nABORT!\n"
+Retry           .null "\nRETRY\n"
