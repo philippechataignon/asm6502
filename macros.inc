@@ -1,24 +1,22 @@
 print       .macro
-            ldy #<\1
-            lda #>\1
-            jsr printstr.main
+_cout       = $fded
+            ldy #0
+-           lda \1,y
+            beq +
+            jsr _cout
+            iny
+            bne -
++
             .endm
 
 prints      .macro
             pha
             tya
             pha
-            ldy #<\1
-            lda #>\1
-            jsr printstr.main
+            print \1
             pla
             tay
             pla
-            .endm
-
-printl      .macro
-            print \1
-            jsr $fd8e   ; crout
             .endm
 
 move        .macro

@@ -114,7 +114,6 @@ ptr_mod = * - 2
                 jmp StartRecv           ; get next block
 
 ssc             .binclude "ssc.s"
-printstr        .binclude "printstr.s"
 
 GoodMsg         .null "\nOK\n"
 RecvMsg         .null "XMODEM256 RECV\n"
