@@ -53,7 +53,7 @@ getc        jsr getc_nb             ; blocking get routine
 
 ; non blocking get routine timeout = 3s
 ; carry set if char received in A
-getc3s      ldx #$0              ; 3 seconds
+getc3s      ldx #$0               ; 3 seconds
             stx retry             ; set low value of timing loop
                                   ; internal loop ~ 11.7 ms
 -           jsr getc_nb           ; get chr from serial port, don't wait

@@ -238,8 +238,6 @@ draw
             sta (basl),y        ; store char in screen ram
 -           rts
 
-printstr    .binclude "printstr.s"
-
 send        lda #start_page
             sta sscsr.send1h
             lda #end_page

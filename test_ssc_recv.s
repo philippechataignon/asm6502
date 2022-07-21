@@ -53,8 +53,5 @@ exit            rts
 
 ssc             .binclude "ssc.s"
 
-; print subroutine
-printstr        .binclude "printstr.s"
-
                 .enc "apple"
 msg_norecv      .null "NO RECV\n"
