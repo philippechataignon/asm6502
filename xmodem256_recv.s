@@ -32,8 +32,8 @@ NAK = $15                       ; bad block acknowledged
 
 ; macros
 getc_nak       .macro
-                jsr ssc.getc3s          ; get chksum
-                bcc SendNak             ; chr recv error, flush and send NAK
+                jsr ssc.getc3s          ; get char, timeout 3s
+                bcc SendNak             ; timeout, flush and send NAK
                 sta endofline1
                 .endm
 
@@ -72,12 +72,6 @@ SendNak         jsr ssc.flush           ; flush the input port
                 jsr ssc.putc            ; send NAK to resend block
                 jmp StartRecv           ; start over, get the block again
 
-Blk1Abort       ldy #$11
-                bne Abort
-Blk2Abort       ldy #$12
-                bne Abort
-ChkAbort        ldy #$13
-                bne Abort
 ProcAbort       ldy #$14
                 bne Abort
 LimAbort        ldy #$15
@@ -85,11 +79,11 @@ Abort           brk
 
 StartBlk        getc_nak                ; get byte and send nak if timeout
                 cmp blknum              ; compare to expected block #
-                bne Blk1Abort
+                bne SendNak             ; error, send NAK
 +               getc_nak
                 eor #$ff                ; neg block number
                 cmp blknum              ; compare to expected
-                bne Blk2Abort
+                bne SendNak             ; error, send NAK
 +               ldy #0
 -               getc_nak
                 sta automod,y           ; good char, save it in the recv buffer
@@ -101,14 +95,15 @@ ptr_mod = * - 2
                 bpl -                   ; continue until $80=128 bits
                 getc_nak
                 cmp chksum              ; compare to calculated checksum
-                bne ChkAbort            ; uncorrect chksum, abort
-                inc blknum              ; done.  Inc the block #
+                bne SendNak             ; error, send NAK
+                ; block is well received, done
+                inc blknum              ; inc the block #
                 lda ptr_mod             ; ptr_modL $0 <-> $80
                 eor #$80
                 sta ptr_mod
                 bne +                   ; if $0, next page so
                 inc ptr_mod+1           ; increment ptr_modH
-                lda ptr_mod+1           ; test if ptr_mod >= limit
+                lda ptr_mod+1           ; test if ptr_mod = limit
                 cmp #limit
                 beq LimAbort            ; yes, abort
 .enc "apple"
