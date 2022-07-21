@@ -15,6 +15,7 @@ automod = $1234                 ; fake automodified address
 ; monitor
 cout = $fded
 crout = $fd8e
+prbyte = $fdda
 home = $fc58
 
 endofline1 = $427
@@ -72,10 +73,12 @@ SendNak         jsr ssc.flush           ; flush the input port
                 jsr ssc.putc            ; send NAK to resend block
                 jmp StartRecv           ; start over, get the block again
 
-ProcAbort       ldy #$14
+ProcAbort       lda #$14
                 bne Abort
-LimAbort        ldy #$15
-Abort           brk
+LimAbort        lda #$15
+Abort           jsr prbyte
+                print ErrorMsg
+                jmp ssc.flush
 
 StartBlk        getc_nak                ; get byte and send nak if timeout
                 cmp blknum              ; compare to expected block #
@@ -117,3 +120,4 @@ ssc             .binclude "ssc.s"
 
 GoodMsg         .null "\nOK\n"
 RecvMsg         .null "XMODEM256 RECV\n"
+ErrorMsg        .null " ERROR CODE\n"
