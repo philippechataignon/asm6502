@@ -88,11 +88,8 @@ Exit_Err        print ErrMsg
 
 ssc             .binclude "ssc.s"
 
-; print subroutine
-printstr        .binclude "printstr.s"
-
                 .enc "apple"
-TitleMsg         .null "XMODEM256 SEND\n"
+TitleMsg        .null "XMODEM256 SEND\n"
 GoodMsg         .null "TRANSFER OK\n"
 ErrMsg          .null "TRANSFER ABORTED!\n"
 GetNAK          .null "START\n"

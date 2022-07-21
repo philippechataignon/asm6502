@@ -40,9 +40,6 @@ getack          print msg_getack
 
 ssc             .binclude "ssc.s"
 
-; print subroutine
-printstr        .binclude "printstr.s"
-
                 .enc "apple"
 msg_getack      .null "GET ACK OK\n"
 msg_retry       .null "NO ACK RESEND\n"
