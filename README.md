@@ -39,3 +39,9 @@ Serial transfer with xmodem in future.
 WIP : create an dsk image from a real (standard) disk. Transfer via serial.
 Actually `ser.py` in [this repo](
 https://github.com/philippechataignon/c2t). Will use *xmodem* in future.
+
+## apple directory
+
+Contains all sources for compiling integer ROM and Apple ][+ ROM. Fix 4
+errors in integer basic in [this commit](
+https://github.com/philippechataignon/asm6502/commit/ac7a722eb845e865dfa68389566f81c88913d214)
