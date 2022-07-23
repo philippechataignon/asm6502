@@ -257,4 +257,3 @@ left        .text "  0:\n"
             .byte 0
 segl        .fill segtotal,?
 segh        .fill segtotal,?
-segend      = * -1

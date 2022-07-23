@@ -1,4 +1,3 @@
-*           = $900
 rwts        = $3D9             ; RWTS jsr (tmp = delay)
 locrpl      = $3E3              ; locate RWTS paramlist jsr
 
@@ -26,12 +25,9 @@ track = 1
 sector = 2
 adr = $1000
 
-st_rwts     .macro
-            lda \2
-            ldy #\3
-            sta (\1),y
-            .endm
+.include "macros.inc"
 
+*           = $F00
             jsr locrpl
             sty ptr
             sta ptr+1
@@ -41,7 +37,7 @@ st_rwts     .macro
             st_rwts ptr,#0,rplvol
             st_rwts ptr,<adr,rplbuf
             st_rwts ptr,>adr,rplbuf+1
-            st_rwts ptr,#cmdread,rplcmd
+            st_rwts ptr,#cmdformat,rplcmd
 
             jsr locrpl
             jsr rwts
