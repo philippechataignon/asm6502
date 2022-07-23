@@ -98,26 +98,8 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
-            jsr ssc.init
-            lda #$19
-            jsr ssc.putc
-            lda #$65
-            jsr ssc.putc
-            lda #$0
-            jsr ssc.putc
-            jsr ssc.getc         ; and wait ack
-            cmp #ack
-            beq initmain
-            jmp sscerr
-getparam    ; status paramm
-            ; lda #<segl
-            ; sta a1
-            ; lda #>segl
-            ; sta a1+1
-            ; lda #<segend
-            ; sta a2
-            ; lda #>segend
-            ; sta a2+1
+getparam    status paramm
+            jsr xm.XModemRecv   ; receive 10 param MSB in $1000
 initmain
             ;;; init main loop
             st_rwts rwtsptr,#0,rplbuf   ; buffer LSB is 0 ($4800)
@@ -232,7 +214,7 @@ draw
             sta (basl),y        ; store char in screen ram
 -           rts
 
-ssc         .binclude "ssc.s"
+xm          .binclude "xmodem256_recv.s"
 inflate     .binclude "unlz4.s"
 
             .enc "apple_inv"
