@@ -2,8 +2,8 @@
 DIRECT := false
 
 ; zero page variables
-blknum  = $06                   ; block number
-chksum  = $19                   ; blksum
+blknum  = $D6                   ; block number
+chksum  = $D7                   ; blksum
 
 ; buffer: $1000 -> max $95FF
 start   = $1000
