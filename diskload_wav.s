@@ -68,23 +68,30 @@ mult = 5                        ; delay multiplier
 .include "apple_enc.inc"
 .enc "apple"
 
-.include "macros.inc"
-
 status      .macro
             jsr clrstatus
-            print \1
+            ldy #<\1
+            lda #>\1
+            jsr print
             .endm
 
 start
             jsr clear           ; clear screen
-            print title
+            ldy #<title
+            lda #>title         ; print title
+            jsr print
+                                ; TRACK
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
             jsr bascalc
-            print track
+            ldy #<track
+            lda #>track         ; print track
+            jsr print
 
-            print header
+            ldy #<header
+            lda #>header        ; print header
+            jsr print
             ldx #linewidth-5    ; length of line
             lda #'-'
 -           jsr cout
@@ -92,7 +99,10 @@ start
             bne -
             jsr crout
 
-            print left          ; print left side of grid
+            ldy #<left
+            lda #>left          ; print left side of grid
+            jsr print
+
 setupiob
 .if REAL
             jsr locrpl         ; locate rwts paramlist
@@ -103,27 +113,29 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
-getparam    ; status paramm
-            ; lda #<segl
-            ; sta a1
-            ; lda #>segl
-            ; sta a1+1
-            ; lda #<segend
-            ; sta a2
-            ; lda #>segend
-            ; sta a2+1
+getparam    status paramm
+            lda #<segl
+            sta a1
+            lda #>segl
+            sta a1+1
+            lda #<segend
+            sta a2
+            lda #>segend
+            sta a2+1
 .if REAL
-            ; jsr read
+            jsr read
 .else
-            ; lda #MULT
-            ; jsr delay
+            lda #MULT
+            jsr delay
 .fi
 
 initmain
             ;;; init main loop
-            st_rwts rwtsptr,#0,rplbuf   ; buffer LSB is 0 ($4800)
-            st_rwts rwtsptr,#0,rplvol   ; every volume number
             lda #0
+            ldy #rplbuf         ; buffer LSB is 0 ($4800)
+            sta (rwtsptr),y     ; write it to RWTS
+            ldy #rplvol         ; every volume number
+            sta (rwtsptr),y     ; write it to RWTS
             sta trknum          ; track 0
             sta secnum          ; sector 0
             lda #segtotal-1     ; segment number
@@ -134,31 +146,31 @@ segloop     ; main loop
             jsr draw
             status loadm
 
-            ;ldx segcnt          ; get #segment
-            ;lda segh,x          ; get load end MSB
-            ;sta load8000.endload+1
-            ;sta inflate.end+1
-            ;jsr prbyte
-            ;lda segl,x          ; get load end LSB
-            ;sta load8000.endload
-            ;sta inflate.end
-            ;jsr prbyte
+            ldx segcnt          ; get #segment
+            lda segh,x          ; get load end MSB
+            sta load8000.endload+1
+            sta inflate.end+1
+            jsr prbyte
+            lda segl,x          ; get load end LSB
+            sta load8000.endload
+            sta inflate.end
+            jsr prbyte
 
-            ;lda #0              ; prepare loading
-            ;sta load8000.begload
-            ;sta inflate.src
-            ;sta inflate.dst
-            ;lda #>data          ; store start loc MSB
-            ;sta load8000.begload+1
-            ;sta inflate.src+1
-            ;lda #>zdata
-            ;sta inflate.dst+1
+            lda #0              ; prepare loading
+            sta load8000.begload
+            sta inflate.src
+            sta inflate.dst
+            lda #>data          ; store start loc MSB
+            sta load8000.begload+1
+            sta inflate.src+1
+            lda #>zdata
+            sta inflate.dst+1
 
 .if REAL
-            ;jsr load8000
+            jsr load8000
 .else
-            ;lda #MULT
-            ;jsr delay
+            lda #MULT
+            jsr delay
 .fi
             ldx #'I'-$C0
             jsr draw
@@ -169,6 +181,7 @@ segloop     ; main loop
             lda #MULT
             jsr delay
 .fi
+
             ldx #slot           ; slot #6
             lda motoron,x       ; turn it on
 
@@ -182,13 +195,21 @@ trkloop
             ldx #'W'-$C0
             jsr draw
 
-            st_rwts rwtsptr,trknum,rpltrk  ; track number
-            st_rwts rwtsptr,secnum,rplsec  ; sector number
-            st_rwts rwtsptr,buffer,rplbuf+1  ; buffer MSB
-            st_rwts rwtsptr,#cmdwrite,rplcmd  ; write cmd
+            lda trknum          ; track number
+            ldy #rpltrk         ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
+            lda secnum          ; sector number
+            ldy #rplsec         ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
+            lda buffer          ; buffer MSB
+            ldy #rplbuf+1       ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
+            lda #cmdwrite       ; read(1)/write(2) command
+            ldy #rplcmd        ; offset in RWTS
+            sta (rwtsptr),y     ; write it to RWTS
+
             jsr locrpl          ; locate rwts paramlist
             jsr rwts            ; do it!
-
             lda #0
             sta preg
             bcc nodiskerr
@@ -244,6 +265,15 @@ draw
             txa
             sta (basl),y        ; store char in screen ram
 -           rts
+print
+            sta prtptr+1         ; store A=MSB
+            sty prtptr           ; store Y=LSB
+            ldy #0
+_L1         lda (prtptr),y       ;
+            beq -                ; return if 0 = end of string
+            jsr cout
+            iny
+            jmp _L1
 .if !REAL
 rwts
             tya                 ;saves Y on stack
