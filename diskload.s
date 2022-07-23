@@ -101,15 +101,15 @@ setupiob
 getparam    status paramm
             jsr xm.XModemRecv   ; receive param in $1000
             ldx #0              ; copy end address of segments
+            ldy #segtotal-1
 -           lda data,x          ; in segl/segh
-            sta segl,x
+            sta segl,y
             lda data+1,x
-            sta segh,x
+            sta segh,y
             inx
             inx
-            cpx #2*segtotal
-            blt -
-
+            dey
+            bpl -
 initmain
             ;;; init main loop
             st_rwts rwtsptr,#0,rplbuf   ; buffer LSB is 0 ($4800)
