@@ -1,6 +1,5 @@
 *           = $9000
 DIRECT := false
-REAL := true
 
 ; apple vectors
 tapein      = $C060             ; read tape interface
@@ -14,9 +13,7 @@ cout        = $FDED             ; character out sub
 read        = $FEFD             ; read from tape
 
 ;            dos routines
-.if REAL
 rwts        = $3D9             ; RWTS jsr (tmp = delay)
-.fi
 locrpl      = $3E3              ; locate RWTS paramlist jsr
 
 rpliob = 0
@@ -65,6 +62,9 @@ segtotal = 10
 secbyseg = 560 / segtotal       ; # of sector by segment
 mult = 5                        ; delay multiplier
 
+ack        = $06                ; ACKNOWLEDGE
+nak        = $15                ; NEGATIVE ACKNOWLEDGE
+
 .include "apple_enc.inc"
 .enc "apple"
 
@@ -94,15 +94,21 @@ start
 
             print left          ; print left side of grid
 setupiob
-.if REAL
             jsr locrpl         ; locate rwts paramlist
-.else
-            ldy #<rwts_iob      ; simul locrpl
-            lda #>rwts_iob
-.fi
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
+            jsr ssc.init
+            lda #$19
+            jsr ssc.putc
+            lda #$65
+            jsr ssc.putc
+            lda #$0
+            jsr ssc.putc
+            jsr ssc.getc         ; and wait ack
+            cmp #ack
+            beq initmain
+            jmp sscerr
 getparam    ; status paramm
             ; lda #<segl
             ; sta a1
@@ -112,13 +118,6 @@ getparam    ; status paramm
             ; sta a2
             ; lda #>segend
             ; sta a2+1
-.if REAL
-            ; jsr read
-.else
-            ; lda #MULT
-            ; jsr delay
-.fi
-
 initmain
             ;;; init main loop
             st_rwts rwtsptr,#0,rplbuf   ; buffer LSB is 0 ($4800)
@@ -154,21 +153,12 @@ segloop     ; main loop
             ;lda #>zdata
             ;sta inflate.dst+1
 
-.if REAL
             ;jsr load8000
-.else
-            ;lda #MULT
-            ;jsr delay
-.fi
             ldx #'I'-$C0
+
             jsr draw
             status inflatem
-.if REAL
             jsr inflate
-.else
-            lda #MULT
-            jsr delay
-.fi
             ldx #slot           ; slot #6
             lda motoron,x       ; turn it on
 
@@ -214,10 +204,7 @@ done
             jsr crout
             rts
 
-diskerror
-            ldx #slot            ; slot #6
-            lda motoroff,x       ; turn it off
-            status diskerrorm     ; print error
+sscerr      status sscerrorm
             rts
 
 clrstatus
@@ -244,38 +231,12 @@ draw
             txa
             sta (basl),y        ; store char in screen ram
 -           rts
-.if !REAL
-rwts
-            tya                 ;saves Y on stack
-            pha
-            lda #22
-            jsr bascalc
-            lda #0
-            sta ch
-            ldy #0
--           lda (rwtsptr),Y
-            jsr prbyte
-            lda #" "
-            jsr cout
-            iny
-            cpy #$D
-            blt -
-            clc
-            pla                 ; restore Y
-            tay
-            lda #1
-            jsr delay
-            rts
-.fi
 
-delay       .binclude "delay.s"
-load8000    .binclude "load8000.s"
+ssc         .binclude "ssc.s"
 inflate     .binclude "unlz4.s"
 
             .enc "apple_inv"
 title       .null "DISKLOAD"
-            .enc "apple_flash"
-diskerrorm  .null "DISK ERROR"
             .enc "apple"
 rwtsm       .null "RWTS "
 paramm      .null "READ PARAM"
@@ -284,6 +245,7 @@ loadm       .null "LOAD: $1000-$"
 inflatem    .null "INFLATE $4900-$80FF"
 formatm     .null "FORMAT"
 writem      .null "WRITE"
+sscerrorm   .null "SSC ERROR"
 track       .null "TRACK\n"
 header      .text "    00000000001111111111222222222233333\n"
             .text "    01234567890123456789012345678901234\n"
@@ -303,8 +265,8 @@ left        .text "  0:\n"
             .text "  C:\n"
             .text "  D:\n"
             .text "  E:\n"
-            .null "  F:\n"
-rwts_iob    .byte 17
+            .text "  F:\n"
+            .byte 0
 segl        .fill segtotal,?
 segh        .fill segtotal,?
 segend      = * -1
