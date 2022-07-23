@@ -11,12 +11,6 @@ ssccontrol  = $C08B+sscslot
 
 retry   = $ce                ; retry counter
 
-.if DIRECT
-* = $900
-; exit_kbd must be assigned to exit jsr when escape
-exitkbd := $3D0
-.fi
-
 ; ssc init routine
 init        bit sscreg              ; reset ssc
             lda #%00001011          ; 7-5 no parity, 4 no echo, 3-2 disable transmit intr

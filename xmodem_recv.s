@@ -1,5 +1,4 @@
 ; XMODEM Receiver for the 6502
-DIRECT := false
 
 ; zero page variables
 blknum  = $D6                   ; block number
