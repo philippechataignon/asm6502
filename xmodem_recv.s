@@ -37,7 +37,9 @@ getc_nak       .macro
                 sta endofline1
                 .endm
 
+.if DIRECT
 *       =  $900
+.fi
 
 XModemRecv      jsr ssc.init
                 jsr ssc.flush
@@ -79,7 +81,7 @@ SendNak         jsr ssc.flush           ; flush the input port
 ProcAbort       lda #$14
                 bne Abort
 LimAbort        lda #$15
-Abort           
+Abort
 .if DIRECT
                 jsr prbyte
                 print ErrorMsg
