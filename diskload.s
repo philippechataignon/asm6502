@@ -125,27 +125,23 @@ segloop     ; main loop
             jsr draw
             status loadm
 
-            ;ldx segcnt          ; get #segment
-            ;lda segh,x          ; get load end MSB
-            ;sta load8000.endload+1
-            ;sta inflate.end+1
-            ;jsr prbyte
-            ;lda segl,x          ; get load end LSB
-            ;sta load8000.endload
-            ;sta inflate.end
-            ;jsr prbyte
+            ldx segcnt          ; get #segment
+            lda segh,x          ; get load end MSB
+            sta inflate.end+1
+            jsr prbyte
+            lda segl,x          ; get load end LSB
+            sta inflate.end
+            jsr prbyte
 
-            ;lda #0              ; prepare loading
-            ;sta load8000.begload
-            ;sta inflate.src
-            ;sta inflate.dst
-            ;lda #>data          ; store start loc MSB
-            ;sta load8000.begload+1
-            ;sta inflate.src+1
-            ;lda #>zdata
-            ;sta inflate.dst+1
+            lda #0              ; prepare loading
+            sta inflate.src
+            sta inflate.dst
+            lda #>data          ; store start loc MSB
+            sta inflate.src+1
+            lda #>zdata
+            sta inflate.dst+1
 
-            ;jsr load8000
+            jsr xm.XModemRecv   ; get segment
             ldx #'I'-$C0
 
             jsr draw
