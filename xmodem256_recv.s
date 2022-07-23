@@ -9,7 +9,6 @@ chksum  = $19                   ; blksum
 start   = $1000
 limit = $96                     ; don't write after $9600
 
-
 automod = $1234                 ; fake automodified address
 
 ; monitor
@@ -42,8 +41,10 @@ getc_nak       .macro
 
 XModemRecv      jsr ssc.init
                 jsr ssc.flush
+.if DIRECT
                 jsr home
                 print RecvMsg
+.fi
                 move #start,ptr_mod     ; set ptr_mod to start
                 lda #1                  ; set block # to 1
                 sta blknum
@@ -65,7 +66,9 @@ StartRecv       lda #0                  ; reinit chksum
 EndRecv         lda #ACK                ; last block, send ACK and exit.
                 jsr ssc.putc
                 jsr ssc.flush           ; get leftover characters, if any
+.if DIRECT
                 print GoodMsg
+.fi
                 rts
 
 SendNak         jsr ssc.flush           ; flush the input port
@@ -76,8 +79,11 @@ SendNak         jsr ssc.flush           ; flush the input port
 ProcAbort       lda #$14
                 bne Abort
 LimAbort        lda #$15
-Abort           jsr prbyte
+Abort           
+.if DIRECT
+                jsr prbyte
                 print ErrorMsg
+.fi
                 jmp ssc.flush
 
 StartBlk        getc_nak                ; get byte and send nak if timeout
@@ -118,6 +124,8 @@ ptr_mod = * - 2
 
 ssc             .binclude "ssc.s"
 
+.if DIRECT
 GoodMsg         .null "\nOK\n"
 RecvMsg         .null "XMODEM256 RECV\n"
 ErrorMsg        .null " ERROR CODE\n"
+.fi
