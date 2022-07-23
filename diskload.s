@@ -99,7 +99,17 @@ setupiob
             sta rwtsptr+1
 
 getparam    status paramm
-            jsr xm.XModemRecv   ; receive 10 param MSB in $1000
+            jsr xm.XModemRecv   ; receive param in $1000
+            ldx #0              ; copy end address of segments
+-           lda data,x          ; in segl/segh
+            sta segl,x
+            lda data+1,x
+            sta segh,x
+            inx
+            inx
+            cpx #2*segtotal
+            blt -
+
 initmain
             ;;; init main loop
             st_rwts rwtsptr,#0,rplbuf   ; buffer LSB is 0 ($4800)
@@ -214,7 +224,7 @@ draw
             sta (basl),y        ; store char in screen ram
 -           rts
 
-xm          .binclude "xmodem256_recv.s"
+xm          .binclude "xmodem_recv.s"
 inflate     .binclude "unlz4.s"
 
             .enc "apple_inv"

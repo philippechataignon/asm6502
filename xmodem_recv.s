@@ -116,8 +116,10 @@ ptr_mod = * - 2
                 cmp #limit
                 beq LimAbort            ; yes, abort
 .enc "apple"
+.if DIRECT
                 lda #'.'
                 jsr cout
+.fi
 +               lda #ACK                ; send ACK
                 jsr ssc.putc
                 jmp StartRecv           ; get next block

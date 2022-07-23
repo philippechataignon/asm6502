@@ -16,7 +16,7 @@ hex:	$(target_hex)
 
 $(target_hex): apple_enc.inc macros.inc
 
-diskload.hex: delay.s unlz4.s load8000.s
+diskload.hex: unlz4.s xmodem_recv.s
 libint.hex: mult32.s div32.s integer.s
 loadlz.hex: load8000.s unlz4.s
 unlz4_example.hex: unlz4.s integer.s.lz4
