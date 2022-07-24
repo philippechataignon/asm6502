@@ -1,6 +1,5 @@
 *           = $9000
 DIRECT := false
-REAL := true
 
 ; apple vectors
 tapein      = $C060             ; read tape interface
@@ -16,9 +15,7 @@ cout        = $FDED             ; character out sub
 save        = $FECD             ; write to tape
 
 ;            dos routines
-.if REAL
-rwts        = $3D9             ; RWTS jsr (tmp = delay)
-.fi
+rwts        = $3D9              ; RWTS jsr (tmp = delay)
 locrpl      = $3E3              ; locate RWTS paramlist jsr
 
 ;           rwts
@@ -86,10 +83,14 @@ status      .macro
             print \1
             .endm
 
-start       jsr ssc.init        ; init ssc
-
+start       jsr xm.ssc.init     ; init ssc
             jsr clear           ; clear screen
             print title
+
+            lda #start_page     ; init xmodem send addr
+            sta xm.start
+            lda #end_page
+            sta xm.end
                                 ; TRACK
             lda #19             ; col 20
             sta ch
@@ -108,27 +109,11 @@ start       jsr ssc.init        ; init ssc
             print left
 
 setupiob
-.if REAL
             jsr locrpl         ; locate rwts paramlist
-.else
-            ldy #<rwts_iob      ; simul locrpl
-            lda #>rwts_iob
-.fi
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
 
             status waitm        ; send magic header
-            lda #$19
-            jsr ssc.putc
-            lda #$64
-            jsr ssc.putc
-            lda #$0
-            jsr ssc.putc
-            jsr ssc.getc         ; and wait ack
-            cmp #ack
-            beq initmain
-            jmp sscerr
-
 initmain
             ; init main loop
             st_rwts rwtsptr,#0,rplbufl
@@ -153,12 +138,7 @@ trkloop
             st_rwts rwtsptr,buffer,rplbufh
             st_rwts rwtsptr,#cmdread,rplcmd
 
-.if REAL
             jsr locrpl         ; locate rwts paramlist
-.else
-            ldy #<rwts_iob      ; simul locrpl
-            lda #>rwts_iob
-.fi
             jsr rwts            ; do it!
             lda #0
             sta preg
@@ -177,40 +157,27 @@ trkloop
             sta secnum
 +           dec seccnt          ; decr sector number
             bne trkloop         ; if >= 0, next sector
-
             status sendm
             ldx #'S'-$C0
             jsr draw
-.if REAL
-            jsr send
-.else
-            lda #MULT
-            jsr delay
-.fi
-            ; wait ack
-            status waitm
-            jsr ssc.getc
+            lda #esc            ; send ESC to prevent send
+            jsr xm.ssc.putc
+            jsr xm.ssc.getc     ; and wait ack
             cmp #ack
-            bne sscerr
-
+            bne error
+            jsr xm.XModemSend   ; send buffer using xmodem
             dec segcnt
             beq done            ; 0, all done with segments
             jmp segloop
 done
-            lda #ack            ; send final ack
-            jsr ssc.putc
             ldx #' '
             jsr draw
             status donem
+            jmp final
+error       status errorm
 final       jsr crout
             bit $c010
             rts
-
-sscerr      status sscerrorm
-            jmp final
-
-diskerror   status diskerrorm
-            jmp final
 
 clrstatus
             lda #" "            ; space
@@ -237,53 +204,15 @@ draw
             sta (basl),y        ; store char in screen ram
 -           rts
 
-send        lda #start_page
-            sta sscsr.send1h
-            lda #end_page
-            sta sscsr.send2h
-            lda #0
-            sta sscsr.send1l
-            sta sscsr.send2l
-            jmp sscsr.send
-
-ssc         .binclude "ssc.s"
-sscsr       .binclude "ssc_sendrec.s"
-
-.if !REAL
-rwts
-            tya                 ;saves Y on stack
-            pha
-            lda #22
-            jsr bascalc
-            lda #0
-            sta ch
-            ldy #0
--           lda (rwtsptr),y
-            jsr prbyte
-            lda #" "
-            jsr cout
-            iny
-            cpy #$D
-            blt -
-            clc
-            pla                 ; restore Y
-            tay
-            lda #1
-            jsr delay
-            rts
-
-delay       .binclude "delay.s"
-.fi
+xm          .binclude "xmodem_send.s"
 
             .enc "apple_inv"
 title       .null "DISKSAVE"
-            .enc "apple_flash"
-diskerrorm  .null "DISK ERROR"
-sscerrorm   .null "SSC ERROR"
             .enc "apple"
 readm       .null "READ"
 rwtsm       .null "RWTS "
 donem       .null "DONE"
+errorm      .null "ERROR!"
 sendm       .null "SEND"
 waitm       .null "WAIT SSC"
 track       .null "TRACK\n"

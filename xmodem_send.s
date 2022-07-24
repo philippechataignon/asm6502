@@ -1,7 +1,5 @@
 ; XMODEM Sender for the 6502
 
-DIRECT := false
-
 ; zero page variables
 blknum  = $06                ; block number
 errcnt  = $08                ; error counter 10 is the limit
@@ -25,11 +23,15 @@ NAK = $15                ; bad block acknowledged
 
 .include "macros.inc"
 
+.if DIRECT
 *       =  $B00
+.fi
 
 XModemSend      jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
+.if DIRECT
                 print TitleMsg
+.fi
                 lda #0
                 sta blknum              ; set block counter to 0
 -               jsr ssc.getc3s
@@ -43,7 +45,9 @@ NextBlk         inc blknum              ; inc block counter
                 lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
 StartBlk        lda #'.'+$80
+.if DIRECT
                 jsr cout
+.fi
                 lda #SOH
                 jsr ssc.putc            ; send SOH = start of header
                 lda blknum
@@ -77,7 +81,9 @@ EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 bne NextBlk
 ExitSend        lda #EOT                ; send final EOT
                 jsr ssc.putc
+.if DIRECT
                 print GoodMsg
+.fi
                 rts
 
 SetError        dec errcnt              ; decr error counter
