@@ -3,7 +3,6 @@ DIRECT := false
 
 segtotal = 5
 secbyseg = 560 / segtotal       ; # of sector by segment
-                                ; (560 sectors / 5 segments)
 
 .include "apple_enc.inc"
 .enc "apple"
@@ -24,7 +23,7 @@ start       jsr init            ; init screen
             sta xm.start
             lda #end_page
             sta xm.end
-            
+
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
@@ -35,6 +34,7 @@ setupiob
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
             status waitm        ; send magic header
+            jsr kbdwait
 initmain
             ; init main loop
             st_rwts rwtsptr,#0,rplbuf
@@ -113,4 +113,4 @@ rwtsm       .null "RWTS "
 donem       .null "DONE"
 errorm      .null "ERROR!"
 sendm       .null "SEND"
-waitm       .null "WAIT SSC"
+waitm       .null "INSERT DISK"

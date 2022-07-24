@@ -1,6 +1,7 @@
 ; apple vectors
 kbdstrb     = $C010
 init        = $FB2F             ; init screen
+kbdwait     = $FB88             ; wait keypress
 bascalc     = $FBC1             ; calc line addr
 home        = $FC58             ; clear screen
 crout       = $FD8E             ; CR out sub
