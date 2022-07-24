@@ -3,7 +3,7 @@
 ; zero page variables
 blknum  = $06                ; block number
 errcnt  = $08                ; error counter 10 is the limit
-blksum  = $19                ; chksum
+blksum  = $ce                ; chksum
 
 start   = $fa                ; data pointer (two byte variable)
 end     = $fb
@@ -27,7 +27,8 @@ NAK = $15                ; bad block acknowledged
 *       =  $B00
 .fi
 
-XModemSend      jsr ssc.init            ; init serial card 19200 8n1
+XModemSend
+                jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
 .if DIRECT
                 print TitleMsg
@@ -38,7 +39,11 @@ XModemSend      jsr ssc.init            ; init serial card 19200 8n1
                 bcc -                   ; wait for something to come in...
                 cmp #NAK                ; is it the NAK to start a chksum xfer?
                 beq +
+.if DIRECT
                 jmp Abort               ; not NAK, abort
+.else
+                jmp -
+.fi
 +               move3 start,#0,ptr      ; write start00 to ptr
                 ldy #0
 NextBlk         inc blknum              ; inc block counter

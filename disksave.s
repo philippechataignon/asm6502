@@ -44,7 +44,6 @@ segcnt      = $1B               ; segment 0-9
 buffer      = $1C               ; MSB of RWTS buffer
 seccnt      = $1D               ; sector count 0-55
 rwtsptr     = $1E               ; rwtsptr LSB
-prtptr      = $CE               ; pointer LSB
 
 ;             monitor vars
 ch          = $24               ; cursor horizontal
