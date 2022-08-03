@@ -1,20 +1,17 @@
-*           = $9000
+*           = $803
 DIRECT := false
 
 ; apple vectors
-tapein      = $C060             ; read tape interface
-motoroff    = $C088             ; Turn drive motor off
-motoron     = $C089             ; Turn drive motor on
-kbd         = $C000
-kbdstrobe   = $C010
+kbdstrb     = $C010
+init        = $FB2F             ; init screen
 bascalc     = $FBC1             ; calc line addr
-clear       = $FC58             ; clear screen
+home        = $FC58             ; clear screen
 crout       = $FD8E             ; CR out sub
 prbyte      = $FDDA             ; print byte in hex
 cout        = $FDED             ; character out sub
-save        = $FECD             ; write to tape
 
 ;            dos routines
+dos         = $3D0
 rwts        = $3D9              ; RWTS jsr (tmp = delay)
 locrpl      = $3E3              ; locate RWTS paramlist jsr
 
@@ -82,36 +79,27 @@ status      .macro
             print \1
             .endm
 
-start       jsr xm.ssc.init     ; init ssc
-            jsr clear           ; clear screen
+start       jsr init            ; init screen
+            jsr home            ; clear screen
             print title
 
+            jsr xm.ssc.init     ; init ssc
             lda #start_page     ; init xmodem send addr
             sta xm.start
             lda #end_page
             sta xm.end
-                                ; TRACK
+            
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
             jsr bascalc
             print track
-
             print header
-            ldx #linewidth-5    ; length of line
-            lda #'-'
--           jsr cout
-            dex
-            bne -
-            jsr crout
-
             print left
-
 setupiob
             jsr locrpl         ; locate rwts paramlist
             sty rwtsptr         ; and save rwtsptr
             sta rwtsptr+1
-
             status waitm        ; send magic header
 initmain
             ; init main loop
@@ -168,15 +156,15 @@ trkloop
             dec segcnt
             beq done            ; 0, all done with segments
             jmp segloop
+error       status errorm
+            jmp final
 done
             ldx #' '
             jsr draw
             status donem
-            jmp final
-error       status errorm
 final       jsr crout
-            bit $c010
-            rts
+            bit kbdstrb
+            jmp dos             ; exit to dos
 
 clrstatus
             lda #" "            ; space
@@ -217,7 +205,8 @@ waitm       .null "WAIT SSC"
 track       .null "TRACK\n"
 header      .text "    00000000000000001111111111111111222\n"
             .text "    0123456789ABCDEF0123456789ABCDEF012\n"
-            .null "    "
+            .text "    -----------------------------------\n"
+            .byte 0
 left        .text "  0:\n"
             .text "  1:\n"
             .text "  2:\n"
