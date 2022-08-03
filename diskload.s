@@ -1,67 +1,12 @@
-*           = $9000
+*           = $803
 DIRECT := false
-
-; apple vectors
-tapein      = $C060             ; read tape interface
-motoroff    = $C088             ; Turn drive motor off
-motoron     = $C089             ; Turn drive motor on
-bascalc     = $FBC1             ; calc line addr
-clear       = $FC58             ; clear screen
-crout       = $FD8E             ; CR out sub
-prbyte      = $FDDA             ; print byte in hex
-cout        = $FDED             ; character out sub
-read        = $FEFD             ; read from tape
-
-;            dos routines
-rwts        = $3D9             ; RWTS jsr (tmp = delay)
-locrpl      = $3E3              ; locate RWTS paramlist jsr
-
-rpliob = 0
-rplslt = 1
-rpldrv = 2
-rplvol = 3
-rpltrk = 4
-rplsec = 5
-rpldct = 6
-rplbuf = 8
-rplsiz = $b
-rplcmd = $c
-rplret = $e
-cmdseek = 0
-cmdread = 1
-cmdwrite = 2
-cmdformat= 4
-
-;            zero page parameters
-secnum      = $19               ; sector num ($0-$f)
-trknum      = $1A               ; track num (0-34)
-segcnt      = $1B               ; segment 0-9
-buffer      = $1C               ; MSB of RWTS buffer
-seccnt      = $1D               ; sector count 0-55
-rwtsptr     = $1E               ; rwtsptr LSB
-prtptr      = $CE               ; pointer LSB
-
-;             monitor vars
-ch          = $24               ; cursor horizontal
-basl        = $28               ; line addr form bascalc LSB
-a1          = $3C               ; for read
-a2          = $3E               ; for read
-preg        = $48
 
 ;            other vars
 data        = $1000             ; max is $3848 from LZ4_compressBound
 zdata       = $4900             ; unlz buffer
-slot        = $60               ; slot 6 * 16
 
-linewidth = 40
-statusline = 21
-secmax = 16                     ; 16 sectors by track
 segtotal = 10
 secbyseg = 560 / segtotal       ; # of sector by segment
-mult = 5                        ; delay multiplier
-
-ack        = $06                ; ACKNOWLEDGE
-nak        = $15                ; NEGATIVE ACKNOWLEDGE
 
 .include "apple_enc.inc"
 .enc "apple"
@@ -74,7 +19,8 @@ status      .macro
             .endm
 
 start
-            jsr clear           ; clear screen
+            jsr init            ; init screen
+            jsr home            ; clear screen
             print title
             lda #19             ; col 20
             sta ch
@@ -135,8 +81,6 @@ segloop     ; main loop
             jsr draw
             status inflatem
             jsr inflate
-            ldx #slot           ; slot #6
-            lda motoron,x       ; turn it on
 
             status writem
 

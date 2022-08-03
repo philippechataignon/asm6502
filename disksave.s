@@ -1,69 +1,9 @@
 *           = $803
 DIRECT := false
 
-; apple vectors
-kbdstrb     = $C010
-init        = $FB2F             ; init screen
-bascalc     = $FBC1             ; calc line addr
-home        = $FC58             ; clear screen
-crout       = $FD8E             ; CR out sub
-prbyte      = $FDDA             ; print byte in hex
-cout        = $FDED             ; character out sub
-
-;            dos routines
-dos         = $3D0
-rwts        = $3D9              ; RWTS jsr (tmp = delay)
-locrpl      = $3E3              ; locate RWTS paramlist jsr
-
-;           rwts
-rpliob = 0
-rplslt = 1
-rpldrv = 2
-rplvol = 3
-rpltrk = 4
-rplsec = 5
-rpldct = 6
-rplbufl = 8
-rplbufh = 9
-rplsiz = $b
-rplcmd = $c
-rplret = $e
-
-cmdseek = 0
-cmdread = 1
-cmdwrite = 2
-cmdformat= 4
-
-;            zero page parameters
-secnum      = $19               ; sector num ($0-$f)
-trknum      = $1A               ; track num (0-34)
-segcnt      = $1B               ; segment 0-9
-buffer      = $1C               ; MSB of RWTS buffer
-seccnt      = $1D               ; sector count 0-55
-rwtsptr     = $1E               ; rwtsptr LSB
-
-;             monitor vars
-ch          = $24               ; cursor horizontal
-basl        = $28               ; line addr form bascalc LSB
-a1          = $3c               ; for save
-a2          = $3e               ; for save
-preg        = $48               ; monitor status register
-
-;            other vars
-diskslot    = $60               ; slot 6 * 16
-start_page  = $10
-end_page    = $80
-
-linewidth = 40
-statusline = 21
-secmax = 16                     ; 16 sectors by track
 segtotal = 5
 secbyseg = 560 / segtotal       ; # of sector by segment
                                 ; (560 sectors / 5 segments)
-
-esc        = $9b        ; ESCAPE KEY
-ack        = $06        ; ACKNOWLEDGE
-nak        = $15        ; NEGATIVE ACKNOWLEDGE
 
 .include "apple_enc.inc"
 .enc "apple"
@@ -97,7 +37,7 @@ setupiob
             status waitm        ; send magic header
 initmain
             ; init main loop
-            st_rwts rwtsptr,#0,rplbufl
+            st_rwts rwtsptr,#0,rplbuf
             st_rwts rwtsptr,#0,rplvol       ; every volume
             lda #0
             sta trknum       ; track 0
@@ -116,7 +56,7 @@ trkloop
             jsr draw
             st_rwts rwtsptr,trknum,rpltrk
             st_rwts rwtsptr,secnum,rplsec
-            st_rwts rwtsptr,buffer,rplbufh
+            st_rwts rwtsptr,buffer,rplbuf+1
             st_rwts rwtsptr,#cmdread,rplcmd
 
             jsr locrpl         ; locate rwts paramlist
