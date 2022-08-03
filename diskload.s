@@ -53,8 +53,6 @@ data        = $1000             ; max is $3848 from LZ4_compressBound
 zdata       = $4900             ; unlz buffer
 slot        = $60               ; slot 6 * 16
 
-line21      = $6D0
-
 linewidth = 40
 statusline = 21
 secmax = 16                     ; 16 sectors by track
@@ -82,17 +80,7 @@ start
             sta ch
             lda #0              ; row 0
             jsr bascalc
-            print track
-
-            print header
-            ldx #linewidth-5    ; length of line
-            lda #'-'
--           jsr cout
-            dex
-            bne -
-            jsr crout
-
-            print left          ; print left side of grid
+            print screen
 setupiob
             jsr locrpl         ; locate rwts paramlist
             sty rwtsptr         ; and save rwtsptr
@@ -195,65 +183,21 @@ done
 sscerr      status sscerrorm
             rts
 
-clrstatus
-            lda #" "            ; space
-            ldx #linewidth-1    ; clear line
--           sta line21,x
-            dex
-            bpl -
-            lda #statusline      ; vert
-            jsr bascalc          ; move cursor to status line
-            lda #0
-            sta ch               ; horiz
-            rts
-draw
-            clc
-            lda #4
-            adc secnum          ; num line
-            jsr bascalc
-            ldy trknum
-            iny                 ; add 4 to get col
-            iny
-            iny
-            iny
-            txa
-            sta (basl),y        ; store char in screen ram
--           rts
 
 xm          .binclude "xmodem_recv.s"
 inflate     .binclude "unlz4.s"
 
+.include    "disk.inc"
+
             .enc "apple_inv"
 title       .null "DISKLOAD"
             .enc "apple"
-rwtsm       .null "RWTS "
 paramm      .null "READ PARAM"
-donem       .null "DONE"
 loadm       .null "RECEIVE: $1000-$"
 inflatem    .null "INFLATE $4900-$80FF"
 formatm     .null "FORMAT"
 writem      .null "WRITE"
+donem       .null "DONE"
 sscerrorm   .null "SSC ERROR"
-track       .null "TRACK\n"
-header      .text "    00000000001111111111222222222233333\n"
-            .text "    01234567890123456789012345678901234\n"
-            .null "    "
-left        .text "  0:\n"
-            .text "  1:\n"
-            .text "  2:\n"
-            .text "  3:\n"
-            .text "  4:\n"
-            .text "S 5:\n"
-            .text "E 6:\n"
-            .text "C 7:\n"
-            .text "T 8:\n"
-            .text "O 9:\n"
-            .text "R A:\n"
-            .text "  B:\n"
-            .text "  C:\n"
-            .text "  D:\n"
-            .text "  E:\n"
-            .text "  F:\n"
-            .byte 0
 segl        .fill segtotal,?
 segh        .fill segtotal,?

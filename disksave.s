@@ -54,20 +54,16 @@ diskslot    = $60               ; slot 6 * 16
 start_page  = $10
 end_page    = $80
 
-line21      = $6D0
-
 linewidth = 40
 statusline = 21
 secmax = 16                     ; 16 sectors by track
 segtotal = 5
 secbyseg = 560 / segtotal       ; # of sector by segment
                                 ; (560 sectors / 5 segments)
-mult = 15                       ; delay multiplier
 
 esc        = $9b        ; ESCAPE KEY
 ack        = $06        ; ACKNOWLEDGE
 nak        = $15        ; NEGATIVE ACKNOWLEDGE
-
 
 .include "apple_enc.inc"
 .enc "apple"
@@ -93,9 +89,7 @@ start       jsr init            ; init screen
             sta ch
             lda #0              ; row 0
             jsr bascalc
-            print track
-            print header
-            print left
+            print screen
 setupiob
             jsr locrpl         ; locate rwts paramlist
             sty rwtsptr         ; and save rwtsptr
@@ -166,32 +160,10 @@ final       jsr crout
             bit kbdstrb
             jmp dos             ; exit to dos
 
-clrstatus
-            lda #" "            ; space
-            ldx #linewidth-1    ; clear line
--           sta line21,x
-            dex
-            bpl -
-            lda #statusline      ; vert
-            jsr bascalc          ; move cursor to status line
-            lda #0
-            sta ch               ; horiz
-            rts
-draw
-            clc
-            lda #4
-            adc secnum          ; num line
-            jsr bascalc
-            ldy trknum
-            iny                 ; add 4 to get col
-            iny
-            iny
-            iny
-            txa
-            sta (basl),y        ; store char in screen ram
--           rts
 
 xm          .binclude "xmodem_send.s"
+
+.include    "disk.inc"
 
             .enc "apple_inv"
 title       .null "DISKSAVE"
@@ -202,25 +174,3 @@ donem       .null "DONE"
 errorm      .null "ERROR!"
 sendm       .null "SEND"
 waitm       .null "WAIT SSC"
-track       .null "TRACK\n"
-header      .text "    00000000000000001111111111111111222\n"
-            .text "    0123456789ABCDEF0123456789ABCDEF012\n"
-            .text "    -----------------------------------\n"
-            .byte 0
-left        .text "  0:\n"
-            .text "  1:\n"
-            .text "  2:\n"
-            .text "  3:\n"
-            .text "  4:\n"
-            .text "S 5:\n"
-            .text "E 6:\n"
-            .text "C 7:\n"
-            .text "T 8:\n"
-            .text "O 9:\n"
-            .text "R A:\n"
-            .text "  B:\n"
-            .text "  C:\n"
-            .text "  D:\n"
-            .text "  E:\n"
-            .null "  F:\n"
-rwts_iob    .byte 17

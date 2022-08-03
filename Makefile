@@ -16,12 +16,12 @@ hex:	$(target_hex)
 
 $(target_hex): apple_enc.inc macros.inc
 
-diskload.hex: unlz4.s xmodem_recv.s
+diskload.hex: unlz4.s xmodem_recv.s disk.inc
 libint.hex: mult32.s div32.s integer.s
 loadlz.hex: load8000.s unlz4.s
 unlz4_example.hex: unlz4.s integer.s.lz4
 inc.hex: inc1.s inc2.s
-disksave.hex: xmodem_send.s
+disksave.hex: xmodem_send.s disk.inc
 xmodem.hex xmodem256_recv.hex xmodem256_send.hex ssc_sendrec.hex: ssc.s
 
 apple:
