@@ -3,7 +3,7 @@
 ; zero page variables
 blknum  = $06                ; block number
 errcnt  = $08                ; error counter 10 is the limit
-blksum  = $ce                ; chksum
+blksum  = $e3                ; chksum
 
 start   = $fa                ; data pointer (two byte variable)
 end     = $fb
