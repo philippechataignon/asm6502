@@ -7,8 +7,7 @@ zdata       = $3000
 
 temp = $CE
 
-segtotal = 35
-secbyseg = 560 / segtotal       ; # of sector by segment
+trktotal = 35
 
 .include "apple_enc.inc"
 .enc "apple"
@@ -36,12 +35,12 @@ setupiob
 
 getparam    status paramm
             jsr xm.XModemRecv   ; receive param in $1000
-            ldx #0              ; copy end address of segments
-            ldy #segtotal-1
--           lda data,x          ; in segl/segh
-            sta segl,y
+            ldx #0              ; copy end address of tracks
+            ldy #trktotal-1
+-           lda data,x          ; in trkl/trkh
+            sta trkl,y
             lda data+1,x
-            sta segh,y
+            sta trkh,y
             inx
             inx
             dey
@@ -57,9 +56,6 @@ initmain
             lda #0
             sta trknum          ; track 0
             sta secnum          ; sector 0
-            lda #segtotal-1     ; segment number
-            sta segcnt
-
 initdrive
             ldx #diskslot       ; timing are very important in this routine
             lda drvon,x
@@ -69,16 +65,16 @@ initdrive
             dey
             bne -
 
-segloop     ; main loop
+trkloop     ; main loop
             ldx #'R'-$C0
             jsr draw
             status loadm
 
-            ldx segcnt          ; get #segment
-            lda segh,x          ; get load end MSB
+            ldx trknum          ; get #track
+            lda trkh,x          ; get load end MSB
             sta inflate.end+1
             jsr prbyte
-            lda segl,x          ; get load end LSB
+            lda trkl,x          ; get load end LSB
             sta inflate.end
             jsr prbyte
 
@@ -101,9 +97,7 @@ segloop     ; main loop
 
             lda #>zdata         ; init with zdata buffer
             sta buffer
-            lda #secbyseg
-            sta seccnt          ; do 7 tracks/segment
-trkloop
+
             ldx #'W'-$C0
             jsr draw
 
@@ -117,31 +111,17 @@ trkloop
 
             jsr writenib
 
-nodiskerr   ldx #"."
+            ldx #"."
             jsr draw            ; write dot
-            inc buffer          ; next page to write
-            inc secnum
-            lda secnum
-            cmp #secmax         ; more than sector max ?
-            blt +               ; yes, next track
             inc trknum
-            lda #0              ; init sector number
-            sta secnum
-+           dec seccnt          ; decr sector number
-            bne trkloop         ; if >= 0, next sector
-            dec segcnt
-            bmi done            ; 0, all done with segments
-            jmp segloop
+            cmp #trktotal
+            bge +               ; >= last track, end
+            jmp trkloop         ; next track
 
-sscerr      status sscerrorm
-            jmp +
-done
++           ldx #diskslot
+            lda drvoff,x
             status donem
-            ldx #diskslot
-+           lda drvoff,x
-            jsr crout
             rts
-
 
 writenib                        ; timing are very important in this routine
             ldy #$ff
@@ -208,7 +188,6 @@ loadm       .null "RECEIVE: $1000-$"
 inflatem    .null "INFLATE $4900-$80FF"
 formatm     .null "FORMAT"
 writem      .null "WRITE"
-donem       .null "DONE"
-sscerrorm   .null "SSC ERROR"
-segl        .fill segtotal,?
-segh        .fill segtotal,?
+donem       .null "DONE\n"
+trkl        .fill trktotal,?
+trkh        .fill trktotal,?
