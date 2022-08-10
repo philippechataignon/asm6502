@@ -5,6 +5,8 @@ DIRECT := false
 data        = $1000
 zdata       = $3000
 
+temp = $CE
+
 segtotal = 35
 secbyseg = 560 / segtotal       ; # of sector by segment
 
@@ -57,6 +59,15 @@ initmain
             sta secnum          ; sector 0
             lda #segtotal-1     ; segment number
             sta segcnt
+
+initdrive
+            ldx #diskslot       ; timing are very important in this routine
+            lda drvon,x
+            ldy #5
+-           lda #$ff            ; wait ~ 1s
+            jsr wait            ; to reach disk speed
+            dey
+            bne -
 
 segloop     ; main loop
             ldx #'R'-$C0
@@ -121,21 +132,18 @@ nodiskerr   ldx #"."
             dec segcnt
             bmi done            ; 0, all done with segments
             jmp segloop
+
+sscerr      status sscerrorm
+            jmp +
 done
             status donem
+            ldx #diskslot
++           lda drvoff,x
             jsr crout
             rts
 
-sscerr      status sscerrorm
-            rts
 
-writenib    ldx #diskslot
-            lda drvon,x
-            ldy #5
--           lda #$ff            ; wait ~ 1s
-            jsr wait            ; to reach disk speed
-            dey
-            bne -
+writenib                        ; timing are very important in this routine
             ldy #$ff
             lda drvoutbyt,x
             lda drvctl1,x
@@ -157,7 +165,7 @@ writenib    ldx #diskslot
             beq +
             jsr wait12
             lda #$ff
-            stx $60
+            stx temp
             jmp -
 +           lda zdata,y
             clc
@@ -165,26 +173,25 @@ writenib    ldx #diskslot
             iny
             pha
             pla
-            jmp ecr5
-ecr4        lda zdata,y
-ptr = *-1
+            jmp +
+-           lda zdata,y
+ptr = * - 1
             iny
-            beq ecr7
-            cmp #$00
-            beq ecr8
+            beq wrnpage
+            cmp #0              ; exit when 0 in write buffer
+            beq wrexit          ; 0 can't be a valid value for nibble
             clc
             clc
             clc
-ecr5        clc
-ecr6        sta drvoutbyt,x
++           clc
+-           sta drvoutbyt,x
             ora drvinbyt,x
-            jmp ecr4
-ecr7        inc ptr
+            jmp -
+wrnpage     inc ptr
             clc
-            jmp ecr6
-ecr8        lda drvctl1,x
-            lda drvoff,x
-            lda #$70
+            jmp -
+wrexit      lda drvctl1,x
+            lda #>zdata
             sta ptr
 wait12      rts
 
