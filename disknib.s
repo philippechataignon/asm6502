@@ -124,7 +124,7 @@ trkloop     ; main loop
             rts
 
 writenib                        ; timing are very important in this routine
-            ldy #$ff
+            ldy #$ff            ; write synchro
             lda drvoutbyt,x
             lda drvctl1,x
             lda #$ff
@@ -142,19 +142,19 @@ writenib                        ; timing are very important in this routine
             sta drvoutbyt,x
             ora drvinbyt,x
             dey
-            beq +
+            beq +               ; end of synchro
             jsr wait12
             lda #$ff
             stx temp
             jmp -
-+           lda zdata,y
-            clc
++           lda zdata,y         ; write first byte of zdata
+            clc                 ; for timing
             clc
             iny
             pha
             pla
             jmp +
--           lda zdata,y
+wrwrite     lda zdata,y
 ptr = * - 1
             iny
             beq wrnpage
@@ -164,9 +164,9 @@ ptr = * - 1
             clc
             clc
 +           clc
--           sta drvoutbyt,x
+-           sta drvoutbyt,x     ; write byte on disk
             ora drvinbyt,x
-            jmp -
+            jmp wrwrite
 wrnpage     inc ptr
             clc
             jmp -
