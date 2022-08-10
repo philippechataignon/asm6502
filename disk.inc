@@ -1,8 +1,15 @@
 ; apple vectors
 kbdstrb     = $C010
+drvoff      = $C088
+drvon       = $C089
+drvinbyt    = $C08C
+drvoutbyt   = $C08D
+drvctl1     = $C08E
+drvctl2     = $C08F
 init        = $FB2F             ; init screen
 kbdwait     = $FB88             ; wait keypress
 bascalc     = $FBC1             ; calc line addr
+wait        = $FCA8             ; wait routine
 home        = $FC58             ; clear screen
 crout       = $FD8E             ; CR out sub
 prbyte      = $FDDA             ; print byte in hex

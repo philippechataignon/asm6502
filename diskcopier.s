@@ -1,13 +1,6 @@
 *           = $900
 DIRECT := false
 
-drvoff  = $c088
-drvon   = $c089
-drvinbyt = $c08c
-drvoutbyt = $c08d
-drvctl1 = $c08e
-drvctl2 = $c08f
-
 ptr = $ce
 
 buffstart = $1000
