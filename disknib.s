@@ -36,35 +36,25 @@ setupiob
 getparam    status paramm
             jsr xm.XModemRecv   ; receive param in $1000
             ldx #0              ; copy end address of tracks
-            ldy #trktotal-1
+            ldy #0
 -           lda data,x          ; in trkl/trkh
             sta trkl,y
             lda data+1,x
             sta trkh,y
             inx
             inx
-            dey
-            bpl -
+            iny
+            cpy #trktotal
+            blt -
 initmain
             ;;; init main loop
             st_rwts rwtsptr,#0,rplvol   ; every volume number
             st_rwts rwtsptr,#0,rplsec  ; sector number
             st_rwts rwtsptr,#0,rplbuf   ; buffer LSB is 0 ($4800)
             st_rwts rwtsptr,#0,rplbuf+1  ; buffer MSB
-            jsr locrpl          ; locate rwts paramlist
-            jsr rwts            ; do it!
             lda #0
             sta trknum          ; track 0
             sta secnum          ; sector 0
-initdrive
-            ldx #diskslot       ; timing are very important in this routine
-            lda drvon,x
-            ldy #5
--           lda #$ff            ; wait ~ 1s
-            jsr wait            ; to reach disk speed
-            dey
-            bne -
-
 trkloop     ; main loop
             ldx #'R'-$C0
             jsr draw
@@ -86,11 +76,18 @@ trkloop     ; main loop
             lda #>zdata
             sta inflate.dst+1
 
+            ldx #diskslot
+            lda drvon,x
+
             jsr xm.XModemRecv   ; get segment
             ldx #'I'-$C0
 
             jsr draw
             status inflatem
+
+            ldx #diskslot
+            lda drvon,x
+
             jsr inflate
 
             status writem
@@ -114,6 +111,7 @@ trkloop     ; main loop
             ldx #"."
             jsr draw            ; write dot
             inc trknum
+            lda trknum
             cmp #trktotal
             bge +               ; >= last track, end
             jmp trkloop         ; next track
@@ -189,5 +187,7 @@ inflatem    .null "INFLATE $4900-$80FF"
 formatm     .null "FORMAT"
 writem      .null "WRITE"
 donem       .null "DONE\n"
+.align      $100
 trkl        .fill trktotal,?
 trkh        .fill trktotal,?
+end         = *

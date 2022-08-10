@@ -143,5 +143,7 @@ formatm     .null "FORMAT"
 writem      .null "WRITE"
 donem       .null "DONE"
 sscerrorm   .null "SSC ERROR"
+
+.align      $100
 segl        .fill segtotal,?
 segh        .fill segtotal,?
