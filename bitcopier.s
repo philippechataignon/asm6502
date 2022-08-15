@@ -6,7 +6,45 @@
 ;                            *
 ;*****************************
 
-CH = $24
+WNDLFT      =     $20
+WNDWDTH     =     $21
+WNDTOP      =     $22
+WNDBTM      =     $23
+CH          =     $24
+CV          =     $25
+GBASL       =     $26
+GBASH       =     $27
+BASL        =     $28
+BASH        =     $29
+BAS2L       =     $2a
+BAS2H       =     $2b
+H2          =     $2c
+LMNEM       =     $2c
+RTNL        =     $2c
+RMNEM       =     $2d
+RTNH        =     $2d
+V2          =     $2d
+CHKSUM      =     $2e
+FORMAT      =     $2e
+MASK        =     $2e
+LASTIN      =     $2f
+LENGTH      =     $2f
+SIGN        =     $2f
+COLOR       =     $30
+MODE        =     $31
+INVFLG      =     $32
+PROMPT      =     $33
+YSAV        =     $34
+YSAV1       =     $35
+CSWL        =     $36
+KSWL        =     $38
+PCL         =     $3a
+PCH         =     $3b
+A1L         =     $3c
+A1H         =     $3d
+A2L         =     $3e
+A2H         =     $3f
+
 DRVOFF = $C088
 DRVON = $C089
 INBYT = $C08C
@@ -25,6 +63,12 @@ RWTS = $03D9
 XAM = $FDB3
 SCREEN = $0583
 
+ptr1 = $FA
+ptr2 = $FC
+trkstart = $02
+trkend = $03
+
+.include "macros.inc"
 
 * = $2B00
             jmp START
@@ -92,9 +136,9 @@ ST4         jsr RDKEY
 ;***********************
 
 INIT        lda #$00 ;PISTE DEPART
-            sta $02
+            sta trkstart
             lda #$23 ;PISTE FIN
-            sta $03
+            sta trkend
             lda #$D5 ;MARQUEURS
             sta $F9
             lda #$AA
@@ -187,7 +231,7 @@ SEEK0       pha
             pla
             ldy #$02
             sta ($00),y
-            lda $02
+            lda trkstart
             ldy #$04
             sta ($00),y
             lda #$00
@@ -244,47 +288,42 @@ PGM02       jsr LECTURE
             lda #'A'
             jsr AFFICH
             jsr ANALYSE
-            bcs PGM09
+            bcs PGMCS       ; si carry
             ldy #$00
-            sty $FC
+            sty ptr2
             lda #$70
-            sta $FD
-PGM03       lda ($FA),y
-            sta ($FC),y
+            sta ptr2+1
+-           lda (ptr1),y     ; copie depuis (ptr1) -> (ptr2 = $7000-$8FFF)
+            sta (ptr2),y
             iny
-            bne PGM03
-            inc $FB
-            inc $FD
-            lda $FD
+            bne -
+            inc ptr1+1
+            inc ptr2+1
+            lda ptr2+1
             cmp #$90
-            bne PGM03
+            bne -
             lda #$05
             sta $25
             lda #$00
             sta $24
-            sta $3C
+            sta A1L
             lda #$70
-            sta $3D
-            sta $3F
+            sta A1H
+            sta A2H
             lda #$5F
-            sta $3E
-            jsr XAM ;IMPRIME A1 ($3C,$3D)
-            lda #$70
-            sta $FB
-            ldy #$00
-            sty $FA
-            sty $FC
-            lda #$75
-            sta $FD
+            sta A2L
+            jsr XAM         ; IMPRIME $7000-$705F
+            move #$7000,ptr1
+            move #$7500,ptr2
             ldy #$00
             ldx #$00
             stx $FE
-PGM04       lda ($FC),y
+PGM04       lda (ptr2),y
             cmp TEST,x
             beq PGM06
 PGM05       iny
             bne PGM04
-            inc $FD
+            inc ptr2+1
             inc $FE
             lda $FE
             cmp #$20
@@ -292,24 +331,24 @@ PGM05       iny
             jmp PGM13
 PGM06       tya
             pha
-            lda $FD
+            lda ptr2+1
             pha
 PGM07       inx
             cpx #$0A
             beq PGM15
             iny
             bne PGM08
-            inc $FD
-PGM08       lda ($FC),y
+            inc ptr2+1
+PGM08       lda (ptr2),y
             cmp TEST,x
             beq PGM07
             pla
-            sta $FD
+            sta ptr2+1
             pla
             tay
             ldx #$00
             jmp PGM05
-PGM09       lda $FF
+PGMCS       lda $FF
             cmp #$04
             beq PGM10
             inc $FF
@@ -338,11 +377,11 @@ PGM14       lda #'3'
             jsr AFFICH
             jmp PGM21
 PGM15       pla
-            sta $FD
+            sta ptr2+1
             pla
             tay
             lda #$00
-            sta ($FC),y
+            sta (ptr2),y
 PGM16       lda #'W'
             jsr AFFICH
             jsr ECRIT
@@ -352,11 +391,11 @@ PGM16       lda #'W'
             lda #'A'
             jsr AFFICH
             lda #$30
-            sta $FD
+            sta ptr2+1
             ldy #$00
-            sta $FC
+            sta ptr2
             ldx #$00
-PGM17       lda ($FC),y
+PGM17       lda (ptr2),y
             cmp TEST,x
             bne PGM18
             inx
@@ -366,19 +405,19 @@ PGM17       lda ($FC),y
 PGM18       ldx #$00
 PGM19       iny
             bne PGM17
-            inc $FD
-            lda $FD
+            inc ptr2+1
+            lda ptr2+1
             cmp #$4F
             bne PGM17
             jmp PGM11
 PGM20       lda #$B0
             jsr AFFICH
-PGM21       lda $02
-            cmp $03
-            beq PGM22
-            inc $02
+PGM21       lda trkstart
+            cmp trkend
+            beq +
+            inc trkstart
             jmp PGM01
-PGM22       brk
++           brk
 
 ;***********************
 ;                      *
@@ -386,98 +425,98 @@ PGM22       brk
 ;                      *
 ;***********************
 
-ANALYSE     lda #$00
+ANALYSE     lda #$00            ; init FA = $3000
             tay
-            sta $FA
+            sta ptr1
             lda #$30
-            sta $FB
-ANA01       lda ($FA),y
+            sta ptr1+1
+ANA01       lda (ptr1),y
             cmp $F9
             beq ANA03
 ANA02       iny
             bne ANA01
-            inc $FB
-            lda $FB
+            inc ptr1+1
+            lda ptr1+1
             cmp #$4F
             bne ANA01
             jmp ANA08
 ANA03       tya
             pha
-            lda $FB
+            lda ptr1+1
             pha
             iny
             bne ANA04
-            inc $FB
-ANA04       lda ($FA),y
+            inc ptr1+1
+ANA04       lda (ptr1),y
             cmp $05
             bne ANA07
             iny
             bne ANA05
-            inc $FB
-ANA05       lda ($FA),y
+            inc ptr1+1
+ANA05       lda (ptr1),y
             cmp $F8
             beq ANA06
             cmp $F7
             bne ANA07
 ANA06       pla
-            sta $FB
+            sta ptr1+1
             pla
             tay
             clc
-            adc $FA
-            sta $FA
+            adc ptr1
+            sta ptr1
             lda #$00
-            adc $FB
-            sta $FB
+            adc ptr1+1
+            sta ptr1+1
             clc
             rts
 ANA07       pla
-            sta $FB
+            sta ptr1+1
             pla
             tay
             jmp ANA02
 ANA08       lda #$00
             tay
-            sta $FA
+            sta ptr1
             lda #$30
-            sta $FB
+            sta ptr1+1
 ANA09       jsr SYNCR
             bcs ANA12
-            lda ($FA),y
+            lda (ptr1),y
             cmp $F9
             bne ANA09
-            lda $FB
+            lda ptr1+1
             pha
             iny
             bne ANA10
-            inc $FB
-ANA10       lda ($FA),y
+            inc ptr1+1
+ANA10       lda (ptr1),y
             cmp $05
             bne ANA11
             pla
-            sta $FB
+            sta ptr1+1
             clc
             rts
 ANA11       pla
-            sta $FB
+            sta ptr1+1
             jmp ANA09
 ANA12       lda #$00
             tay
-            sta $FA
+            sta ptr1
             lda #$30
-            sta $FB
+            sta ptr1+1
 ANA13       jsr SYNCR
             bcs ANA14
-            lda ($FA),y
+            lda (ptr1),y
             cmp $F9
             bne ANA13
             clc
             rts
 ANA14       lda #$00
             tay
-            sta $FA
+            sta ptr1
             lda #$30
-            sta $FB
+            sta ptr1+1
             jsr SYNCR
             rts
 
@@ -488,7 +527,7 @@ ANA14       lda #$00
 ;***********************
 
 SYNCR       ldx #$00
-SYN01       lda ($FA),y
+SYN01       lda (ptr1),y
             cmp #$FF
             bne SYN03
             inx
@@ -496,8 +535,8 @@ SYN01       lda ($FA),y
             beq SYN05
 SYN02       iny
             bne SYN01
-            inc $FB
-            lda $FB
+            inc ptr1+1
+            lda ptr1+1
             cmp #$4F
             beq SYN04
             bne SYN01
@@ -507,20 +546,20 @@ SYN04       sec
             rts
 SYN05       iny
             bne SYN06
-            inc $FB
-            lda $FB
+            inc ptr1+1
+            lda ptr1+1
             cmp #$4F
             beq SYN04
-SYN06       lda ($FA),y
+SYN06       lda (ptr1),y
             cmp #$FF
             beq SYN05
             clc
             tya
-            adc $FA
-            sta $FA
+            adc ptr1
+            sta ptr1
             lda #$00
-            adc $FB
-            sta $FB
+            adc ptr1+1
+            sta ptr1+1
             ldy #$00
             clc
             rts
@@ -531,7 +570,7 @@ SYN06       lda ($FA),y
 ;                      *
 ;***********************
 
-AFFICH      ldx $02
+AFFICH      ldx trkstart
             sta SCREEN,x
             rts
 AFFTRK      ldx #$00
@@ -549,16 +588,16 @@ AFFRTS      rts
 ;                      *
 ;***********************
 
-PISTE0      lda $02
+PISTE0      lda trkstart
             pha
             lda #$FF
-            sta $02
+            sta trkstart
             lda #$01
             jsr SEEK0
             lda #$02
             jsr SEEK0
             pla
-            sta $02
+            sta trkstart
             rts
 
 ;***********************
