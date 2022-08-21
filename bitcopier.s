@@ -44,6 +44,7 @@ A1L         =     $3c
 A1H         =     $3d
 A2L         =     $3e
 A2H         =     $3f
+PREG        =     $48
 
 DRVOFF = $C088
 DRVON = $C089
@@ -68,7 +69,20 @@ ptr2 = $FC
 trkstart = $02
 trkend = $03
 
+dlm1 = $F9
+dlm2 = $05
+dlm3 = $F8
+dlm4 = $F7
+
+ptr0 = $00
+
+var1 = $FF
+var2 = $FE
+
+.include "apple_enc.inc"
 .include "macros.inc"
+
+.enc "apple"
 
 * = $2B00
             jmp START
@@ -87,11 +101,11 @@ TABLE2      .text "APPLE BITCOPIER (C) 1982         "
             .text " "
             .byte 0
 
-TIRET       ldx #$28
-            lda #$BD
-TIR1        jsr COUT
+TIRET       ldx #40
+            lda #"="
+-           jsr COUT
             dex
-            bne TIR1
+            bne -
             rts
 
 
@@ -102,32 +116,32 @@ TIR1        jsr COUT
 ;***********************
 
 START       jsr HOME
-            ldx #$00
+            ldx #0
             sta CH
-            lda #$06
+            lda #6
             sta CH+1
             jsr VTAB
             jsr TIRET
-            ldx #$00
-ST1         lda TABLE2,x
-            beq ST2
+            ldx #0
+-           lda TABLE2,x
+            beq +
             jsr COUT
             inx
-            bne ST1
-ST2         jsr CROUT
+            bne -
++           jsr CROUT
             jsr TIRET
-            lda #$04
-            sta $24
-            lda #$0C
-            sta $25
+            lda #4
+            sta CH
+            lda #12
+            sta CV
             jsr VTAB
-            ldx #$00
-ST3         lda TABLE1,x
-            beq ST4
+            ldx #0
+-           lda TABLE1,x
+            beq +
             jsr COUT
             inx
-            bne ST3
-ST4         jsr RDKEY
+            bne -
++           jsr RDKEY
 
 ;***********************
 ;                      *
@@ -135,18 +149,18 @@ ST4         jsr RDKEY
 ;                      *
 ;***********************
 
-INIT        lda #$00 ;PISTE DEPART
+INIT        lda #0 ;PISTE DEPART
             sta trkstart
-            lda #$23 ;PISTE FIN
+            lda #35 ;PISTE FIN
             sta trkend
             lda #$D5 ;MARQUEURS
-            sta $F9
+            sta dlm1
             lda #$AA
-            sta $05
+            sta dlm2
             lda #$96
-            sta $F8
+            sta dlm3
             lda #$B5
-            sta $F7
+            sta dlm4
             jsr HOME
             jsr AFFTRK
             jsr PISTE0
@@ -158,14 +172,14 @@ INIT        lda #$00 ;PISTE DEPART
 ;                      *
 ;***********************
 
-ECRIT       lda #$02
+ECRIT       lda #2
             jsr SEEK0
             lda DRVON,x
-            ldy #$05
-ECR1        lda #$FF
+            ldy #5
+-           lda #$FF
             jsr WAIT
             dey
-            bne ECR1
+            bne -
             ldy #$FF
             lda OUTBYT,x
             lda DRVCTL1,x
@@ -200,7 +214,7 @@ ECR4        lda TEST,y
 PTR = *-1
             iny
             beq ECR7
-            cmp #$00
+            cmp #0
             beq ECR8
             clc
             clc
@@ -226,23 +240,23 @@ WAIT12      rts
 
 SEEK0       pha
             jsr GETIOB
-            sty $00
-            sta $01
+            sty ptr0
+            sta ptr0+1
             pla
             ldy #$02
-            sta ($00),y
+            sta (ptr0),y
             lda trkstart
             ldy #$04
-            sta ($00),y
+            sta (ptr0),y
             lda #$00
             ldy #$0C
-            sta ($00),y
+            sta (ptr0),y
             jsr GETIOB
             jsr RWTS
-            lda #$00
-            sta $48
+            lda #0
+            sta PREG
             ldy #$01
-            lda ($00),y
+            lda (ptr0),y
             tax
             rts
 
@@ -252,25 +266,27 @@ SEEK0       pha
 ;                      *
 ;***********************
 
+; read $3000-$6EFF
+
 LECTURE     lda #$01
             jsr SEEK0
 LECT1       ldx #$60
             lda DRVON,x
             lda DRVCTL1,x
             lda #$00
-            sta $00
+            sta ptr0
             lda #$30
-            sta $01
-            ldy #$00
-LECT2       lda INBYT,x
-            bpl LECT2
-            sta ($00),y
-            inc $00
-            bne LECT2
-            inc $01
-            lda $01
+            sta ptr0+1
+            ldy #0
+-           lda INBYT,x
+            bpl -
+            sta (ptr0),y
+            inc ptr0
+            bne -
+            inc ptr0+1
+            lda ptr0+1
             cmp #$6F
-            bcc LECT2
+            bcc -
             lda DRVOFF,x
             rts
 
@@ -282,30 +298,30 @@ LECT2       lda INBYT,x
 
 PGM01       lda #'R'
             jsr AFFICH
-            lda #$00
-            sta $FF
+            lda #0
+            sta var1
 PGM02       jsr LECTURE
             lda #'A'
             jsr AFFICH
             jsr ANALYSE
             bcs PGMCS       ; si carry
-            ldy #$00
+            ldy #$00        ; ptr2 = $7000
             sty ptr2
             lda #$70
             sta ptr2+1
 -           lda (ptr1),y     ; copie depuis (ptr1) -> (ptr2 = $7000-$8FFF)
-            sta (ptr2),y
+            sta (ptr2),y     ; ptr1 computed in ANALYSE
             iny
             bne -
             inc ptr1+1
             inc ptr2+1
             lda ptr2+1
-            cmp #$90
+            cmp #$90        ; max $9000
             bne -
-            lda #$05
-            sta $25
-            lda #$00
-            sta $24
+            lda #5
+            sta CV
+            lda #0
+            sta CH
             sta A1L
             lda #$70
             sta A1H
@@ -317,15 +333,15 @@ PGM02       jsr LECTURE
             move #$7500,ptr2
             ldy #$00
             ldx #$00
-            stx $FE
+            stx var2
 PGM04       lda (ptr2),y
             cmp TEST,x
             beq PGM06
 PGM05       iny
             bne PGM04
             inc ptr2+1
-            inc $FE
-            lda $FE
+            inc var2
+            lda var2
             cmp #$20
             bne PGM04
             jmp PGM13
@@ -348,28 +364,28 @@ PGM08       lda (ptr2),y
             tay
             ldx #$00
             jmp PGM05
-PGMCS       lda $FF
+PGMCS       lda var1
             cmp #$04
             beq PGM10
-            inc $FF
+            inc var1
             lda #'R'
             jsr AFFICH
             jmp PGM02
 PGM10       lda #'1'
             jsr AFFICH
             jmp PGM21
-PGM11       lda $FF
+PGM11       lda var1
             cmp #$04
             beq PGM12
-            inc $FF
+            inc var1
             jmp PGM16
 PGM12       lda #'2'
             jsr AFFICH
             jmp PGM21
-PGM13       lda $FF
+PGM13       lda var1
             cmp #$04
             beq PGM14
-            inc $FF
+            inc var1
             lda #'R'
             jsr AFFICH
             jmp PGM02
@@ -425,19 +441,19 @@ PGM21       lda trkstart
 ;                      *
 ;***********************
 
-ANALYSE     lda #$00            ; init FA = $3000
+ANALYSE     lda #$00            ; init ptr1 = $3000
             tay
             sta ptr1
             lda #$30
             sta ptr1+1
 ANA01       lda (ptr1),y
-            cmp $F9
+            cmp dlm1
             beq ANA03
 ANA02       iny
             bne ANA01
             inc ptr1+1
             lda ptr1+1
-            cmp #$4F
+            cmp #$4F            ; max $4EFF
             bne ANA01
             jmp ANA08
 ANA03       tya
@@ -448,15 +464,15 @@ ANA03       tya
             bne ANA04
             inc ptr1+1
 ANA04       lda (ptr1),y
-            cmp $05
+            cmp dlm2
             bne ANA07
             iny
             bne ANA05
             inc ptr1+1
 ANA05       lda (ptr1),y
-            cmp $F8
+            cmp dlm3
             beq ANA06
-            cmp $F7
+            cmp dlm4
             bne ANA07
 ANA06       pla
             sta ptr1+1
@@ -483,7 +499,7 @@ ANA08       lda #$00
 ANA09       jsr SYNCR
             bcs ANA12
             lda (ptr1),y
-            cmp $F9
+            cmp dlm1
             bne ANA09
             lda ptr1+1
             pha
@@ -491,7 +507,7 @@ ANA09       jsr SYNCR
             bne ANA10
             inc ptr1+1
 ANA10       lda (ptr1),y
-            cmp $05
+            cmp dlm2
             bne ANA11
             pla
             sta ptr1+1
@@ -508,7 +524,7 @@ ANA12       lda #$00
 ANA13       jsr SYNCR
             bcs ANA14
             lda (ptr1),y
-            cmp $F9
+            cmp dlm1
             bne ANA13
             clc
             rts
@@ -531,7 +547,7 @@ SYN01       lda (ptr1),y
             cmp #$FF
             bne SYN03
             inx
-            cpx #$05
+            cpx #dlm2
             beq SYN05
 SYN02       iny
             bne SYN01
@@ -592,9 +608,9 @@ PISTE0      lda trkstart
             pha
             lda #$FF
             sta trkstart
-            lda #$01
+            lda #1
             jsr SEEK0
-            lda #$02
+            lda #2
             jsr SEEK0
             pla
             sta trkstart
