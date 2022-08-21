@@ -84,6 +84,8 @@ buff2 = $7000
 buff2end = $9000
 addr1 = $7500
 
+slot = $60
+
 .include "apple_enc.inc"
 .include "macros.inc"
 
@@ -157,51 +159,51 @@ ECRIT       lda #2
             lda #$FF
             sta DRVCTL2,x
             ora INBYT,x
-            clc
-            clc
-            clc
-            clc
-            clc
-            lda #$FF
-            jsr WAIT12
-ECR2        pha
-            pla
-            sta OUTBYT,x
-            ora INBYT,x
-            dey
-            beq ECR3
-            jsr WAIT12
-            lda #$FF
-            stx $60
-            jmp ECR2
-ECR3        lda buff2,y
-            clc
-            clc
-            iny
-            pha
-            pla
-            jmp ECR5
-ECR4        lda buff2,y
+            clc             ; 2c
+            clc             ; 2c
+            clc             ; 2c
+            clc             ; 2c
+            clc             ; 2c
+            lda #$FF        ; 2c
+            jsr WAIT12      ; 6+6c
+ECR2        pha             ; 3c
+            pla             ; 4c
+            sta OUTBYT,x    ; 5c
+            ora INBYT,x     ; 4c
+            dey             ; 2c
+            beq ECR3        ; 2/3c
+            jsr WAIT12      ; 6c
+            lda #$FF        ; 2c
+            jmp ECR2B       ; 3c
+ECR2B       jmp ECR2        ; 3c
+ECR3        lda buff2,y     ; 4c
+            clc             ; 2c
+            clc             ; 2c
+            iny             ; 2c
+            pha             ; 3c
+            pla             ; 4c
+            jmp ECR5        ; 3c
+ECR4        lda buff2,y     ; 4c
 PTR = *-1
-            iny
+            iny             ; 2c
             beq ECR7
             cmp #0
             beq ECR8
-            clc
+            clc             ; 8c
             clc
             clc
 ECR5        clc
-ECR6        sta OUTBYT,x
-            ora INBYT,x
-            jmp ECR4
-ECR7        inc PTR
-            clc
-            jmp ECR6
+ECR6        sta OUTBYT,x    ; 5c
+            ora INBYT,x     ; 4c
+            jmp ECR4        ; 3c
+ECR7        inc PTR         ; 5c
+            clc             ; 2c
+            jmp ECR6        ; 3c
 ECR8        lda DRVCTL1,x
             lda DRVOFF,x
-            lda #$70
+            lda #>buff2
             sta PTR
-WAIT12      rts
+WAIT12      rts             ; 6c
 
 ;***********************
 ;                      *
@@ -241,7 +243,7 @@ SEEK0       pha
 
 LECTURE     lda #$01
             jsr SEEK0
-LECT1       ldx #$60
+LECT1       ldx #slot
             lda DRVON,x
             lda DRVCTL1,x
             lda #$00
