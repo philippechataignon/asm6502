@@ -339,21 +339,21 @@ PGM02       jsr LECTURE
 -           lda (ptr2),y        ; compare (ptr2),y et buff2
             cmp buff2,x
             beq +               ; match
-PGM05       iny
+PGMNXTCMP   iny                 ; incr ptr2H,Y
             bne -
-            inc ptr2+1
+            inc ptr2+1          ; incr var2 when new page
             inc var2
             lda var2
-            cmp #$20
+            cmp #$20            ; $20 pages ?
             bne -
-            jmp PGM13
+            jmp PGMENDBUF
 +           tya                 ; store ptr2H,Y on stack
             pha
             lda ptr2+1
             pha
 -           inx
             cpx #10
-            beq PGM15           ; 10 common values -> PGM15
+            beq PGMCMPOK        ; 10 common values -> PGM15
             iny
             bne -
             inc ptr2+1
@@ -365,7 +365,7 @@ PGM05       iny
             pla
             tay
             ldx #$00
-            jmp PGM05
+            jmp PGMNXTCMP
 
 PGMCS       lda var1        ; test if #retry < 4
             cmp #4
@@ -374,6 +374,7 @@ PGMCS       lda var1        ; test if #retry < 4
             lda #'R'
             jsr AFFICH
             jmp PGM02
+
 ERR1        lda #'1'
             jmp ERR
 ERR2        lda #'2'
@@ -382,26 +383,28 @@ ERR3        lda #'3'
 ERR         jsr AFFICH
             jmp PGNTRK
 
-PGM11       lda var1
-            cmp #4
+PGMERRVER   lda var1        ; error verif
+            cmp #4          ; try to write 4 times
             beq ERR2
             inc var1
-            jmp PGM16
-PGM13       lda var1
-            cmp #4
-            beq ERR3
+            jmp PGMWRITE
+
+PGMENDBUF   lda var1
+            cmp #4          ; try to reread 4 times
+            beq ERR3        ; else exit with error 3
             inc var1
             lda #'R'
             jsr AFFICH
             jmp PGM02
-PGM15       pla             ; 10 common values
+
+PGMCMPOK    pla             ; 10 common values
             sta ptr2+1      ; unstack ptr2H,Y
             pla
             tay
             lda #$00
             sta (ptr2),y    ; write 0 at buffer end
 
-PGM16       lda #'W'
+PGMWRITE    lda #'W'
             jsr AFFICH
             jsr ECRIT
             lda #'V'
@@ -410,22 +413,23 @@ PGM16       lda #'W'
             lda #'A'
             jsr AFFICH
             move #buff1,ptr2
-            ldx #$00
-PGM17       lda (ptr2),y
+            ldx #0
+-           lda (ptr2),y
             cmp buff2,x
-            bne PGM18
+            bne +
             inx
             cpx #$10
             beq PGMOK
-            bne PGM19
-PGM18       ldx #$00
-PGM19       iny
-            bne PGM17
+            bne ++
++           ldx #$00
++           iny
+            bne -
             inc ptr2+1
             lda ptr2+1
             cmp #>buff1end
-            bne PGM17
-            jmp PGM11
+            bne -
+            jmp PGMERRVER
+
 PGMOK       lda #"0"
             jsr AFFICH
 PGNTRK      lda trkcurr
