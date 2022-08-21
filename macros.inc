@@ -19,25 +19,18 @@ printsafe   .macro
             pla
             .endm
 
-move        .macro
+movea       .macro
             lda >\1
             sta \2+1
             lda <\1
             sta \2
             .endm
 
-moveay      .macro
+move       .macro
             lda >\1
             sta \2+1
             ldy <\1
             sty \2
-            .endm
-
-move3       .macro
-            lda \2
-            sta \3
-            lda \1
-            sta \3+1
             .endm
 
 st_rwts     .macro

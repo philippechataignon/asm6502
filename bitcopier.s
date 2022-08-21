@@ -82,7 +82,7 @@ buff1 = $3000
 buff1end = $4f00
 buff2 = $7000
 buff2end = $9000
-cycleaddr = $7500
+addr1 = $7500
 
 .include "apple_enc.inc"
 .include "macros.inc"
@@ -310,7 +310,7 @@ PGM02       jsr LECTURE
             jsr AFFICH
             jsr ANALYSE
             bcs PGMCS           ; carry set = fail
-            moveay buff2,ptr2   ; ptr2 = $7000
+            move buff2,ptr2   ; ptr2 = $7000
 -           lda (ptr1),y        ; copy from buff1/ptr1 computed in ANALYSE
             sta (ptr2),y        ; in buff2
             iny
@@ -332,13 +332,13 @@ PGM02       jsr LECTURE
             sta A2L
             jsr XAM             ; display start ($5F bytes) of buff2
             move #buff2,ptr1    ; find 10 identical (X) values in buffer
-            move #cycleaddr,ptr2
-            ldy #$00
-            ldx #$00
+            move #addr1,ptr2
+            ldy #0
+            ldx #0
             stx var2
-PGM04       lda (ptr2),y
+PGM04       lda (ptr2),y        ; compare (ptr2),y et buff2
             cmp buff2,x
-            beq PGM06
+            beq +               ; match
 PGM05       iny
             bne PGM04
             inc ptr2+1
@@ -347,19 +347,19 @@ PGM05       iny
             cmp #$20
             bne PGM04
             jmp PGM13
-PGM06       tya
++           tya                 ; store ptr2H,Y on stack
             pha
             lda ptr2+1
             pha
-PGM07       inx
+-           inx
             cpx #10
-            beq PGM15
+            beq PGM15           ; 10 common values -> PGM15
             iny
             bne PGM08
             inc ptr2+1
 PGM08       lda (ptr2),y
             cmp buff2,x
-            beq PGM07
+            beq -
             pla
             sta ptr2+1
             pla
@@ -394,12 +394,13 @@ PGM13       lda var1
             lda #'R'
             jsr AFFICH
             jmp PGM02
-PGM15       pla
-            sta ptr2+1
+PGM15       pla             ; 10 common values
+            sta ptr2+1      ; unstack ptr2H,Y
             pla
             tay
             lda #$00
-            sta (ptr2),y
+            sta (ptr2),y    ; write 0 at buffer end
+
 PGM16       lda #'W'
             jsr AFFICH
             jsr ECRIT
@@ -408,10 +409,7 @@ PGM16       lda #'W'
             jsr LECT1
             lda #'A'
             jsr AFFICH
-            lda #$30
-            sta ptr2+1
-            ldy #$00
-            sta ptr2
+            move #buff1,ptr2
             ldx #$00
 PGM17       lda (ptr2),y
             cmp buff2,x
