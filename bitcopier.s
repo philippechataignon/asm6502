@@ -89,30 +89,7 @@ addr1 = $7500
 
 .enc "apple"
 
-* = $2B00
-            jmp START
-
-;***********************
-;                      *
-; TABLE CARACTERES     *
-;                      *
-;***********************
-
-
-TABLE1      .text "INTRODUISEZ VOS DISQUETTES S.V.P:"
-            .byte 0
-TABLE2      .text "APPLE BITCOPIER (C) 1982         "
-            .text 'JALB '
-            .text " "
-            .byte 0
-
-TIRET       ldx #40
-            lda #"="
--           jsr COUT
-            dex
-            bne -
-            rts
-
+* = $900
 
 ;***********************
 ;                      *
@@ -127,26 +104,15 @@ START       jsr HOME
             sta CH+1
             jsr VTAB
             jsr TIRET
-            ldx #0
--           lda TABLE2,x
-            beq +
-            jsr COUT
-            inx
-            bne -
-+           jsr CROUT
+            print TABLE2
             jsr TIRET
             lda #4
             sta CH
             lda #12
             sta CV
             jsr VTAB
-            ldx #0
--           lda TABLE1,x
-            beq +
-            jsr COUT
-            inx
-            bne -
-+           jsr RDKEY
+            print TABLE1
+            jsr RDKEY
 
 ;***********************
 ;                      *
@@ -167,7 +133,7 @@ INIT        lda #0 ;PISTE DEPART
             lda #$B5
             sta dlm4
             jsr HOME
-            jsr AFFTRK
+            print TEXTE
             jsr PISTE0
             jmp PGM01
 
@@ -581,14 +547,6 @@ SYN05       iny             ; 5 $FF, incr ptr1,Y
 AFFICH      ldx trkcurr
             sta SCREEN,x
             rts
-AFFTRK      ldx #$00
-AFF1        lda TEXTE,x
-            cmp #$00
-            beq AFFRTS
-            jsr COUT
-            inx
-            jmp AFF1
-AFFRTS      rts
 
 ;***********************
 ;                      *
@@ -614,15 +572,23 @@ PISTE0      lda trkcurr
 ;                      *
 ;***********************
 
-TEXTE
-            .text "TR 000000000000000011111111111111112222"
-            .byte $8D
-            .text "AC 0123456789ABCDEF0123456789ABCDEF0123"
-            .byte $8D
-            .text "---------------------------------------"
-            .byte $8D
-            .text "ER"
-            .byte $8D
-            .text "---------------------------------------"
-            .byte $8D
+TIRET       ldx #40
+            lda #"="
+-           jsr COUT
+            dex
+            bne -
+            rts
+
+TEXTE       .text "TR 000000000000000011111111111111112222\n"
+            .text "AC 0123456789ABCDEF0123456789ABCDEF0123\n"
+            .text "---------------------------------------\n"
+            .text "ER\n"
+            .text "---------------------------------------\n"
+            .byte 0
+
+TABLE1      .text "INTRODUISEZ VOS DISQUETTES S.V.P:"
+            .byte 0
+TABLE2      .text "APPLE BITCOPIER (C) 1982         "
+            .text 'JALB '
+            .text " \n"
             .byte 0
