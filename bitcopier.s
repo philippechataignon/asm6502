@@ -82,6 +82,7 @@ buff1 = $3000
 buff1end = $4f00
 buff2 = $7000
 buff2end = $9000
+cycleaddr = $7500
 
 .include "apple_enc.inc"
 .include "macros.inc"
@@ -324,14 +325,14 @@ PGM02       jsr LECTURE
             lda #0
             sta CH
             sta A1L
-            lda #$>buff2
+            lda #>buff2
             sta A1H
             sta A2H
             lda #$5F
             sta A2L
-            jsr XAM         ; display start ($5F bytes) of buff2
-            move #buff2,ptr1
-            move #$7500,ptr2
+            jsr XAM             ; display start ($5F bytes) of buff2
+            move #buff2,ptr1    ; find 10 identical (X) values in buffer
+            move #cycleaddr,ptr2
             ldy #$00
             ldx #$00
             stx var2
@@ -351,7 +352,7 @@ PGM06       tya
             lda ptr2+1
             pha
 PGM07       inx
-            cpx #$0A
+            cpx #10
             beq PGM15
             iny
             bne PGM08
@@ -365,24 +366,27 @@ PGM08       lda (ptr2),y
             tay
             ldx #$00
             jmp PGM05
+
 PGMCS       lda var1        ; test if #retry < 4
             cmp #4
-            beq ERR1       ; fail, next track if any
+            beq ERR1        ; fail, next track if any
             inc var1        ; incr var1 and read again
             lda #'R'
             jsr AFFICH
             jmp PGM02
 ERR1        lda #'1'
-            jsr AFFICH
-            jmp EXNXTTRK
+            jmp ERR
+ERR2        lda #'2'
+            jmp ERR
+ERR3        lda #'3'
+ERR         jsr AFFICH
+            jmp PGNTRK
+
 PGM11       lda var1
             cmp #4
             beq ERR2
             inc var1
             jmp PGM16
-ERR2        lda #'2'
-            jsr AFFICH
-            jmp EXNXTTRK
 PGM13       lda var1
             cmp #4
             beq ERR3
@@ -390,9 +394,6 @@ PGM13       lda var1
             lda #'R'
             jsr AFFICH
             jmp PGM02
-ERR3        lda #'3'
-            jsr AFFICH
-            jmp EXNXTTRK
 PGM15       pla
             sta ptr2+1
             pla
@@ -417,19 +418,19 @@ PGM17       lda (ptr2),y
             bne PGM18
             inx
             cpx #$10
-            beq PGM20
+            beq PGMOK
             bne PGM19
 PGM18       ldx #$00
 PGM19       iny
             bne PGM17
             inc ptr2+1
             lda ptr2+1
-            cmp #$4F
+            cmp #>buff1end
             bne PGM17
             jmp PGM11
-PGM20       lda #$B0
+PGMOK       lda #"0"
             jsr AFFICH
-EXNXTTRK    lda trkcurr
+PGNTRK      lda trkcurr
             cmp trkend
             beq EXIT
             inc trkcurr
@@ -542,7 +543,7 @@ SYN02       iny
             bne -
             inc ptr1+1
             lda ptr1+1
-            cmp #$4F        ; end of buffer -> SYN04
+            cmp #>buff1end
             beq SYNFAIL
             bne -
 SYN03       ldx #0
@@ -553,7 +554,7 @@ SYN05       iny             ; 5 $FF, incr ptr1,Y
             bne +
             inc ptr1+1
             lda ptr1+1
-            cmp #$4F
+            cmp #>buff1end
             beq SYNFAIL
 +           lda (ptr1),y
             cmp #$FF        ; while in synchro, incr ptr1,Y
