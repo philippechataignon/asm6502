@@ -331,21 +331,21 @@ PGM02       jsr LECTURE
             lda #$5F
             sta A2L
             jsr XAM             ; display start ($5F bytes) of buff2
-            move #buff2,ptr1    ; find 10 identical (X) values in buffer
+            move #buff2,ptr1    ; find 10 identical values in buffer
             move #addr1,ptr2
             ldy #0
             ldx #0
             stx var2
-PGM04       lda (ptr2),y        ; compare (ptr2),y et buff2
+-           lda (ptr2),y        ; compare (ptr2),y et buff2
             cmp buff2,x
             beq +               ; match
 PGM05       iny
-            bne PGM04
+            bne -
             inc ptr2+1
             inc var2
             lda var2
             cmp #$20
-            bne PGM04
+            bne -
             jmp PGM13
 +           tya                 ; store ptr2H,Y on stack
             pha
@@ -355,9 +355,9 @@ PGM05       iny
             cpx #10
             beq PGM15           ; 10 common values -> PGM15
             iny
-            bne PGM08
+            bne -
             inc ptr2+1
-PGM08       lda (ptr2),y
+-           lda (ptr2),y
             cmp buff2,x
             beq -
             pla
