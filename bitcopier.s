@@ -446,58 +446,58 @@ ANALYSE     lda #$00            ; init ptr1 = $3000
             sta ptr1
             lda #$30
             sta ptr1+1
-ANA01       lda (ptr1),y
+-           lda (ptr1),y        ; search dlm1, found -> ANA03
             cmp dlm1
             beq ANA03
 ANA02       iny
-            bne ANA01
+            bne -
             inc ptr1+1
             lda ptr1+1
             cmp #$4F            ; max $4EFF
-            bne ANA01
-            jmp ANA08
-ANA03       tya
-            pha
+            bne -
+            jmp NONSTD          ; not found at end of buffer, NONSTD
+ANA03       tya                 ; found dlm1, store Y | ptr1H on stack
+            pha                 ; push addr
             lda ptr1+1
             pha
             iny
-            bne ANA04
+            bne +
             inc ptr1+1
-ANA04       lda (ptr1),y
++           lda (ptr1),y        ; search dlm2
             cmp dlm2
-            bne ANA07
+            bne NOTDLM           ; not dlm2, NOTDLM
             iny
             bne ANA05
             inc ptr1+1
-ANA05       lda (ptr1),y
+ANA05       lda (ptr1),y        ; search dlm3
             cmp dlm3
-            beq ANA06
+            beq BINGO           ; bingo !
             cmp dlm4
-            bne ANA07
-ANA06       pla
-            sta ptr1+1
+            bne NOTDLM
+BINGO       pla                 ; store stacked address in ptr1
+            sta ptr1+1          ; ptr1H
             pla
             tay
-            clc
-            adc ptr1
-            sta ptr1
-            lda #$00
+            clc                 ; add Y to ptr1
+            adc ptr1            ; if Y + ptr1L > $FF
+            sta ptr1            ; increment ptr1H
+            lda #0
             adc ptr1+1
             sta ptr1+1
-            clc
+            clc                 ; success = carry clear
             rts
-ANA07       pla
+NOTDLM      pla                 ; not dlm2/3, restore ptr1
             sta ptr1+1
             pla
             tay
-            jmp ANA02
-ANA08       lda #$00
+            jmp ANA02           ; and next nibble
+NONSTD      lda #$00            ; restore ptr1 = $3000
             tay
             sta ptr1
             lda #$30
             sta ptr1+1
-ANA09       jsr SYNCR
-            bcs ANA12
+ANA09       jsr SYNCR           ; call non standard analyse
+            bcs ANA12           ; if carry set, fail -> ANA12
             lda (ptr1),y
             cmp dlm1
             bne ANA09
@@ -516,19 +516,19 @@ ANA10       lda (ptr1),y
 ANA11       pla
             sta ptr1+1
             jmp ANA09
-ANA12       lda #$00
+ANA12       lda #$00            ; first analyse fail, retry from $3000
             tay
             sta ptr1
             lda #$30
             sta ptr1+1
 ANA13       jsr SYNCR
-            bcs ANA14
+            bcs ANA14           ; fail again, ANA14
             lda (ptr1),y
             cmp dlm1
             bne ANA13
             clc
             rts
-ANA14       lda #$00
+ANA14       lda #$00            ; last attempt
             tay
             sta ptr1
             lda #$30
@@ -542,42 +542,42 @@ ANA14       lda #$00
 ;                      *
 ;***********************
 
-SYNCR       ldx #$00
-SYN01       lda (ptr1),y
-            cmp #$FF
+SYNCR       ldx #0
+-           lda (ptr1),y
+            cmp #$FF        ; search synchro
             bne SYN03
-            inx
-            cpx #dlm2
-            beq SYN05
+            inx             ; inx if $ff found
+            cpx #5          
+            beq SYN05       ; found 5 $FF -> SYN05
 SYN02       iny
-            bne SYN01
+            bne -
             inc ptr1+1
             lda ptr1+1
-            cmp #$4F
-            beq SYN04
-            bne SYN01
-SYN03       ldx #$00
+            cmp #$4F        ; end of buffer -> SYN04
+            beq SYNFAIL
+            bne -
+SYN03       ldx #0
             jmp SYN02
-SYN04       sec
+SYNFAIL     sec             ; fail -> carry set
             rts
-SYN05       iny
-            bne SYN06
+SYN05       iny             ; 5 $FF, incr ptr1,Y
+            bne +
             inc ptr1+1
             lda ptr1+1
             cmp #$4F
-            beq SYN04
-SYN06       lda (ptr1),y
-            cmp #$FF
+            beq SYNFAIL
++           lda (ptr1),y    
+            cmp #$FF        ; while in synchro, incr ptr1,Y
             beq SYN05
-            clc
-            tya
-            adc ptr1
-            sta ptr1
+            clc             ; end of synchro = success
+            tya             ; store ptr1 + Y in ptr1
+            adc ptr1        ; ptr1 = addr of first nibble of
+            sta ptr1        ; min 5 $FF
             lda #$00
             adc ptr1+1
             sta ptr1+1
             ldy #$00
-            clc
+            clc             ; success = carry clear
             rts
 
 ;***********************
