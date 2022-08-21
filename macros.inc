@@ -9,7 +9,7 @@ _cout       = $fded
 +
             .endm
 
-prints      .macro
+printsafe   .macro
             pha
             tya
             pha
@@ -20,10 +20,17 @@ prints      .macro
             .endm
 
 move        .macro
-            lda <\1
-            sta \2
             lda >\1
             sta \2+1
+            lda <\1
+            sta \2
+            .endm
+
+moveay      .macro
+            lda >\1
+            sta \2+1
+            ldy <\1
+            sty \2
             .endm
 
 move3       .macro

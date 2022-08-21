@@ -58,7 +58,6 @@ VTAB = $FC22
 COUT = $FDED
 CROUT = $FD8E
 WAIT = $FCA8
-TEST = $7000
 GETIOB = $03E3
 RWTS = $03D9
 XAM = $FDB3
@@ -66,7 +65,7 @@ SCREEN = $0583
 
 ptr1 = $FA
 ptr2 = $FC
-trkstart = $02
+trkcurr = $02
 trkend = $03
 
 dlm1 = $F9
@@ -78,6 +77,11 @@ ptr0 = $00
 
 var1 = $FF
 var2 = $FE
+
+buff1 = $3000
+buff1end = $4f00
+buff2 = $7000
+buff2end = $9000
 
 .include "apple_enc.inc"
 .include "macros.inc"
@@ -150,7 +154,7 @@ START       jsr HOME
 ;***********************
 
 INIT        lda #0 ;PISTE DEPART
-            sta trkstart
+            sta trkcurr
             lda #35 ;PISTE FIN
             sta trkend
             lda #$D5 ;MARQUEURS
@@ -203,14 +207,14 @@ ECR2        pha
             lda #$FF
             stx $60
             jmp ECR2
-ECR3        lda TEST,y
+ECR3        lda buff2,y
             clc
             clc
             iny
             pha
             pla
             jmp ECR5
-ECR4        lda TEST,y
+ECR4        lda buff2,y
 PTR = *-1
             iny
             beq ECR7
@@ -245,7 +249,7 @@ SEEK0       pha
             pla
             ldy #$02
             sta (ptr0),y
-            lda trkstart
+            lda trkcurr
             ldy #$04
             sta (ptr0),y
             lda #$00
@@ -298,44 +302,41 @@ LECT1       ldx #$60
 
 PGM01       lda #'R'
             jsr AFFICH
-            lda #0
+            lda #0              ; init retry counter
             sta var1
 PGM02       jsr LECTURE
             lda #'A'
             jsr AFFICH
             jsr ANALYSE
-            bcs PGMCS       ; si carry
-            ldy #$00        ; ptr2 = $7000
-            sty ptr2
-            lda #$70
-            sta ptr2+1
--           lda (ptr1),y     ; copie depuis (ptr1) -> (ptr2 = $7000-$8FFF)
-            sta (ptr2),y     ; ptr1 computed in ANALYSE
+            bcs PGMCS           ; carry set = fail
+            moveay buff2,ptr2   ; ptr2 = $7000
+-           lda (ptr1),y        ; copy from buff1/ptr1 computed in ANALYSE
+            sta (ptr2),y        ; in buff2
             iny
             bne -
             inc ptr1+1
             inc ptr2+1
             lda ptr2+1
-            cmp #$90        ; max $9000
+            cmp #<buff2end      ; until end of buff2
             bne -
             lda #5
             sta CV
             lda #0
             sta CH
             sta A1L
-            lda #$70
+            lda #$>buff2
             sta A1H
             sta A2H
             lda #$5F
             sta A2L
-            jsr XAM         ; IMPRIME $7000-$705F
-            move #$7000,ptr1
+            jsr XAM         ; display start ($5F bytes) of buff2
+            move #buff2,ptr1
             move #$7500,ptr2
             ldy #$00
             ldx #$00
             stx var2
 PGM04       lda (ptr2),y
-            cmp TEST,x
+            cmp buff2,x
             beq PGM06
 PGM05       iny
             bne PGM04
@@ -356,7 +357,7 @@ PGM07       inx
             bne PGM08
             inc ptr2+1
 PGM08       lda (ptr2),y
-            cmp TEST,x
+            cmp buff2,x
             beq PGM07
             pla
             sta ptr2+1
@@ -364,34 +365,34 @@ PGM08       lda (ptr2),y
             tay
             ldx #$00
             jmp PGM05
-PGMCS       lda var1
-            cmp #$04
-            beq PGM10
-            inc var1
+PGMCS       lda var1        ; test if #retry < 4
+            cmp #4
+            beq ERR1       ; fail, next track if any
+            inc var1        ; incr var1 and read again
             lda #'R'
             jsr AFFICH
             jmp PGM02
-PGM10       lda #'1'
+ERR1        lda #'1'
             jsr AFFICH
-            jmp PGM21
+            jmp EXNXTTRK
 PGM11       lda var1
-            cmp #$04
-            beq PGM12
+            cmp #4
+            beq ERR2
             inc var1
             jmp PGM16
-PGM12       lda #'2'
+ERR2        lda #'2'
             jsr AFFICH
-            jmp PGM21
+            jmp EXNXTTRK
 PGM13       lda var1
-            cmp #$04
-            beq PGM14
+            cmp #4
+            beq ERR3
             inc var1
             lda #'R'
             jsr AFFICH
             jmp PGM02
-PGM14       lda #'3'
+ERR3        lda #'3'
             jsr AFFICH
-            jmp PGM21
+            jmp EXNXTTRK
 PGM15       pla
             sta ptr2+1
             pla
@@ -412,7 +413,7 @@ PGM16       lda #'W'
             sta ptr2
             ldx #$00
 PGM17       lda (ptr2),y
-            cmp TEST,x
+            cmp buff2,x
             bne PGM18
             inx
             cpx #$10
@@ -428,12 +429,12 @@ PGM19       iny
             jmp PGM11
 PGM20       lda #$B0
             jsr AFFICH
-PGM21       lda trkstart
+EXNXTTRK    lda trkcurr
             cmp trkend
-            beq +
-            inc trkstart
+            beq EXIT
+            inc trkcurr
             jmp PGM01
-+           brk
+EXIT        brk
 
 ;***********************
 ;                      *
@@ -441,19 +442,16 @@ PGM21       lda trkstart
 ;                      *
 ;***********************
 
-ANALYSE     lda #$00            ; init ptr1 = $3000
+ANALYSE     move #buff1,ptr1    ; init ptr1 = $3000
             tay
-            sta ptr1
-            lda #$30
-            sta ptr1+1
 -           lda (ptr1),y        ; search dlm1, found -> ANA03
             cmp dlm1
-            beq ANA03
-ANA02       iny
+            beq ANA03           ; found dlm1
+ANA02       iny                 ; next nibble
             bne -
             inc ptr1+1
             lda ptr1+1
-            cmp #$4F            ; max $4EFF
+            cmp #>buff1end      ; max $4EFF
             bne -
             jmp NONSTD          ; not found at end of buffer, NONSTD
 ANA03       tya                 ; found dlm1, store Y | ptr1H on stack
@@ -465,7 +463,7 @@ ANA03       tya                 ; found dlm1, store Y | ptr1H on stack
             inc ptr1+1
 +           lda (ptr1),y        ; search dlm2
             cmp dlm2
-            bne NOTDLM           ; not dlm2, NOTDLM
+            bne NOTDLM          ; not dlm2, NOTDLM
             iny
             bne ANA05
             inc ptr1+1
@@ -491,48 +489,39 @@ NOTDLM      pla                 ; not dlm2/3, restore ptr1
             pla
             tay
             jmp ANA02           ; and next nibble
-NONSTD      lda #$00            ; restore ptr1 = $3000
+NONSTD      move #buff1,ptr1    ; restore ptr1 = $3000
             tay
-            sta ptr1
-            lda #$30
-            sta ptr1+1
 ANA09       jsr SYNCR           ; call non standard analyse
             bcs ANA12           ; if carry set, fail -> ANA12
             lda (ptr1),y
-            cmp dlm1
-            bne ANA09
-            lda ptr1+1
-            pha
+            cmp dlm1            ; dlm1 after synchro ?
+            bne ANA09           ; no, test another synchro
+            lda ptr1+1          ; store ptr1,Y on stack
+            pha                 ; push ptrH
             iny
             bne ANA10
             inc ptr1+1
-ANA10       lda (ptr1),y
+ANA10       lda (ptr1),y        ; dlm2 ?
             cmp dlm2
             bne ANA11
-            pla
-            sta ptr1+1
-            clc
+            pla                 ; success !
+            sta ptr1+1          ; restore and store ptr1H
+            clc                 ; carry clear
             rts
-ANA11       pla
+ANA11       pla                 ; restore ptr1H
             sta ptr1+1
-            jmp ANA09
-ANA12       lda #$00            ; first analyse fail, retry from $3000
+            jmp ANA09           ; next synchro
+ANA12       move #buff1,ptr1    ; first analyse fail, retry from $3000
             tay
-            sta ptr1
-            lda #$30
-            sta ptr1+1
 ANA13       jsr SYNCR
             bcs ANA14           ; fail again, ANA14
             lda (ptr1),y
             cmp dlm1
             bne ANA13
-            clc
+            clc                 ; found dlm1 = success
             rts
-ANA14       lda #$00            ; last attempt
+ANA14       move buff1,ptr1     ; last attempt
             tay
-            sta ptr1
-            lda #$30
-            sta ptr1+1
             jsr SYNCR
             rts
 
@@ -547,7 +536,7 @@ SYNCR       ldx #0
             cmp #$FF        ; search synchro
             bne SYN03
             inx             ; inx if $ff found
-            cpx #5          
+            cpx #5
             beq SYN05       ; found 5 $FF -> SYN05
 SYN02       iny
             bne -
@@ -566,7 +555,7 @@ SYN05       iny             ; 5 $FF, incr ptr1,Y
             lda ptr1+1
             cmp #$4F
             beq SYNFAIL
-+           lda (ptr1),y    
++           lda (ptr1),y
             cmp #$FF        ; while in synchro, incr ptr1,Y
             beq SYN05
             clc             ; end of synchro = success
@@ -586,7 +575,7 @@ SYN05       iny             ; 5 $FF, incr ptr1,Y
 ;                      *
 ;***********************
 
-AFFICH      ldx trkstart
+AFFICH      ldx trkcurr
             sta SCREEN,x
             rts
 AFFTRK      ldx #$00
@@ -604,16 +593,16 @@ AFFRTS      rts
 ;                      *
 ;***********************
 
-PISTE0      lda trkstart
+PISTE0      lda trkcurr
             pha
             lda #$FF
-            sta trkstart
+            sta trkcurr
             lda #1
             jsr SEEK0
             lda #2
             jsr SEEK0
             pla
-            sta trkstart
+            sta trkcurr
             rts
 
 ;***********************
