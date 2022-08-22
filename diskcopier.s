@@ -191,21 +191,19 @@ LECTURE     jsr SEEK0
 LECT1       ldx #slot
             lda DRVON,x
             lda DRVCTL1,x
-            move buff1,ptr0
+            move buff1,LECTPTR
 -           lda INBYT,x
             bpl -
-            sta (ptr0),y
-            inc ptr0
+            sta buff1
+LECTPTR = * - 2
+            inc LECTPTR
             bne -
-            inc ptr0+1
-            lda ptr0+1
+            inc LECTPTR+1
+            lda LECTPTR+1
             cmp #>buff1read
             blt -
             lda DRVOFF,x
             rts
-
-
-
 
 ;***********************
 ;                      *
@@ -279,14 +277,14 @@ PGMNXTCMP   iny                 ; incr ptr2H,Y
             ldx #0
             jmp PGMNXTCMP
 
+; bad analyze
 PGMCS       lda var1        ; test if #retry < 4
             cmp #4
-            beq ERR1        ; fail, next track if any
+            bge ERR1        ; fail, next track if any
             inc var1        ; incr var1 and read again
             lda #'R'
             jsr AFFICH
             jmp PGM02
-
 
 PGMENDBUF   lda var1
             cmp #4          ; try to reread 4 times
@@ -339,7 +337,6 @@ ERR         jsr AFFICH
 ;***********************
 
 ANALYSE     move #buff1,ptr1    ; init ptr1 = $3000
-            tay
 -           lda (ptr1),y        ; search dlm1, found -> ANA03
             cmp dlm1
             beq ANA03           ; found dlm1
@@ -386,7 +383,6 @@ NOTDLM      pla                 ; not dlm2/3, restore ptr1
             tay
             jmp ANA02           ; and next nibble
 NONSTD      move #buff1,ptr1    ; restore ptr1 = $3000
-            tay
 ANA09       jsr SYNCR           ; call non standard analyse
             bcs ANA12           ; if carry set, fail -> ANA12
             lda (ptr1),y
@@ -408,7 +404,6 @@ ANA11       pla                 ; restore ptr1H
             sta ptr1+1
             jmp ANA09           ; next synchro
 ANA12       move #buff1,ptr1    ; first analyse fail, retry from $3000
-            tay
 ANA13       jsr SYNCR
             bcs ANA14           ; fail again, ANA14
             lda (ptr1),y
@@ -417,7 +412,6 @@ ANA13       jsr SYNCR
             clc                 ; found dlm1 = success
             rts
 ANA14       move buff1,ptr1     ; last attempt
-            tay
             jsr SYNCR
             rts
 
