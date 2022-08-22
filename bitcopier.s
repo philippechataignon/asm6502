@@ -58,8 +58,6 @@ VTAB = $FC22
 COUT = $FDED
 CROUT = $FD8E
 WAIT = $FCA8
-GETIOB = $03E3
-RWTS = $03D9
 XAM = $FDB3
 SCREEN = $0583
 
@@ -85,6 +83,26 @@ buff2end = $9000
 addr1 = $7500
 
 slot = $60
+
+rpliob = 0
+rplslt = 1
+rpldrv = 2
+rplvol = 3
+rpltrk = 4
+rplsec = 5
+rpldct = 6
+rplbuf = 8                      ; (2 bytes)
+rplsiz = $b
+rplcmd = $c
+rplret = $e
+
+cmdseek = 0
+cmdread = 1
+cmdwrite = 2
+cmdformat= 4
+
+rwts        = $3D9
+locrpl      = $3E3
 
 .include "apple_enc.inc"
 .include "macros.inc"
@@ -145,15 +163,17 @@ INIT        lda #0 ;PISTE DEPART
 ;                      *
 ;***********************
 
-ECRIT       lda #2
+ECRIT
+            ldx #slot
+            lda #2
             jsr SEEK0
             lda DRVON,x
             ldy #5
 -           lda #$FF
-            jsr WAIT
+            jsr WAIT        ; long wait
             dey
             bne -
-            ldy #$FF
+            ldy #$FF        ; write sync
             lda OUTBYT,x
             lda DRVCTL1,x
             lda #$FF
@@ -205,33 +225,6 @@ ECR8        lda DRVCTL1,x
             sta PTR
 WAIT12      rts             ; 6c
 
-;***********************
-;                      *
-; REMET DRIVE PISTE 0  *
-;                      *
-;***********************
-
-SEEK0       pha
-            jsr GETIOB
-            sty ptr0
-            sta ptr0+1
-            pla
-            ldy #$02
-            sta (ptr0),y
-            lda trkcurr
-            ldy #$04
-            sta (ptr0),y
-            lda #$00
-            ldy #$0C
-            sta (ptr0),y
-            jsr GETIOB
-            jsr RWTS
-            lda #0
-            sta PREG
-            ldy #$01
-            lda (ptr0),y
-            tax
-            rts
 
 ;***********************
 ;                      *
@@ -332,7 +325,7 @@ PGMNXTCMP   iny                 ; incr ptr2H,Y
             sta ptr2+1
             pla
             tay
-            ldx #$00
+            ldx #0
             jmp PGMNXTCMP
 
 PGMCS       lda var1        ; test if #retry < 4
@@ -389,7 +382,7 @@ PGMWRITE    lda #'W'
             cpx #$10
             beq PGMOK
             bne ++
-+           ldx #$00
++           ldx #0
 +           iny
             bne -
             inc ptr2+1
@@ -548,6 +541,30 @@ SYN05       iny             ; 5 $FF, incr ptr1,Y
 
 AFFICH      ldx trkcurr
             sta SCREEN,x
+            rts
+
+;***********************
+;                      *
+; REMET DRIVE PISTE 0  *
+;                      *
+;***********************
+
+SEEK0       pha
+            jsr locrpl
+            sty ptr0
+            sta ptr0+1
+            pla
+            ldy #rpldrv
+            sta (ptr0),y
+            st_rwts ptr0,trkcurr,rpltrk
+            st_rwts ptr0,#0,rplcmd
+            jsr locrpl
+            jsr rwts
+            lda #0
+            sta PREG
+            ldy #$01
+            lda (ptr0),y
+            tax
             rts
 
 ;***********************
