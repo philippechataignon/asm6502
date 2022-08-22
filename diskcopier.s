@@ -1,5 +1,7 @@
 ; diskcopier
 
+DIRECT := false
+
 WNDLFT      =     $20
 WNDWDTH     =     $21
 WNDTOP      =     $22
