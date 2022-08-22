@@ -78,6 +78,7 @@ var2 = $FE
 
 buff1 = $3000
 buff1end = $4f00
+buff1read = $6f00
 buff2 = $7000
 buff2end = $9000
 addr1 = $7500
@@ -234,16 +235,12 @@ WAIT12      rts             ; 6c
 
 ; read $3000-$6EFF
 
-LECTURE     lda #$01
+LECTURE     lda #1
             jsr SEEK0
 LECT1       ldx #slot
             lda DRVON,x
             lda DRVCTL1,x
-            lda #$00
-            sta ptr0
-            lda #$30
-            sta ptr0+1
-            ldy #0
+            move buff1,ptr0
 -           lda INBYT,x
             bpl -
             sta (ptr0),y
@@ -251,8 +248,8 @@ LECT1       ldx #slot
             bne -
             inc ptr0+1
             lda ptr0+1
-            cmp #$6F
-            bcc -
+            cmp #>buff1read
+            blt -
             lda DRVOFF,x
             rts
 
@@ -271,8 +268,8 @@ PGM02       jsr LECTURE
             jsr AFFICH
             jsr ANALYSE
             bcs PGMCS           ; carry set = fail
-            move buff2,ptr2   ; ptr2 = $7000
--           lda (ptr1),y        ; copy from buff1/ptr1 computed in ANALYSE
+            move buff2,ptr2     ; ptr2 = $7000
+-           lda (ptr1),y        ; copy from ptr1 computed in ANALYSE
             sta (ptr2),y        ; in buff2
             iny
             bne -
@@ -293,7 +290,7 @@ PGM02       jsr LECTURE
             sta A2L
             jsr XAM             ; display start ($5F bytes) of buff2
             move #buff2,ptr1    ; find 10 identical values in buffer
-            move #addr1,ptr2
+            move #addr1,ptr2    ; addr1 = start of search addr
             ldy #0
             ldx #0
             stx var2
@@ -308,19 +305,19 @@ PGMNXTCMP   iny                 ; incr ptr2H,Y
             cmp #$20            ; $20 pages ?
             bne -
             jmp PGMENDBUF
-+           tya                 ; store ptr2H,Y on stack
++           tya                 ; store ptr2H,Y = delta on stack
             pha
             lda ptr2+1
             pha
 -           inx
             cpx #10
-            beq PGMCMPOK        ; 10 common values -> PGM15
+            beq PGMCMPOK        ; 10 common values -> PGMCMPOK
             iny
-            bne -
+            bne +
             inc ptr2+1
--           lda (ptr2),y
++           lda (ptr2),y
             cmp buff2,x
-            beq -
+            beq -               ; again =, next X
             pla
             sta ptr2+1
             pla
