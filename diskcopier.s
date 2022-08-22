@@ -99,6 +99,10 @@ cmdformat= 4
 rwts        = $3D9
 locrpl      = $3E3
 
+ack        = $06
+nak        = $15
+esc        = $9b
+
 .include "apple_enc.inc"
 .include "macros.inc"
 
@@ -150,6 +154,7 @@ INIT        lda #0          ; init track
             jsr HOME
             print TEXTE
             jsr SEEK0
+            jsr xm.ssc.init     ; init ssc
             jmp PGM01
 
 ;***********************
@@ -158,8 +163,19 @@ INIT        lda #0          ; init track
 ;                      *
 ;***********************
 
-ENVOI       nop
-
+ENVOI
+            lda #>buff2
+            sta xm.start
+            ldy ptr2+1          ; get ptr2H
+            iny
+            sty xm.end
+            lda #esc            ; send ESC to prevent send
+            jsr xm.ssc.putc
+            jsr xm.ssc.getc     ; and wait ack
+            cmp #ack
+            bne +
+            jmp xm.XModemSend   ; send buffer using xmodem
++           jmp ERR4            ; ssc error
 
 ;***********************
 ;                      *
@@ -186,6 +202,9 @@ LECT1       ldx #slot
             lda DRVOFF,x
             rts
 
+
+
+
 ;***********************
 ;                      *
 ; BOUCLE PRINCIPALE    *
@@ -210,7 +229,7 @@ PGM02       jsr LECTURE
             inc ptr2+1
             lda ptr2+1
             cmp #<buff2end      ; until end of buff2
-            bne -
+            blt -
             lda #5
             sta CV
             lda #0
@@ -266,13 +285,6 @@ PGMCS       lda var1        ; test if #retry < 4
             jsr AFFICH
             jmp PGM02
 
-ERR1        lda #'1'
-            jmp ERR
-ERR2        lda #'2'
-            jmp ERR
-ERR3        lda #'3'
-ERR         jsr AFFICH
-            jmp PGNTRK
 
 PGMENDBUF   lda var1
             cmp #4          ; try to reread 4 times
@@ -291,7 +303,7 @@ PGMCMPOK    pla             ; 10 common values
 
 PGMWRITE    lda #'S'
             jsr AFFICH
-            jsr ENVOI
+            jsr ENVOI       ; SEND (buff2)->(ptr2)
 
 PGMOK       lda #"0"
             jsr AFFICH
@@ -301,6 +313,22 @@ PGNTRK      lda trkcurr
             inc trkcurr
             jmp PGM01
 EXIT        brk
+
+;***********************
+;                      *
+; ERREURS              *
+;                      *
+;***********************
+
+ERR1        lda #'1'
+            jmp ERR
+ERR2        lda #'2'
+            jmp ERR
+ERR3        lda #'3'
+            jmp ERR
+ERR4        lda #'4'
+ERR         jsr AFFICH
+            jmp PGNTRK
 
 ;***********************
 ;                      *
@@ -479,6 +507,8 @@ TIRET       ldx #40
             dex
             bne -
             rts
+
+xm          .binclude "xmodem_send.s"
 
 TEXTE       .text "TR 000000000000000011111111111111112222\n"
             .text "AC 0123456789ABCDEF0123456789ABCDEF0123\n"
