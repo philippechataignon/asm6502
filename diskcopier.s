@@ -44,8 +44,8 @@ PREG        =     $48
 
 DRVOFF = $C088
 DRVON = $C089
-INBYT = $C08C
-OUTBYT = $C08D
+DRVINBYT = $C08C
+DRVOUTBYT = $C08D
 DRVCTL1 = $C08E
 DRVCTL2 = $C08F
 RDKEY = $FD0C
@@ -187,22 +187,32 @@ ENVOI
 
 ; read $3000-$6EFF
 
-LECTURE     jsr SEEK0
-LECT1       ldx #slot
+LECTURE     ldx #slot
             lda DRVON,x
             lda DRVCTL1,x
-            move buff1,LECTPTR
--           lda INBYT,x
+            move buff1,ptr0
+waitff      lda DRVINBYT,x
+            bpl waitff          ; wait until byte ready
+            cmp #$ff
+            bne waitff
+-           lda DRVINBYT,x
             bpl -
-            sta buff1
-LECTPTR = * - 2
-            inc LECTPTR
-            bne -
-            inc LECTPTR+1
-            lda LECTPTR+1
+            cmp #$ff
+            bne waitff
+-           lda DRVINBYT,x
+            bpl -
+            cmp #$ff
+            bne +
+            beq -
+loop1       lda DRVINBYT,x
+            bpl loop1
++           sta (ptr0),y
+            iny
+            bne loop1
+            inc ptr0+1
+            lda ptr0+1
             cmp #>buff1read
-            blt -
-            lda DRVOFF,x
+            blt loop1
             rts
 
 ;***********************
