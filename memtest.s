@@ -3,8 +3,8 @@
 ; print PASS if OK, else ERR
 ; example:
 ;
-; * FA:5 C0
-; * 2A0G
+; * FA:8 96
+; * 280G
 ;
 ; will test $0500-$BFFF
 ; note : program location page can't be tested
