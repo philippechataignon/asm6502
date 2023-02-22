@@ -5,9 +5,12 @@ data    = $1000
 
 loop0   ldx #0
 loop1   lda data+1,x
-        cmp data,x
-        blt swap
-        bge next
+        sec
+        sbc data,x
+        bvc +
+        eor #$80
++       bmi swap
+        bpl next
 swap    lda data+1,x
         ldy data,x
         sta data,x
