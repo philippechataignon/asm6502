@@ -16,6 +16,9 @@ swap    lda data+1,x
 next    inx
         cpx i
         blt loop1
-        dec i
-        bpl loop0
-        rts
+        ldx i
+        beq exit
+        dex
+        stx i
+        jmp loop0
+exit    rts
