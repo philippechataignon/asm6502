@@ -3,25 +3,25 @@ data    = $1000
 
 *       = $803
 
-loop0   ldx #0
-loop1   lda data+1,x
+loop0   ldy #0
+loop1   lda data+1,y
         sec
-        sbc data,x
+        sbc data,y
         bvc +
         eor #$80
 +       bmi swap
         bpl next
-swap    lda data+1,x
-        ldy data,x
-        sta data,x
-        tya
-        sta data+1,x
-next    inx
-        cpx i
+swap    lda data+1,y
+        ldx data,y
+        sta data,y
+        txa
+        sta data+1,y
+next    iny
+        cpy i
         blt loop1
-        ldx i
+        ldy i
         beq exit
-        dex
-        stx i
+        dey
+        sty i
         jmp loop0
 exit    rts
