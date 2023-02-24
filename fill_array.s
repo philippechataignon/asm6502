@@ -23,15 +23,10 @@ fill = $fe
         sta fill
 
 ; get array
-
         jsr chkcom
         jsr getarypt
-        lda lowtr
-        sta ptr
-        lda lowtr+1
-        sta ptr+1
 
-; addr first value = ptr = lowtr + 7
+; first value = ptr = lowtr + 7
         clc
         lda lowtr
         adc #7
@@ -51,9 +46,8 @@ fill = $fe
         adc lowtr+1
         sta end+1
 
-loop
 ; ptr >= end, exit
-        lda ptr
+loop    lda ptr
         cmp end
         lda ptr+1
         sbc end+1

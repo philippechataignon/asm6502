@@ -15,11 +15,6 @@ sum = $fe
         jsr chkcom
         jsr getarypt
 
-        lda lowtr
-        sta ptr
-        lda lowtr+1
-        sta ptr+1
-
 ; addr first value = ptr = lowtr + 7
         clc
         lda lowtr
@@ -45,9 +40,8 @@ sum = $fe
         sta sum
         sta sum+1
 
-loop
 ; ptr >= end, exit
-        lda ptr
+loop    lda ptr
         cmp end
         lda ptr+1
         sbc end+1
@@ -62,7 +56,6 @@ loop
         lda (ptr),y
         adc sum+1
         sta sum+1
-
 ; ptr = ptr + 2
         clc
         lda ptr
