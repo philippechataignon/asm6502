@@ -1,29 +1,23 @@
-start = $FA
+; store cte in [ptr; end[
+
+ptr = $FA
 end = $FC
-tmp = $19
 
-* = $803
+* = $300
 
-        ldy start       ; get real start
-        lda #0          ; start LSB = 0
-        sta start
--       lda #$A5        ; constant
-        sta (start),y   ; store
-        iny
-        bne +
-        inc start+1
-        beq exit        ; exit on $0000
-
-;+       cpy end         ; y,start < end
-;        lda start+1
-;        sbc end+1
-;        blt -
-                        ; y=tmp,start <= end
-+       sty tmp
-        lda end
-        cmp tmp
-        lda end+1
-        sbc start+1
-        bge -
+        ldy #0          ; always 0
+; if ptr >= end, exit
+loop    lda ptr
+        cmp end
+        lda ptr+1
+        sbc end+1
+        bge exit
+        lda #$A2        ; constant
+        sta (ptr),y   ; store
+; incr ptr
+        inc ptr
+        bne loop
+        inc ptr+1
+        bne loop
 exit    rts
 
