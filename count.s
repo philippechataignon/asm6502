@@ -1,12 +1,20 @@
 ptr     = $FA
-data    = $1000
-count   = $1100
+last    = $FC
+start   = $D0
+end     = $0
+countp  = $10
+automod = $1234
 
 *       = $803
 
-        lda #<count
+init    lda #0
         sta ptr
-        lda #>count
+        sta dataptr
+        lda #start
+        sta dataptr+1
+        lda #end
+        sta last
+        lda #countp
         sta ptr+1
 
 ; init count array to 0
@@ -22,7 +30,8 @@ count   = $1100
 ; count each #byte
 ; starts at 1 because max # is 255
         ldx #0
-loop    ldy data,x
+loop    ldy automod,x
+dataptr = * - 2
         lda (ptr),y
         clc
         adc #1
@@ -33,5 +42,9 @@ loop    ldy data,x
         sta (ptr),y
         dec ptr+1   ; restore page
         inx
+        bne loop
+        inc dataptr+1
+        lda dataptr+1
+        cmp last
         bne loop
 exit    rts
