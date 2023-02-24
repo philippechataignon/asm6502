@@ -1,22 +1,44 @@
 varpnt  = $83
 chkcom  = $debe
 ptrget  = $dfe3
-data    = $8000
-data2   = $8100
 getarypt = $f7d9
 arytab = $6b
 charget = $b1
-lowtr = $9B
+lowtr = $9b
+
+start = $fa
+end = $fc
 
 *       = $9000
 
         jsr chkcom
         jsr getarypt
-        ldy #0
--       lda (lowtr),y
-        sta data,y
+
+        lda lowtr
+        sta start
+        lda lowtr+1
+        sta start+1
+
+; addr first value = start = lowtr + 6
+        clc
+        lda lowtr
+        adc #6
+        sta start
+        lda lowtr+1
+        adc #0
+        sta start+1
+
+; end = lowtr + (lowtr)2
+        ldy #2
+        clc
+        lda (lowtr),y
+        adc lowtr
+        sta end
         iny
-        bne -
+        lda (lowtr),y
+        adc lowtr+1
+        sta end+1
+
         jsr chkcom
         jsr ptrget
         lda #>12345
