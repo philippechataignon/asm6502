@@ -6,8 +6,9 @@ arytab = $6b
 charget = $b1
 lowtr = $9b
 
-start = $fa
+ptr = $fa
 end = $fc
+sum = $fe
 
 *       = $9000
 
@@ -15,18 +16,18 @@ end = $fc
         jsr getarypt
 
         lda lowtr
-        sta start
+        sta ptr
         lda lowtr+1
-        sta start+1
+        sta ptr+1
 
-; addr first value = start = lowtr + 6
+; addr first value = ptr = lowtr + 7
         clc
         lda lowtr
-        adc #6
-        sta start
+        adc #7
+        sta ptr
         lda lowtr+1
         adc #0
-        sta start+1
+        sta ptr+1
 
 ; end = lowtr + (lowtr)2
         ldy #2
@@ -39,13 +40,46 @@ end = $fc
         adc lowtr+1
         sta end+1
 
-        jsr chkcom
+; init sum = 0
+        lda #0
+        sta sum
+        sta sum+1
+
+loop
+; ptr >= end, exit
+        lda ptr
+        cmp end
+        lda ptr+1
+        sbc end+1
+        bge exit
+; add (ptr) to sum
+        ldy #1
+        clc
+        lda (ptr),y
+        adc sum
+        sta sum
+        dey
+        lda (ptr),y
+        adc sum+1
+        sta sum+1
+
+; ptr = ptr + 2
+        clc
+        lda ptr
+        adc #2
+        sta ptr
+        lda ptr+1
+        adc #0
+        sta ptr+1
+        jmp loop
+
+; store in n%
+exit    jsr chkcom
         jsr ptrget
-        lda #>12345
-        ldx #<12345
         ldy #2
+        lda sum+1
         sta (lowtr),y
         iny
-        txa
+        lda sum
         sta (lowtr),y
         rts
