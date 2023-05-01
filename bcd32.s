@@ -11,32 +11,33 @@
 ; Andrew Jacobs, 28-Feb-2004
 
 * = $300
-        jmp BINBCD16
+        jmp BINBCD32
 
-; 12345 -> BCD: $01 $23 $45
-BIN        .word  12345
-BCD        .fill  3
+; 1234567890 -> BCD: $12 $34 $56 $78 $90
+BIN        .dword  1234567890
+BCD        .fill  5
 
-BINBCD16:
+BINBCD32:
         sed             ; Switch to decimal mode
+        ldy #8
         lda #0          ; Ensure the result is clear
-        sta BCD+0
-        sta BCD+1
-        sta BCD+2
-        ldx #16         ; The number of source bits
+-       sta BCD,y
+        dey
+        bpl -
 
+        ldx #32         ; The number of source bits
 CNVBIT: asl BIN         ; Shift out one bit
         rol BIN+1
-        lda BCD +2      ; And add into result
-        adc BCD +2
-        sta BCD +2
-        lda BCD+1       ; propagating any carry
-        adc BCD+1
-        sta BCD+1
-        lda BCD         ; ... thru whole result
-        adc BCD
-        sta BCD
+        rol BIN+2
+        rol BIN+3
+
+        ldy #5
+-       lda BCD-1,y       ; And add into result
+        adc BCD-1,y       ; propagating any carry
+        sta BCD-1,y       ; thru whole result
+        dey
+        bne -
         dex             ; And repeat for next bit
         bne CNVBIT
         cld             ; Back to binary
-        rts
+        brk
