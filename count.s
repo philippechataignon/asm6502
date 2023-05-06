@@ -5,6 +5,8 @@ end     = $0
 countp  = $10
 automod = $1234
 
+; count on 2 pages = 16 bits
+
 *       = $803
 
 init    lda #0
@@ -27,8 +29,6 @@ init    lda #0
         iny
         bne -
 
-; count each #byte
-; starts at 1 because max # is 255
         ldx #0
 loop    ldy automod,x
 dataptr = * - 2
@@ -47,4 +47,4 @@ dataptr = * - 2
         lda dataptr+1
         cmp last
         bne loop
-exit    rts
+        rts
