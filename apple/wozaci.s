@@ -5,181 +5,182 @@
 ;
 ;-------------------------------------------------------------------------
 
-                .CR     6502
-                .OR     $C100
-                .TF     WOZACI.HEX,HEX,8
+* = $C100
 
 ;-------------------------------------------------------------------------
 ;  Memory declaration
 ;-------------------------------------------------------------------------
 
-HEX1L           .EQ     $24             End address of dump block
-HEX1H           .EQ     $25
-HEX2L           .EQ     $26             Begin address of dump block
-HEX2H           .EQ     $27
-SAVEINDEX       .EQ     $28             Save index in input buffer
-LASTSTATE       .EQ     $29             Last input state
+HEX1L           =     $24             ; End address of dump block
+HEX1H           =     $25
+HEX2L           =     $26             ; Begin address of dump block
+HEX2H           =     $27
+SAVEINDEX       =     $28             ; Save index in input buffer
+LASTSTATE       =     $29             ; Last input state
 
-IN              .EQ     $0200           Input buffer
-FLIP            .EQ     $C000           Output flip-flop
-TAPEIN          .EQ     $C081           Tape input
-KBD             .EQ     $D010           PIA.A keyboard input
-KBDCR           .EQ     $D011           PIA.A keyboard control register
-ESCAPE          .EQ     $FF1A           Escape back to monitor
-ECHO            .EQ     $FFEF           Echo character to terminal
+IN              =     $0200           ; Input buffer
+FLIP            =     $C000           ; Output flip-flop
+TAPEIN          =     $C081           ; Tape input
+KBD             =     $D010           ; PIA.A keyboard input
+KBDCR           =     $D011           ; PIA.A keyboard control register
+ESCAPE          =     $FF1A           ; Escape back to monitor
+ECHO            =     $FFEF           ; Echo character to terminal
 
 ;-------------------------------------------------------------------------
 ;  Constants
 ;-------------------------------------------------------------------------
 
-CR              .EQ     $8D             Carriage Return
-ESC             .EQ     $9B             ASCII ESC
+CR              =     $8D             ; Carriage Return
+ESC             =     $9B             ; ASCII ESC
+
+.include "apple_enc.inc"
+.enc "apple"
 
 ;-------------------------------------------------------------------------
 ;  Let's get started
 ;-------------------------------------------------------------------------
 
-WOZACI          LDA     #"*"            Print the Tape prompt
-                JSR     ECHO
-                LDA     #CR             And drop the cursor one line
-                JSR     ECHO
+WOZACI          lda     #"*"            ; Print the Tape prompt
+                jsr     ECHO
+                lda     #CR             ; And drop the cursor one line
+                jsr     ECHO
 
-                LDY     #-1             Reset the input buffer index
-NEXTCHAR        INY
-KBDWAIT         LDA     KBDCR           Wait for a key
-                BPL     KBDWAIT         Still no key!
+                ldy     #-1             ; Reset the input buffer index
+NEXTCHAR        iny
+KBDWAIT         lda     KBDCR           ; Wait for a key
+                bpl     KBDWAIT         ; Still no key!
 
-                LDA     KBD             Read key from keyboard
-                STA     IN,Y            Save it into buffer
-                JSR     ECHO            And type it on the screen
-                CMP     #ESC
-                BEQ     WOZACI          Start from scratch if ESC!
-                CMP     #CR
-                BNE     NEXTCHAR        Read keys until CR
+                lda     KBD             ; Read key from keyboard
+                sta     IN,Y            ; Save it into buffer
+                jsr     ECHO            ; And type it on the screen
+                cmp     #ESC
+                beq     WOZACI          ; Start from scratch if ESC!
+                cmp     #CR
+                bne     NEXTCHAR        ; Read keys until CR
 
-                LDX     #-1             Initialize parse buffer pointer
+                ldx     #-1             ; Initialize parse buffer pointer
 
 ;-------------------------------------------------------------------------
 ; Start parsing first or a new tape command
 ;-------------------------------------------------------------------------
 
-NEXTCMD         LDA     #0              Clear begin and end values
-                STA     HEX1L
-                STA     HEX1H
-                STA     HEX2L
-                STA     HEX2H
+NEXTCMD         lda     #0              ; Clear begin and end values
+                sta     HEX1L
+                sta     HEX1H
+                sta     HEX2L
+                sta     HEX2H
 
-NEXTCHR         INX                     Increment input pointer
-                LDA     IN,X            Get next char from input line
-                CMP     #"R"            Read command?
-                BEQ     READ            Yes!
-                CMP     #"W"            Write command?
-                BEQ     WRITE           Yes! (note: CY=1)
-                CMP     #"."            Separator?
-                BEQ     SEP             Yes!
-                CMP     #CR             End of line?
-                BEQ     GOESC           Escape to monitor! We're done
-                CMP     #" "            Ignore spaces
-                BEQ     NEXTCHR
-                EOR     #"0"            Map digits to 0-9
-                CMP     #9+1            Is it a decimal digit?
-                BCC     DIG             Yes!
-                ADC     #$88            Map letter "A"-"F" to $FA-$FF
-                CMP     #$FA            Hex letter?
-                BCC     WOZACI          No! Character not hex!
+NEXTCHR         inx                     ; Increment input pointer
+                lda     IN,X            ; Get next char from input line
+                cmp     #"R"            ; Read command?
+                beq     READ            ; Yes!
+                cmp     #"W"            ; Write command?
+                beq     WRITE           ; Yes! (note: CY=1)
+                cmp     #"."            ; Separator?
+                beq     SEP             ; Yes!
+                cmp     #CR             ; End of line?
+                beq     GOESC           ; Escape to monitor! We're done
+                cmp     #" "            ; Ignore spaces
+                beq     NEXTCHR
+                eor     #"0"            ; Map digits to 0-9
+                cmp     #9+1            ; Is it a decimal digit?
+                bcc     DIG             ; Yes!
+                adc     #$88            ; Map letter "A"-"F" to $FA-$FF
+                cmp     #$FA            ; Hex letter?
+                bcc     WOZACI          ; No! Character not hex!
 
-DIG             ASL                     Hex digit to MSD of A
-                ASL
-                ASL
-                ASL
+DIG             asl                     ; Hex digit to MSD of A
+                asl
+                asl
+                asl
 
-                LDY     #4              Shift count
-HEXSHIFT        ASL                     Hex digit left, MSB to carry
-                ROL     HEX1L           Rotate into LSD
-                ROL     HEX1H           Rotate into MSD
-                DEY                     Done 4 shifts?
-                BNE     HEXSHIFT        No! Loop
-                BEQ     NEXTCHR         Handle next character
+                ldy     #4              ; Shift count
+HEXSHIFT        asl                     ; Hex digit left, MSB to carry
+                rol     HEX1L           ; Rotate into LSD
+                rol     HEX1H           ; Rotate into MSD
+                dey                     ; Done 4 shifts?
+                bne     HEXSHIFT        ; No! Loop
+                beq     NEXTCHR         ; Handle next character
 
 ;-------------------------------------------------------------------------
 ; Return to monitor, prints \ first
 ;-------------------------------------------------------------------------
 
-GOESC           JMP     ESCAPE          Escape back to monitor
+GOESC           jmp     ESCAPE          ; Escape back to monitor
 
 ;-------------------------------------------------------------------------
 ; Separating . found. Copy HEX1 to Hex2. Doesn't clear HEX1!!!
 ;-------------------------------------------------------------------------
 
-SEP             LDA     HEX1L           Copy hex value 1 to hex value 2
-                STA     HEX2L
-                LDA     HEX1H
-                STA     HEX2H
-                BCS     NEXTCHR         Always taken!
+SEP             lda     HEX1L           ; Copy hex value 1 to hex value 2
+                sta     HEX2L
+                lda     HEX1H
+                sta     HEX2H
+                bcs     NEXTCHR         ; Always taken!
 
 ;-------------------------------------------------------------------------
 ; Write a block of memory to tape
 ;-------------------------------------------------------------------------
 
-WRITE           LDA     #64             Write 10 second header
-                JSR     WHEADER
+WRITE           lda     #64             ; Write 10 second header
+                jsr     WHEADER
 
-WRNEXT          DEY                     Compensate timing for extra work
-                LDX     #0              Get next byte to write
-                LDA     (HEX2L,X)
+WRNEXT          dey                     ; Compensate timing for extra work
+                ldx     #0              ; Get next byte to write
+                lda     (HEX2L,X)
 
-                LDX     #8*2            Shift 8 bits (decremented twice)
-WBITLOOP        ASL                     Shift MSB to carry
-                JSR     WRITEBIT        Write this bit
-                BNE     WBITLOOP        Do all 8 bits!
+                ldx     #8*2            ; Shift 8 bits (decremented twice)
+WBITLOOP        asl                     ; Shift MSB to carry
+                jsr     WRITEBIT        ; Write this bit
+                bne     WBITLOOP        ; Do all 8 bits!
 
-                JSR     INCADDR         Increment address
-                LDY     #30             Compensate timer for extra work
-                BCC     WRNEXT          Not done yet! Write next byte
+                jsr     INCADDR         ; Increment address
+                ldy     #30             ; Compensate timer for extra work
+                bcc     WRNEXT          ; Not done yet! Write next byte
 
-RESTIDX         LDX     SAVEINDEX       Restore index in input line
-                BCS     NEXTCMD         Always taken!
+RESTIDX         ldx     SAVEINDEX       ; Restore index in input line
+                bcs     NEXTCMD         ; Always taken!
 
-;-------------------------------------------------------------------------
+;-----------------------------------------------------------------------
 ; Read from tape
-;-------------------------------------------------------------------------
+;-----------------------------------------------------------------------
 
-READ            JSR     FULLCYCLE       Wait until full cycle is detected
-                LDA     #22             Introduce some delay to allow
-                JSR     WHEADER          the tape speed to stabilize
-                JSR     FULLCYCLE       Synchronize with full cycle
+READ            jsr     FULLCYCLE       ; Wait until full cycle is detected
+                lda     #22             ; Introduce some delay to allow
+                jsr     WHEADER         ;  the tape speed to stabilize
+                jsr     FULLCYCLE       ; Synchronize with full cycle
 
-NOTSTART        LDY     #31             Try to detect the much shorter
-                JSR     CMPLEVEL          start bit
-                BCS     NOTSTART        Start bit not detected yet!
+NOTSTART        ldy     #31             ; Try to detect the much shorter
+                jsr     CMPLEVEL        ;   start bit
+                bcs     NOTSTART        ; Start bit not detected yet!
 
-                JSR     CMPLEVEL        Wait for 2nd phase of start bit
+                jsr     CMPLEVEL        ; Wait for 2nd phase of start bit
 
-                LDY     #58             Set threshold value in middle
-RDBYTE          LDX     #8              Receiver 8 bits
-RDBIT           PHA
-                JSR     FULLCYCLE       Detect a full cycle
-                PLA
-                ROL                     Roll new bit into result
-                LDY     #57             Set threshold value in middle
-                DEX                     Decrement bit counter
-                BNE     RDBIT           Read next bit!
-                STA     (HEX2L,X)       Save new byte
+                ldy     #58             ; Set threshold value in middle
+RDBYTE          ldx     #8              ; Receiver 8 bits
+RDBIT           pha
+                jsr     FULLCYCLE       ; Detect a full cycle
+                pla
+                rol                     ; Roll new bit into result
+                ldy     #57             ; Set threshold value in middle
+                dex                     ; Decrement bit counter
+                bne     RDBIT           ; Read next bit!
+                sta     (HEX2L,X)       ; Save new byte
 
-                JSR     INCADDR         Increment address
-                LDY     #53             Compensate threshold with workload
-                BCC     RDBYTE          Do next byte if not done yet!
-                BCS     RESTIDX         Always taken! Restore parse index
+                jsr     INCADDR         ; Increment address
+                ldy     #53             ; Compensate threshold with workload
+                bcc     RDBYTE          ; Do next byte if not done yet!
+                bcs     RESTIDX         ; Always taken! Restore parse index
 
-FULLCYCLE       JSR     CMPLEVEL        Wait for two level changes
-CMPLEVEL        DEY                     Decrement time counter
-                LDA     TAPEIN          Get Tape In data
-                CMP     LASTSTATE       Same as before?
-                BEQ     CMPLEVEL        Yes!
-                STA     LASTSTATE       Save new data
+FULLCYCLE       jsr     CMPLEVEL        ; Wait for two level changes
+CMPLEVEL        dey                     ; Decrement time counter
+                lda     TAPEIN          ; Get Tape In data
+                cmp     LASTSTATE       ; Same as before?
+                beq     CMPLEVEL        ; Yes!
+                sta     LASTSTATE       ; Save new data
 
-                CPY     #128            Compare threshold
-                RTS
+                cpy     #128            ; Compare threshold
+                rts
 
 ;-------------------------------------------------------------------------
 ; Write header to tape
@@ -195,13 +196,13 @@ CMPLEVEL        DEY                     Decrement time counter
 ; routine to trigger the reading of the actual data.
 ;-------------------------------------------------------------------------
 
-WHEADER         STX     SAVEINDEX       Save index in input line
-HCOUNT          LDY     #66             Extra long delay
-                JSR     WDELAY          CY is constantly 1, writing a 1
-                BNE     HCOUNT          Do this 64 * 256 time!
-                ADC     #-2             Decrement A (CY=1 all the time)
-                BCS     HCOUNT          Not all done!
-                LDY     #30             Write a final short bit (start)
+WHEADER         stx     SAVEINDEX       ; Save index in input line
+HCOUNT          ldy     #66             ; Extra long delay
+                jsr     WDELAY          ; CY is constantly 1, writing a 1
+                bne     HCOUNT          ; Do this 64 * 256 time!
+                adc     #-2             ; Decrement A (CY=1 all the time)
+                bcs     HCOUNT          ; Not all done!
+                ldy     #30             ; Write a final short bit (start)
 
 ;-------------------------------------------------------------------------
 ; Write a full bit cycle
@@ -210,36 +211,31 @@ HCOUNT          LDY     #66             Extra long delay
 ; bit length. All subsequent loops don't have to be time compensated.
 ;-------------------------------------------------------------------------
 
-WRITEBIT        JSR     WDELAY          Do two equal phases
-                LDY     #44             Load 250us counter - compensation
+WRITEBIT        jsr     WDELAY          ; Do two equal phases
+                ldy     #44             ; Load 250us counter - compensation
 
-WDELAY          DEY                     Delay 250us (one phase of 2kHz)
-                BNE     WDELAY
-                BCC     WRITE1          Write a '1' (2kHz)
+WDELAY          dey                     ; Delay 250us (one phase of 2kHz)
+                bne     WDELAY
+                bcc     WRITE1          ; Write a '1' (2kHz)
 
-                LDY     #47             Additional delay for '0' (1kHz)
-WDELAY0         DEY                      (delay 250us)
-                BNE     WDELAY0
+                ldy     #47             ; Additional delay for '0' (1kHz)
+WDELAY0         dey                     ;  (delay 250us)
+                bne     WDELAY0
 
-WRITE1          LDY     FLIP,X          Flip the output bit
-                LDY     #41             Reload 250us cntr (compensation)
-                DEX                     Decrement bit counter
-                RTS
+WRITE1          ldy     FLIP,X          ; Flip the output bit
+                ldy     #41             ; Reload 250us cntr (compensation)
+                dex                     ; Decrement bit counter
+                rts
 
 ;-------------------------------------------------------------------------
 ; Increment current address and compare with last address
 ;-------------------------------------------------------------------------
 
-INCADDR         LDA     HEX2L           Compare current address with
-                CMP     HEX1L            end address
-                LDA     HEX2H
-                SBC     HEX1H
-                INC     HEX2L           And increment current address
-                BNE     NOCARRY         No carry to MSB!
-                INC     HEX2H
-NOCARRY         RTS
-
-;-------------------------------------------------------------------------
-
-                .LI     OFF
-
+INCADDR         lda     HEX2L           ; Compare current address with
+                cmp     HEX1L           ;  end address
+                lda     HEX2H
+                sbc     HEX1H
+                inc     HEX2L           ; And increment current address
+                bne     NOCARRY         ; No carry to MSB!
+                inc     HEX2H
+NOCARRY         rts

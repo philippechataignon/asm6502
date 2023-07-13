@@ -34,6 +34,9 @@ DSPCR           =     $D013           ; PIA.B display control register
 ; Interrupts are enabled, though not use; d. KBD can be jumpered to IRQ,
 ; whereas DSP can be jumpered to NMI.
 
+.include "apple_enc.inc"
+.enc "apple"
+
 ;-------------------------------------------------------------------------
 ;  Constants
 ;-------------------------------------------------------------------------
@@ -41,7 +44,7 @@ DSPCR           =     $D013           ; PIA.B display control register
 BS              =     $DF             ; Backspace key, arrow left key
 CR              =     $8D             ; Carriage Return
 ESC             =     $9B             ; ESC key
-PROMPT          =     $DC             ; Prompt character '\'
+PROMPT          =     '\'             ; Prompt character '\'
 
 ;-------------------------------------------------------------------------
 ;  Let's get started
