@@ -1,14 +1,10 @@
-; Convert an 16 bit binary value to BCD
+; Convert an 32 bit binary value to BCD
 ;
-; This function converts a 16 bit binary value into a 24 bit BCD. It
+; This function converts a 32 bit binary value into a 40 bit BCD. It
 ; works by transferring one bit a time from the source and adding it
 ; into a BCD value that is being doubled on each iteration. As all the
 ; arithmetic is being done in BCD the result is a binary to decimal
-; conversion. All conversions take 915 clock cycles.
-;
-; See BINBCD8 for more details of its operation.
-;
-; Andrew Jacobs, 28-Feb-2004
+; conversion.
 
 * = $300
         jmp BINBCD32

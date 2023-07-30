@@ -27,9 +27,9 @@ BINBCD16:
 
 CNVBIT: asl BIN         ; Shift out one bit
         rol BIN+1
-        lda BCD +2      ; And add into result
-        adc BCD +2
-        sta BCD +2
+        lda BCD+2       ; And add into result
+        adc BCD+2
+        sta BCD+2
         lda BCD+1       ; propagating any carry
         adc BCD+1
         sta BCD+1
