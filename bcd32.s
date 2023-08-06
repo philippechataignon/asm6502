@@ -10,9 +10,13 @@
         jmp BINBCD32
 
 ; 1234567890 -> BCD: $12 $34 $56 $78 $90
-BCD_POS = 5
-BIN        .dword  1234567890
-BCD        .fill  BCD_POS
+PRBYTE      = $FDDA
+PRHEX       = $FDE3
+BCD_POS     = 5
+BIN         .dword 1234567890
+BCD         .fill  BCD_POS
+F0          .byte  $F0
+FLAG        .byte  %10000000
 
 BINBCD32:
         sed             ; Switch to decimal mode
@@ -37,4 +41,10 @@ CNVBIT: asl BIN         ; Shift out one bit
         dex             ; And repeat for next bit
         bne CNVBIT
         cld             ; Back to binary
+        ldy #0
+-       lda BCD,y
+        jsr PRBYTE
++       iny
+        cpy #BCD_POS
+        blt -
         rts
