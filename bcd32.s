@@ -10,9 +10,11 @@
         jmp BINBCD32
 
 ; 1234567890 -> BCD: $12 $34 $56 $78 $90
+
 PRBYTE      = $FDDA
 PRHEX       = $FDE3
 COUT        = $FDED
+
 BCD_POS     = 5
 BIN         .dword 1234567890
 BCD         .fill  BCD_POS
@@ -55,12 +57,10 @@ CNVBIT: asl BIN         ; Shift out one bit
         jsr COUT
         rts
 NIBBLE:
-        bit F0
+        bit F0          ; "and" $F0
         bne PRINT       ; si XY, normal print
         jsr PRHEX       ; else 0Y, PRHEX
-        iny             ; and next byte
-        cpy #BCD_POS    ; and PRINT if not last byte
-        bge END         ; else END
+        jmp +           ; next byte
 PRINT:
 -       lda BCD,y
         jsr PRBYTE
