@@ -12,11 +12,15 @@
 ; 1234567890 -> BCD: $12 $34 $56 $78 $90
 PRBYTE      = $FDDA
 PRHEX       = $FDE3
+COUT        = $FDED
 BCD_POS     = 5
 BIN         .dword 1234567890
 BCD         .fill  BCD_POS
 F0          .byte  $F0
 FLAG        .byte  %10000000
+
+.include "apple_enc.inc"
+.enc "apple"
 
 BINBCD32:
         sed             ; Switch to decimal mode
@@ -41,10 +45,26 @@ CNVBIT: asl BIN         ; Shift out one bit
         dex             ; And repeat for next bit
         bne CNVBIT
         cld             ; Back to binary
-        ldy #0
+        ldy #0          ; skip when byte = 0
+-       lda BCD,y       ; avoid printing "00"
+        bne NIBBLE      ; test if "0x"
+        iny
+        cpy #BCD_POS
+        blt -
+        lda #"0"        ; all zeros, print "0"
+        jsr COUT
+        rts
+NIBBLE:
+        bit F0
+        bne PRINT       ; si XY, normal print
+        jsr PRHEX       ; else 0Y, PRHEX
+        iny             ; and next byte
+        cpy #BCD_POS    ; and PRINT if not last byte
+        bge END         ; else END
+PRINT:
 -       lda BCD,y
         jsr PRBYTE
 +       iny
         cpy #BCD_POS
         blt -
-        rts
+END     rts
