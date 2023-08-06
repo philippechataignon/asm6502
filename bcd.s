@@ -9,6 +9,7 @@
 ; 1234567890 -> BCD: $12 $34 $56 $78 $90
 
 BITS := 32
+SIGNED := true
 
 PRBYTE      = $FDDA
 PRHEX       = $FDE3
@@ -30,7 +31,28 @@ BINBCD:
         lda #$F0        ; bit instr has no immediate mode
         sta F0ADDR
         sed             ; Switch to decimal mode
-        ldx #BCD_POS
+.if SIGNED
+        ldx #BITS/8-1   ; 1 for 16 bits, 3 for 32 bits
+        lda BIN,x       ; high-order byte
+        bpl START       ; if >= 0, START
+-       lda BIN,x       ; else negate x and output '-'
+        eor #$FF        ; eor #$FF and add 1
+        sta BIN,x
+        dex
+        bpl -
+        inc BIN
+        bne +
+        inc BIN+1
+        bne +
+.if BITS == 32
+        inc BIN+2
+        bne +
+        inc BIN+3
+.endif
++       lda #'-'
+        jsr COUT
+.endif                  ; endif SIGNED
+START:  ldx #BCD_POS
         lda #0          ; Ensure the result is clear
 -       sta BCD-1,x
         dex
@@ -73,3 +95,4 @@ PRINT:
         cpx #BCD_POS
         blt -
         rts
+
