@@ -6,9 +6,6 @@
 ; arithmetic is being done in BCD the result is a binary to decimal
 ; conversion.
 
-* = $300
-        jmp BINBCD32
-
 ; 1234567890 -> BCD: $12 $34 $56 $78 $90
 
 PRBYTE      = $FDDA
@@ -16,55 +13,58 @@ PRHEX       = $FDE3
 COUT        = $FDED
 
 BCD_POS     = 5
-BIN         .dword 1234567890
-BCD         .fill  BCD_POS
-F0          .byte  $F0
-FLAG        .byte  %10000000
+F0ADDR      = $EB
+BIN         = $EC
+BCD         = BIN + 4
 
 .include "apple_enc.inc"
 .enc "apple"
 
+* = $300
+
 BINBCD32:
+        lda #$F0
+        sta F0ADDR
         sed             ; Switch to decimal mode
-        ldy #BCD_POS
+        ldx #BCD_POS
         lda #0          ; Ensure the result is clear
--       sta BCD-1,y
-        dey
+-       sta BCD-1,x
+        dex
         bne -
 
-        ldx #32         ; The number of source bits
+        ldy #32         ; The number of source bits
 CNVBIT: asl BIN         ; Shift out one bit
         rol BIN+1
         rol BIN+2
         rol BIN+3
 
-        ldy #BCD_POS
--       lda BCD-1,y     ; And add into result
-        adc BCD-1,y     ; propagating any carry
-        sta BCD-1,y     ; thru whole result
-        dey
+        ldx #BCD_POS
+-       lda BCD-1,x     ; And add into result
+        adc BCD-1,x     ; propagating any carry
+        sta BCD-1,x     ; thru whole result
+        dex
         bne -
-        dex             ; And repeat for next bit
+        dey             ; And repeat for next bit
         bne CNVBIT
         cld             ; Back to binary
-        ldy #0          ; skip when byte = 0
--       lda BCD,y       ; avoid printing "00"
+        ldx #0          ; skip when byte = 0
+-       lda BCD,x       ; avoid printing "00"
         bne NIBBLE      ; test if "0x"
-        iny
-        cpy #BCD_POS
+        inx
+        cpx #BCD_POS
         blt -
         lda #"0"        ; all zeros, print "0"
         jsr COUT
         rts
 NIBBLE:
-        bit F0          ; "and" $F0
+        bit F0ADDR      ; "and" #$F0
         bne PRINT       ; si XY, normal print
         jsr PRHEX       ; else 0Y, PRHEX
-        jmp +           ; next byte
+        jmp +           ; next bxte
 PRINT:
--       lda BCD,y
+-       lda BCD,x
         jsr PRBYTE
-+       iny
-        cpy #BCD_POS
++       inx
+        cpx #BCD_POS
         blt -
 END     rts
