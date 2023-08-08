@@ -44,9 +44,9 @@ XModemRecv      jsr ssc.init
                 jsr ssc.flush
 .if DIRECT
                 jsr home
-                print RecvMsg
+                prt RecvMsg
 .fi
-                move #start,ptr_mod     ; set ptr_mod to start
+                mov #start,ptr_mod     ; set ptr_mod to start
                 lda #1                  ; set block # to 1
                 sta blknum
                 lda #0                  ; init chksum
@@ -68,7 +68,7 @@ EndRecv         lda #ACK                ; last block, send ACK and exit.
                 jsr ssc.putc
                 jsr ssc.flush           ; get leftover characters, if any
 .if DIRECT
-                print GoodMsg
+                prt GoodMsg
 .fi
                 rts
 
@@ -83,7 +83,7 @@ LimAbort        lda #$15
 Abort
 .if DIRECT
                 jsr prbyte
-                print ErrorMsg
+                prt ErrorMsg
 .fi
                 jmp ssc.flush
 

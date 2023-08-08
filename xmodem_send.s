@@ -31,7 +31,7 @@ XModemSend
                 jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
 .if DIRECT
-                print TitleMsg
+                prt TitleMsg
 .fi
                 lda #0
                 sta blknum              ; set block counter to 0
@@ -44,7 +44,7 @@ XModemSend
 .else
                 jmp -
 .fi
-+               move start << 8,ptr     ; write start00 to ptr
++               mov start << 8,ptr     ; write start00 to ptr
 NextBlk         inc blknum              ; inc block counter
                 lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
@@ -86,15 +86,15 @@ EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
 ExitSend        lda #EOT                ; send final EOT
                 jsr ssc.putc
 .if DIRECT
-                print GoodMsg
+                prt GoodMsg
 .fi
                 rts
 
 SetError        dec errcnt              ; decr error counter
-                print Retry
+                prt Retry
                 bne StartBlk            ; if not null, resend block
 Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
-Exit_Err        print ErrMsg
+Exit_Err        prt ErrMsg
                 rts
 
 ssc             .binclude "ssc.s"

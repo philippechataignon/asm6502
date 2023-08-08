@@ -30,11 +30,11 @@ NAK = $15                ; bad block acknowledged
                 bcc norecv
                 cmp #ACK                ; Chr received... is it:
                 beq getack
-                print msg_retry
+                prt msg_retry
                 jmp -
-norecv          print msg_norecv
+norecv          prt msg_norecv
                 rts
-getack          print msg_getack
+getack          prt msg_getack
                 rts
 
 ssc             .binclude "ssc.s"

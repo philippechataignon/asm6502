@@ -9,7 +9,7 @@ motoron     = $C089             ; Turn drive motor on
 bascalc     = $FBC1             ; calc line addr
 clear       = $FC58             ; clear screen
 crout       = $FD8E             ; CR out sub
-prbyte      = $FDDA             ; print byte in hex
+prbyte      = $FDDA             ; prt byte in hex
 cout        = $FDED             ; character out sub
 read        = $FEFD             ; read from tape
 
@@ -72,26 +72,26 @@ status      .macro
             jsr clrstatus
             ldy #<\1
             lda #>\1
-            jsr print
+            jsr prt
             .endm
 
 start
             jsr clear           ; clear screen
             ldy #<title
-            lda #>title         ; print title
-            jsr print
+            lda #>title         ; prt title
+            jsr prt
                                 ; TRACK
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
             jsr bascalc
             ldy #<track
-            lda #>track         ; print track
-            jsr print
+            lda #>track         ; prt track
+            jsr prt
 
             ldy #<header
-            lda #>header        ; print header
-            jsr print
+            lda #>header        ; prt header
+            jsr prt
             ldx #linewidth-5    ; length of line
             lda #'-'
 -           jsr cout
@@ -100,8 +100,8 @@ start
             jsr crout
 
             ldy #<left
-            lda #>left          ; print left side of grid
-            jsr print
+            lda #>left          ; prt left side of grid
+            jsr prt
 
 setupiob
 .if REAL
@@ -238,7 +238,7 @@ done
 diskerror
             ldx #slot            ; slot #6
             lda motoroff,x       ; turn it off
-            status diskerrorm     ; print error
+            status diskerrorm     ; prt error
             rts
 
 clrstatus
@@ -265,7 +265,7 @@ draw
             txa
             sta (basl),y        ; store char in screen ram
 -           rts
-print
+prt
             sta prtptr+1         ; store A=MSB
             sty prtptr           ; store Y=LSB
             ldy #0

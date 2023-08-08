@@ -15,17 +15,17 @@ trknb = 35
 
 status      .macro
             jsr clrstatus
-            print \1
+            prt \1
             .endm
 
 start       jsr init            ; init screen
             jsr home            ; clear screen
-            print title
+            prt title
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
             jsr bascalc
-            print screen
+            prt screen
 
             jsr xm.ssc.init     ; init ssc
             lda #>buffstart     ; init xmodem send addr

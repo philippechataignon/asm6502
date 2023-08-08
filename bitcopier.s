@@ -125,14 +125,14 @@ START       jsr HOME
             sta CH+1
             jsr VTAB
             jsr TIRET
-            print TABLE2
+            prt TABLE2
             jsr TIRET
             lda #4
             sta CH
             lda #12
             sta CV
             jsr VTAB
-            print TABLE1
+            prt TABLE1
             jsr RDKEY
 
 ;***********************
@@ -154,7 +154,7 @@ INIT        lda #0 ;PISTE DEPART
             lda #$B5
             sta dlm4
             jsr HOME
-            print TEXTE
+            prt TEXTE
             jsr PISTE0
             jmp PGM01
 
@@ -240,7 +240,8 @@ LECTURE     lda #1
 LECT1       ldx #slot
             lda DRVON,x
             lda DRVCTL1,x
-            move buff1,ptr0
+            mov #buff1,ptr0
+            ldy #0
 -           lda INBYT,x
             bpl -
             sta (ptr0),y
@@ -268,7 +269,7 @@ PGM02       jsr LECTURE
             jsr AFFICH
             jsr ANALYSE
             bcs PGMCS           ; carry set = fail
-            move buff2,ptr2     ; ptr2 = $7000
+            mov #buff2,ptr2     ; ptr2 = $7000
 -           lda (ptr1),y        ; copy from ptr1 computed in ANALYSE
             sta (ptr2),y        ; in buff2
             iny
@@ -289,8 +290,8 @@ PGM02       jsr LECTURE
             lda #$5F
             sta A2L
             jsr XAM             ; display start ($5F bytes) of buff2
-            move #buff2,ptr1    ; find 10 identical values in buffer
-            move #addr1,ptr2    ; addr1 = start of search addr
+            mov #buff2,ptr1    ; find 10 identical values in buffer
+            mov #addr1,ptr2    ; addr1 = start of search addr
             ldy #0
             ldx #0
             stx var2
@@ -370,7 +371,7 @@ PGMWRITE    lda #'W'
             jsr LECT1
             lda #'A'
             jsr AFFICH
-            move #buff1,ptr2
+            mov #buff1,ptr2
             ldx #0
 -           lda (ptr2),y
             cmp buff2,x
@@ -403,7 +404,7 @@ EXIT        brk
 ;                      *
 ;***********************
 
-ANALYSE     move #buff1,ptr1    ; init ptr1 = $3000
+ANALYSE     mov #buff1,ptr1    ; init ptr1 = $3000
             tay
 -           lda (ptr1),y        ; search dlm1, found -> ANA03
             cmp dlm1
@@ -450,7 +451,7 @@ NOTDLM      pla                 ; not dlm2/3, restore ptr1
             pla
             tay
             jmp ANA02           ; and next nibble
-NONSTD      move #buff1,ptr1    ; restore ptr1 = $3000
+NONSTD      mov #buff1,ptr1    ; restore ptr1 = $3000
             tay
 ANA09       jsr SYNCR           ; call non standard analyse
             bcs ANA12           ; if carry set, fail -> ANA12
@@ -472,7 +473,7 @@ ANA10       lda (ptr1),y        ; dlm2 ?
 ANA11       pla                 ; restore ptr1H
             sta ptr1+1
             jmp ANA09           ; next synchro
-ANA12       move #buff1,ptr1    ; first analyse fail, retry from $3000
+ANA12       mov #buff1,ptr1    ; first analyse fail, retry from $3000
             tay
 ANA13       jsr SYNCR
             bcs ANA14           ; fail again, ANA14
@@ -481,7 +482,7 @@ ANA13       jsr SYNCR
             bne ANA13
             clc                 ; found dlm1 = success
             rts
-ANA14       move buff1,ptr1     ; last attempt
+ANA14       mov #buff1,ptr1     ; last attempt
             tay
             jsr SYNCR
             rts

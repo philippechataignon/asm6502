@@ -11,12 +11,12 @@ secbyseg = 560 / segtotal       ; # of sector by segment
 
 status      .macro
             jsr clrstatus
-            print \1
+            prt \1
             .endm
 
 start       jsr init            ; init screen
             jsr home            ; clear screen
-            print title
+            prt title
 
             jsr xm.ssc.init     ; init ssc
             lda #start_page     ; init xmodem send addr
@@ -28,7 +28,7 @@ start       jsr init            ; init screen
             sta ch
             lda #0              ; row 0
             jsr bascalc
-            print screen
+            prt screen
 setupiob
             jsr locrpl         ; locate rwts paramlist
             sty rwtsptr         ; and save rwtsptr

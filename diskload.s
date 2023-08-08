@@ -15,18 +15,18 @@ secbyseg = 560 / segtotal       ; # of sector by segment
 
 status      .macro
             jsr clrstatus
-            print \1
+            prt \1
             .endm
 
 start
             jsr init            ; init screen
             jsr home            ; clear screen
-            print title
+            prt title
             lda #19             ; col 20
             sta ch
             lda #0              ; row 0
             jsr bascalc
-            print screen
+            prt screen
 setupiob
             jsr locrpl         ; locate rwts paramlist
             sty rwtsptr         ; and save rwtsptr
