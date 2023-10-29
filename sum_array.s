@@ -3,7 +3,7 @@ chkcom  = $debe
 ptrget  = $dfe3
 getarypt = $f7d9
 arytab = $6b
-charget = $b1
+; charget = $b1
 lowtr = $9b
 
 ptr = $fa
@@ -12,8 +12,10 @@ sum = $fe
 
 *       = $9000
 
-        jsr chkcom
-        jsr getarypt
+        jsr chkcom          ; check comma at txtptri ($B8), 
+                            ; else 'syntax error'
+        jsr getarypt        ; get array pointer in lowtr
+                            ; from name in (charget)
 
 ; addr first value = ptr = lowtr + 7
         clc
