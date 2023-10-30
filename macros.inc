@@ -48,3 +48,11 @@ st_rwts     .macro
             ldy #\3
             sta (\1),y
             .endm
+
+; increment 16 bits addr 
+incr        .macro
+            inc \1
+            bne +
+            inc \1+1
++
+            .endm
