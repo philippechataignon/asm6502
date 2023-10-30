@@ -39,6 +39,7 @@ loop:
         jsr rnd.xorshift
         ldy #0
         lda rnd.rndl+1  ; store rnd MSB
+        and #$7f        ; ensure >= 0
         sta (ptr),y
         iny
         lda rnd.rndl    ; store rnd LSB
