@@ -8,28 +8,17 @@ lowtr = $9b
 
 ptr = $fa
 count = $fc
-fill = $fe
 
 .include "macros.inc"
 
 *       = $9100
-
-; get n% -> fill
-        jsr chkcom      ; get comma
-        jsr ptrget      ; get addr var in lowtr
-        ldy #2          ; value in addr + 2
-        lda (lowtr),y   ; MSB
-        sta fill+1
-        iny             ; addr +3
-        lda (lowtr),y   ; LSB
-        sta fill        ; store in fill
 
 ; get array
         jsr chkcom      ; check if ptr is on comma
         jsr getarypt    ; get array ptr
 
 ; first value = ptr = lowtr + 7
-        clc 
+        clc
         lda lowtr
         adc #7
         sta ptr
@@ -47,11 +36,12 @@ fill = $fe
 
 ; main loop
 loop:
+        jsr rnd.xorshift
         ldy #0
-        lda fill+1  ; store fill MSB
+        lda rnd.rndl+1  ; store rnd MSB
         sta (ptr),y
         iny
-        lda fill    ; store fill LSB
+        lda rnd.rndl    ; store rnd LSB
         sta (ptr),y
 ; next item, ptr = ptr + 2
         incr ptr
@@ -65,3 +55,5 @@ loop:
 +       dec count
         jmp loop
 exit    rts
+
+rnd     .binclude "xorshift.s"
