@@ -23,4 +23,4 @@ DIRECT := false
 unlz4  .binclude "unlz4.s"
 
 .align $100
-buffer .binary "integer.s.lz4"
+buffer .binary "test.bin.lz4"
