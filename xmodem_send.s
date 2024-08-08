@@ -1,5 +1,9 @@
 ; XMODEM Sender for the 6502
 
+; transfer 256 bytes pages over serial using xmodem protocol
+; exemple : 1000-17FF
+; FA:10 18 B00G
+
 ; zero page variables
 blknum  = $06                ; block number
 errcnt  = $08                ; error counter 10 is the limit
@@ -20,7 +24,6 @@ NAK = $15                ; bad block acknowledged
 
 .include "apple_enc.inc"
 .enc "none"
-
 .include "macros.inc"
 
 .if DIRECT
@@ -100,7 +103,9 @@ Exit_Err        prt ErrMsg
 ssc             .binclude "ssc.s"
 
                 .enc "apple"
+.if DIRECT
 TitleMsg        .null "XMODEM256 SEND\n"
 GoodMsg         .null "\nOK\n"
+.fi
 ErrMsg          .null "\nABORT!\n"
 Retry           .null "\nRETRY\n"
