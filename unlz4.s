@@ -11,7 +11,7 @@
 
 ; Example
 ; 00000000: *b4*56 6f69 7475   7265 2075 6e0a 0b00 *45*64  .Voiture un...Ed
-; 00000010: 6575   780d 00*55* 7472 6f69 730e 0070 *71*75  eux..Utrois..pqu
+; 00000010: 6575   780d 00*55* 7472 6f69 730e 00*70* 7175  eux..Utrois..pqu
 ; 00000020: 6174   7265 0a                                 atre.
 
 ; token b4: b = 11 = length of literals
@@ -32,7 +32,7 @@
 ; offset 000e, length 5+4=9
 ; output Voiture un@Voiture deux@Voiture trois@Voiture
 ;        0123456789012345678901234567890123456789012345
-; token 71
+; token 70
 ; output Voiture un@Voiture deux@Voiture trois@Voiture quatre@
 ;        0123456789012345678901234567890123456789012345
 
