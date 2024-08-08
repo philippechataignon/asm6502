@@ -18,6 +18,7 @@
 unlz4
 ;literal length
                 jsr    get_byte         ; get token
+                php                     ; push P to test C if end reaches
                 sta    token            ; store for future use (match length)
                 lsr    a                ; get high nibble
                 lsr    a
@@ -30,29 +31,25 @@ unlz4
 literals        jsr    get_byte         ; read byte
                 jsr    store_byte       ; and store
                 bne    literals         ; until len
-; offset
+                plp                     ; restore P
+                bcc    read_offset      ; if C clear, continue
+                rts                     ; unlz4 exit
+; get offset and calc source address
 read_offset     jsr    get_byte         ; get LSB offset
-                tay                     ; put (dest - offset) in src
-                sec                     ;
+                sec                     ; put (dest - offset) in src
                 eor    #$ff             ; eor 1 = FE = -2 = -1 - 1
                 adc    dest             ;
                 sta    src              ; idem with MSB offset
                 jsr    get_byte
-                tax                     ; save to X
                 eor    #$ff
                 adc    dest+1
                 sta    src+1
-                tya
-                bne    +
-                txa
-                bne    +
-                rts                     ; exit if offset = 0
 
 ; calc match length from saved token
 +               lda    #$ff             ; get token
 token           =      *-1
                 and    #$0f             ; get low nibble
-                adc    #$03             ; add 4 (C set ?)
+                adc    #$03             ; add 4 (C always set ?)
                 cmp    #$13             ; equivalent to cmp $0f
                 jsr    getLength
 ; copy matches loop
@@ -71,9 +68,9 @@ dest            =      *-2
                 inc    dest
                 bne    +
                 inc    dest+1
-+               dec    lenL
++               dec    lenl
                 bne    +
-                dec    lenH
+                dec    lenh
 +               rts
 
 ; -- get byte and incr source
@@ -82,6 +79,10 @@ source          =     *-2
                 inc   source
 			    bne   +
 			    inc   source+1
+                lda   source                ; src >= end ?
+                cmp   end
+                lda   source+1
+                sbc   end+1                 ; carry set if start >= end
 +               rts
 
 ; -- calc length, store in lenHL
@@ -89,17 +90,18 @@ source          =     *-2
                 tay
                 clc
                 adc    #$00                 ; $00 replaced by LSB length
-lenL            =      *-1
+lenl            =      *-1
                 bcc    +                    ; 16 bits length increment
-                inc    lenH
+                inc    lenh
 +               iny                         ; test if $ff with beq
-getLength       sta    lenL                 ; do not modify flags, uses in adc #
+getLength       sta    lenl                 ; do not modify flags, uses in adc #
                 beq    -                    ; Z from "cmp $0f" when initial call
                                             ; else from "iny"
                 tay                         ;
                 beq    +
-                inc    lenH
+                inc    lenh
 +               rts
 
-lenH            .byte   $00
+lenh            .byte   $00
+end             .word   0
 
