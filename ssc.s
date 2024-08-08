@@ -3,13 +3,15 @@ kbdstrobe   = $c010
 
 esc         = $9B
 
-sscslot     = $30               ; slot 3
+slot        = 3                 ; slot 3
+
+sscslot     = slot << 4
 sscreg      = $C088+sscslot
 sscstatus   = $C089+sscslot
 ssccommand  = $C08A+sscslot
 ssccontrol  = $C08B+sscslot
 
-retry   = $ce                ; retry counter
+retry   = $ce                       ; retry counter
 
 ; ssc init routine
 init        bit sscreg              ; reset ssc
