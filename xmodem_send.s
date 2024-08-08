@@ -45,7 +45,10 @@ XModemSend
 .else
                 jmp -
 .fi
-+               mov start << 8,ptr     ; write start00 to ptr
++               lda #0                  ; write start to ptr
+                sta ptr
+                lda start
+                sta ptr+1
 NextBlk         inc blknum              ; inc block counter
                 lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
