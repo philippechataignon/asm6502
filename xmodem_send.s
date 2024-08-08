@@ -12,8 +12,6 @@ blksum  = $e3                ; chksum
 start   = $fa                ; data pointer (two byte variable)
 end     = $fb
 
-automod = $1234
-
 cout = $fded
 
 ; XMODEM Control Character Constants
@@ -63,7 +61,7 @@ StartBlk        lda #'.'+$80
                 jsr ssc.putc            ; send neg count
                 lda #0                  ; Y =  0
                 sta blksum              ; init blksum
--               lda automod,y           ; send 128 bytes of data
+-               lda $1234,y             ; send 128 bytes of data
 ptr             = * - 2
                 jsr ssc.putc            ; send current byte
                 clc
