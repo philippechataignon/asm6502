@@ -15,9 +15,7 @@ bin:	$(target_bin)
 hex:	$(target_hex)
 
 integer.s.lz4: integer.s
-	lz4 -f $< $@
-	touch $@
-
+	lz4 -c -l $< | tail -c+9 > $@
 
 $(target_hex): apple_enc.inc macros.inc
 

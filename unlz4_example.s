@@ -1,5 +1,5 @@
-;LZ4 data decompressor for Apple II
-;use LZ4 legacy format:
+; LZ4 data decompressor for Apple II
+; use LZ4 legacy format:
 ; lz4 -l file
 
 * = $803
