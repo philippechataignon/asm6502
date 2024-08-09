@@ -50,7 +50,8 @@ read_offset     jsr    get_byte         ; get LSB offset
 +               lda    #$ff             ; get token
 token           =      *-1
                 and    #$0f             ; get low nibble
-                adc    #$03             ; add 4 (C always set ?)
+                clc
+                adc    #4               ; add 4
                 cmp    #$13             ; equivalent to cmp $0f
                 jsr    gen_length
 ; copy matches loop
