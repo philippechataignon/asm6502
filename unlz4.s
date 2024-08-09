@@ -13,6 +13,8 @@
 * = $300
 .fi
 
+.include "macros.inc"
+
 ; -- entry
 
 unlz4
@@ -56,10 +58,8 @@ token           =      *-1
 ; copy matches loop
 -               lda    $1234
 tmp_src         =      *-2
-                inc    tmp_src
-                bne    +
-                inc    tmp_src+1
-+               jsr    store_byte
+                incr    tmp_src
+                jsr    store_byte
                 bne    -
                 beq    unlz4            ; next byte (token)
 unlz4_exit      rts
@@ -67,9 +67,7 @@ unlz4_exit      rts
 ; -- store byte and decr len
 store_byte      sta    $1234
 dst             =      *-2
-                inc    dst
-                bne    +
-                inc    dst+1
+                incr   dst
 +               dec    lenl
                 bne    +
                 dec    lenh
@@ -78,10 +76,8 @@ dst             =      *-2
 ; -- get byte and incr src
 get_byte        lda   $1234
 src             =     *-2
-                inc   src
-			    bne   +
-			    inc   src+1
-+               rts
+                incr  src
+                rts
 
 ; -- calc length, store in lenHL
 -               jsr    get_byte
