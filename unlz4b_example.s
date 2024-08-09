@@ -15,9 +15,9 @@ init
         lda #>(buffer+size(buffer))
         sta unlz4.end+1
         lda #<buffer_dest
-        sta unlz4.dest
+        sta unlz4.dst
         lda #>buffer_dest
-        sta unlz4.dest+1
+        sta unlz4.dst+1
 
 DIRECT := false
 unlz4  .binclude "unlz4b.s"

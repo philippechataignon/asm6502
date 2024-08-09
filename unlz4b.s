@@ -37,13 +37,13 @@ literals        jsr    get_byte         ; read byte
                 bcs    unlz4_exit       ; then exit
 ; get offset and calc source address
 read_offset     jsr    get_byte         ; get LSB offset
-                sec                     ; put (dest - offset) in tmp_src
+                sec                     ; put (dst - offset) in tmp_src
                 eor    #$ff
-                adc    dest
+                adc    dst
                 sta    tmp_src
                 jsr    get_byte         ; idem with MSB offset
                 eor    #$ff
-                adc    dest+1
+                adc    dst+1
                 sta    tmp_src+1
 
 ; calc match length from saved token
@@ -66,10 +66,10 @@ unlz4_exit      rts
 
 ; -- store byte and decr len
 store_byte      sta    $1234
-dest            =      *-2
-                inc    dest
+dst             =      *-2
+                inc    dst
                 bne    +
-                inc    dest+1
+                inc    dst+1
 +               dec    lenl
                 bne    +
                 dec    lenh
