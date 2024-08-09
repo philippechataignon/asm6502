@@ -44,14 +44,13 @@ read_offset     jsr    get_byte         ; get LSB offset
                 jsr    get_byte         ; idem with MSB offset
                 eor    #$ff
                 adc    dst+1
-                sta    tmp_src+1
+                sta    tmp_src+1        ; C is set if offset < dst, always
 
 ; calc match length from saved token
 +               lda    #$ff             ; get token
 token           =      *-1
                 and    #$0f             ; get low nibble
-                clc
-                adc    #4               ; add 4
+                adc    #3               ; add 4, C is set from read_offset
                 cmp    #$13             ; equivalent to cmp $0f
                 jsr    gen_length
 ; copy matches loop
