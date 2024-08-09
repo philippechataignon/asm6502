@@ -38,9 +38,9 @@ literals        jsr    get_byte         ; read byte
 ; get offset and calc source address
 read_offset     jsr    get_byte         ; get LSB offset
                 sec                     ; put (dst - offset) in tmp_src
-                eor    #$ff
-                adc    dst
-                sta    tmp_src
+                eor    #$ff             ; add -offset -1 (eor) + 1(carry)
+                adc    dst              ; to dst
+                sta    tmp_src          ; and store in tmp_src
                 jsr    get_byte         ; idem with MSB offset
                 eor    #$ff
                 adc    dst+1
