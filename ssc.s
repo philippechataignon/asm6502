@@ -11,7 +11,6 @@ sscstatus   = $C089+sscslot
 ssccommand  = $C08A+sscslot
 ssccontrol  = $C08B+sscslot
 
-retry   = $ce                       ; retry counter
 
 ; ssc init routine
 init        bit sscreg              ; reset ssc
@@ -34,7 +33,7 @@ putc        pha                     ; Push A onto the stack
 ; carry set if char received in A
 getc_nb
             clc                     ; no chr present
-            lda #%00010000          ; Load mask for bit 3 recv full
+            lda #%00001000          ; Load mask for bit 3 recv full
             bit sscstatus           ; Check status register
             beq +                   ; if no char, done
             sec                     ; else set the Carry Flag
@@ -66,3 +65,5 @@ flush
 -           jsr getc_nb
             bcs -                 ; get char, get next
             rts                   ; else done
+
+retry       .byte 0               ; retry counter
