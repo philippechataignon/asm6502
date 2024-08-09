@@ -24,49 +24,49 @@ unlz4
                 lsr    a
                 lsr    a
                 beq    read_offset      ; if 0, no literals, read offset
-                cmp    #$0f             ; position Z if $0f
-                jsr    getLength        ; get literal length
+                cmp    #$0f             ; Z set if $0f, tested in gen_length
+                jsr    gen_length       ; get literal length in len(hl)
 ; literals loop
 literals        jsr    get_byte         ; read byte
                 jsr    store_byte       ; and store
                 bne    literals         ; until len
-                lda   src               ; src >= end ?
-                cmp   end
-                lda   src+1
-                sbc   end+1             ; carry set if start >= end
-                bcc    read_offset      ; if C clear, continue
-                rts                     ; unlz4 exit
+                lda    src              ; if src >= end
+                cmp    end
+                lda    src+1
+                sbc    end+1
+                bcs    unlz4_exit       ; then exit
 ; get offset and calc source address
 read_offset     jsr    get_byte         ; get LSB offset
-                sec                     ; put (dest - offset) in tmpsrc
-                eor    #$ff             ;
-                adc    dest             ;
-                sta    tmpsrc
+                sec                     ; put (dest - offset) in tmp_src
+                eor    #$ff
+                adc    dest
+                sta    tmp_src
                 jsr    get_byte         ; idem with MSB offset
                 eor    #$ff
                 adc    dest+1
-                sta    tmpsrc+1
+                sta    tmp_src+1
 
 ; calc match length from saved token
 +               lda    #$ff             ; get token
-token           =      * - 1
+token           =      *-1
                 and    #$0f             ; get low nibble
                 adc    #$03             ; add 4 (C always set ?)
                 cmp    #$13             ; equivalent to cmp $0f
-                jsr    getLength
+                jsr    gen_length
 ; copy matches loop
 -               lda    $1234
-tmpsrc          =      * - 2
-                inc    tmpsrc
+tmp_src         =      *-2
+                inc    tmp_src
                 bne    +
-                inc    tmpsrc+1
+                inc    tmp_src+1
 +               jsr    store_byte
                 bne    -
                 beq    unlz4            ; next byte (token)
+unlz4_exit      rts
 
 ; -- store byte and decr len
 store_byte      sta    $1234
-dest            =      * - 2
+dest            =      *-2
                 inc    dest
                 bne    +
                 inc    dest+1
@@ -77,7 +77,7 @@ dest            =      * - 2
 
 ; -- get byte and incr src
 get_byte        lda   $1234
-src             =     * - 2
+src             =     *-2
                 inc   src
 			    bne   +
 			    inc   src+1
@@ -92,10 +92,10 @@ lenl            =      *-1
                 bcc    +                ; 16 bits length increment
                 inc    lenh
 +               iny                     ; test if $ff with beq
-getLength       sta    lenl             ; do not modify flags, uses in adc #
+gen_length      sta    lenl             ; do not modify flags, uses in adc #
                 beq    -                ; Z from "cmp $0f" when initial call
                                         ; else from "iny"
-                tay                     ;
+                tay
                 beq    +
                 inc    lenh
 +               rts
