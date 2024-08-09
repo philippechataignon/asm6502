@@ -7,10 +7,8 @@ TOPT=--intel-hex -C -B -q -m --tab-size=4 --line-numbers -Wall -Wlong-branch -Wn
 	64tass $(TOPT) -L $(<:.s=.lst) -o $@ $<
 
 target_hex = $(patsubst %.s,%.hex,$(wildcard *.s)) $(patsubst %.S,%.hex,$(wildcard *.S))
-target_bin = $(patsubst %.s,%.bin,$(wildcard *.s)) $(patsubst %.S,%.bin,$(wildcard *.S))
 
 all:	hex apple write_example test.bin.lz4
-bin:	$(target_bin)
 hex:	$(target_hex)
 
 write_example: write_example.c
@@ -22,14 +20,14 @@ test.bin.lz4: write_example
 
 $(target_hex): apple_enc.inc macros.inc
 
-diskload.hex: unlz4.s xmodem_recv.s disk.inc
-libint.hex: mult32.s div32.s integer.s
+disksave.hex: xmodem_send.hex disk.inc
+diskload.hex: xmodem_recv.hex disk.inc unlz4.hex
+diskcopier.hex: xmodem_send.hex disk.inc
+libint.hex: mult32.hex div32.hex integer.hex
 loadlz.hex: load8000.s unlz4.s
-unlz4_example.hex: unlz4.s test.bin.lz4
-inc.hex: inc1.s inc2.s
-disksave.hex: xmodem_send.s disk.inc
-diskcopier.hex: xmodem_send.s disk.inc
-xmodem.hex xmodem256_recv.hex xmodem256_send.hex ssc_sendrec.hex: ssc.s
+unlz4_example.hex: unlz4.hex test.bin.lz4
+xmodem_recv.hex xmodem_send.hex: ssc.hex
+ssc_sendrec.hex: ssc.hex
 
 apple:
 	make -C $@

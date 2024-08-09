@@ -23,10 +23,10 @@ init        bit sscreg              ; reset ssc
 
 ; blocking put routine : send A
 putc        pha                     ; Push A onto the stack
--           lda sscstatus           ; Check status bits
-            and #%00010000          ; Test bit 4 transmit register empty
+            lda #%00010000          ; Load mask for bit 4 transmit register empty
+-           bit sscstatus           ; Check status register
             beq -                   ; Output register is full, so loop
-            pla
+            pla                     ; Restore A from stack
             sta sscreg              ; Put character
             rts
 
@@ -34,11 +34,11 @@ putc        pha                     ; Push A onto the stack
 ; carry set if char received in A
 getc_nb
             clc                     ; no chr present
-            lda sscstatus           ; get Serial port status
-            and #%00001000          ; Test bit 3 recv full
+            lda #%00010000          ; Load mask for bit 3 recv full
+            bit sscstatus           ; Check status register
             beq +                   ; if no char, done
-            lda sscreg              ; else get char
-            sec                     ; and set the Carry Flag
+            sec                     ; else set the Carry Flag
+            lda sscreg              ; and get char
 +           rts                     ; done
 
 ; blocking get routine
