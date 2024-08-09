@@ -13,6 +13,7 @@ start   = $fa                ; data pointer (two byte variable)
 end     = $fb
 
 cout = $fded
+;crout = $fd8e
 prbyte = $fdda
 
 ; XMODEM Control Character Constants
@@ -50,9 +51,9 @@ XModemSend
 .if DIRECT
                 prt StartMsg
 .fi
-                lda #0                  ; write start to ptr
-                sta ptr
-                lda start
+                ldy #0                  ; init y
+                sty ptr
+                lda start               ; write start to ptr
                 sta ptr+1
 NextBlk         inc blknum              ; inc block counter
                 lda #10                 ; error counter set to
@@ -101,13 +102,16 @@ ExitSend        lda #EOT                ; send final EOT
                 rts
 
 SetError        dec errcnt              ; decr error counter
-                jsr prbyte
-                prt RetryMsg
+.if DIRECT
                 lda errcnt
-                jsr prbyte
+                prt GoodMsg
+                lda errcnt
+.fi
                 bne StartBlk            ; if not null, resend block
+.if DIRECT
 Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
 Exit_Err        prt ErrMsg
+.fi
                 rts
 
 ssc             .binclude "ssc.s"
@@ -117,6 +121,5 @@ ssc             .binclude "ssc.s"
 TitleMsg        .null "WAIT NAK\n"
 StartMsg        .null "GET NAK\n"
 GoodMsg         .null "\nOK\n"
-.fi
 ErrMsg          .null "\nERROR!\n"
-RetryMsg        .null "\nRETRY "
+.fi
