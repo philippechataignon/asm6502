@@ -10,8 +10,10 @@ int main()
         fputc(0xea, fp);
     }
     for (int i=0; i<32; ++i) {
-        long n = 0x12345678;
-        fwrite(&n, 8, 1, fp);
+        int n1 = 0x12345678;
+        int n2 = 0x1EDCBA98;
+        fwrite(&n1, 4, 1, fp);
+        fwrite(&n2, 4, 1, fp);
     }
     fclose(fp);
     return 0;
