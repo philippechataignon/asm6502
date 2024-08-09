@@ -13,6 +13,7 @@ start   = $fa                ; data pointer (two byte variable)
 end     = $fb
 
 cout = $fded
+prbyte = $fdda
 
 ; XMODEM Control Character Constants
 SOH = $01                ; start block
@@ -45,15 +46,20 @@ XModemSend
 .else
                 jmp -
 .fi
-+               lda #0                  ; write start to ptr
++
+.if DIRECT
+                prt StartMsg
+.fi
+                lda #0                  ; write start to ptr
                 sta ptr
                 lda start
                 sta ptr+1
 NextBlk         inc blknum              ; inc block counter
                 lda #10                 ; error counter set to
                 sta errcnt              ; 10 max retries
-StartBlk        lda #'.'+$80
+StartBlk
 .if DIRECT
+                lda #'.'+$80
                 jsr cout
 .fi
                 lda #SOH
@@ -81,7 +87,7 @@ EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
                 bcc SetError            ; No chr received after 3 seconds, resend
                 cmp #ACK                ; Chr received... is it:
                 bne SetError            ; No ACK => error
-                cpy #$80                ; if end of loop1, next block
+                cpy #128                ; if end of loop1, next block
                 beq NextBlk             ; after blksum sending
                 inc ptr+1               ; next page
                 lda ptr+1
@@ -95,7 +101,10 @@ ExitSend        lda #EOT                ; send final EOT
                 rts
 
 SetError        dec errcnt              ; decr error counter
-                prt Retry
+                jsr prbyte
+                prt RetryMsg
+                lda errcnt
+                jsr prbyte
                 bne StartBlk            ; if not null, resend block
 Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
 Exit_Err        prt ErrMsg
@@ -105,8 +114,9 @@ ssc             .binclude "ssc.s"
 
                 .enc "apple"
 .if DIRECT
-TitleMsg        .null "XMODEM256 SEND\n"
+TitleMsg        .null "WAIT NAK\n"
+StartMsg        .null "GET NAK\n"
 GoodMsg         .null "\nOK\n"
 .fi
-ErrMsg          .null "\nABORT!\n"
-Retry           .null "\nRETRY\n"
+ErrMsg          .null "\nERROR!\n"
+RetryMsg        .null "\nRETRY "
