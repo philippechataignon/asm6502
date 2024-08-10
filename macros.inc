@@ -1,13 +1,53 @@
 ; prt string at \1, ended with null char
 ; A, Y modified
 prt         .macro
-_cout       = $fded
+_coutz      = $fdf6
             ldy #0
 -           lda \1,y
             beq +
-            jsr _cout
+            jsr _coutz
             iny
             bne -
++
+            .endm
+
+prc         .macro
+_coutz      = $fdf6
+            ldy #0
+-           lda _str,y
+            beq +
+            jsr _coutz
+            iny
+            bne -
+_str        .null \1
++
+            .endm
+
+pra         .macro
+.edef "\n",$d
+_coutz      = $fdf6
+            ldy #0
+-           lda _str,y
+            bmi +
+            ora #$80
+            jsr _coutz
+            iny
+            jmp -
+_str        .shift \1
++           jsr _coutz
+            .endm
+
+prp         .macro
+_coutz      = $fdf6
+            ldx _str
+            ldy #1
+-           lda _str,y
+            jsr _coutz
+            iny
+            dex
+            bne -
+            beq +
+_str        .ptext \1
 +
             .endm
 
