@@ -16,8 +16,8 @@ ACK = $06                ; good block acknowledged
 NAK = $15                ; bad block acknowledged
 
 .include "apple_enc.inc"
-.enc "none"
 .include "macros.inc"
+.enc "apple"
 
 .if DIRECT
 *               =  $B00
@@ -32,7 +32,7 @@ XModemSend
                 jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
 .if DIRECT
-                prt TitleMsg
+                prc "XMODEM SEND\n"
 .fi
                 lda #0
                 sta blknum              ; set block counter to 0
@@ -47,7 +47,7 @@ XModemSend
 .fi
 +
 .if DIRECT
-                prt StartMsg
+                prc "SEND DATA\n"
 .fi
                 ldy #0                  ; init y
                 sty ptr
@@ -58,7 +58,7 @@ NextBlk         inc blknum              ; inc block counter
                 sta errcnt              ; 10 max retries
 StartBlk
 .if DIRECT
-                lda #'.'+$80
+                lda #'.'
                 jsr cout
 .fi
                 lda #SOH
@@ -95,32 +95,19 @@ EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
 ExitSend        lda #EOT                ; send final EOT
                 jsr ssc.putc
 .if DIRECT
-                prt GoodMsg
+                prc "\nTRANSFER OK\n"
 .fi
                 rts
 
 SetError        dec errcnt              ; decr error counter
-.if DIRECT
-                lda errcnt
-                prt GoodMsg
-                lda errcnt
-.fi
                 bne StartBlk            ; if not null, resend block
 .if DIRECT
 Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
-Exit_Err        prt ErrMsg
+Exit_Err        prc "\nERROR!\n"
 .fi
                 rts
 
 ssc             .binclude "ssc.s"
-
-                .enc "apple"
-.if DIRECT
-TitleMsg        .null "XMODEM SEND - WAITING NAK\n"
-StartMsg        .null "GET NAK\n"
-GoodMsg         .null "\nOK\n"
-ErrMsg          .null "\nERROR!\n"
-.fi
 
 ; variables
 blknum  .fill 1              ; block number

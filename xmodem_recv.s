@@ -10,7 +10,6 @@ automod = $1234                 ; fake automodified address
 cout = $fded
 crout = $fd8e
 prbyte = $fdda
-home = $fc58
 
 endofline1 = $427
 
@@ -21,8 +20,7 @@ ACK = $06                       ; good block acknowledged
 NAK = $15                       ; bad block acknowledged
 
 .include "apple_enc.inc"
-.enc "none"
-
+.enc "apple"
 .include "macros.inc"
 
 ; macros
@@ -39,8 +37,7 @@ getc_nak       .macro
 XModemRecv      jsr ssc.init
                 jsr ssc.flush
 .if DIRECT
-                jsr home
-                prt RecvMsg
+                prc "XMODEM RECV\n"
 .fi
                 lda #start              ; set ptr to start
                 sta ptr+1
@@ -66,7 +63,7 @@ EndRecv         lda #ACK                ; last block, send ACK and exit.
                 jsr ssc.putc
                 jsr ssc.flush           ; get leftover characters, if any
 .if DIRECT
-                prt GoodMsg
+                prc "\nTRANSFER OK\n"
 .fi
                 rts
 
@@ -80,8 +77,9 @@ ProcAbort       lda #$14
 LimAbort        lda #$15
 Abort
 .if DIRECT
+                jsr crout
                 jsr prbyte
-                prt ErrorMsg
+                prc " ERROR CODE\n"
 .fi
                 jmp ssc.flush
 
@@ -114,7 +112,6 @@ ptr         = * - 2
                 lda ptr+1               ; test if ptr = limit
                 cmp #limit
                 beq LimAbort            ; yes, abort
-.enc "apple"
 .if DIRECT
                 lda #'.'
                 jsr cout
@@ -124,12 +121,6 @@ ptr         = * - 2
                 jmp StartRecv           ; get next block
 
 ssc             .binclude "ssc.s"
-
-.if DIRECT
-GoodMsg         .null "\nOK\n"
-RecvMsg         .null "XMODEM RECV\n"
-ErrorMsg        .null " ERROR CODE\n"
-.fi
 
 ; variables
 blknum          .fill 1                 ; block number
