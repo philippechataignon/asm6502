@@ -1,7 +1,7 @@
 * = $803
 COUT = $FDED
-TEMP = $CE                          ; temp LSB
 
+.include "macros.inc"
 .include "apple_enc.inc"
 .enc "apple"
 
@@ -11,20 +11,18 @@ TEMP = $CE                          ; temp LSB
             .null "HELLO WORLD!2\n"
             rts
 
-msgout      pla                     ; get calling addr in TEMP
-            sta TEMP
+msgout      pla                     ; get calling addr in PTR
+            sta PTR
             pla
-            sta TEMP+1
-            ldy #0                  ; always 0
--           inc TEMP
-            bne +
-            inc TEMP+1
-+           lda (TEMP),y
+            sta PTR+1
+-           incr PTR
+            lda PTR
+PTR         = * - 2
             beq _exit
             jsr COUT
             jmp -
-_exit       lda TEMP+1              ; TEMP points on next instr
+_exit       lda PTR+1               ; PTR point to next instr
             pha
-            lda TEMP
+            lda PTR
             pha
-            rts                     ; use TEMP as return addr
+            rts                     ; use PTR as return addr
