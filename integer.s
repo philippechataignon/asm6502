@@ -1,21 +1,23 @@
-ORG         :?=     $BD00
+ORG         :?=     $9000
+
+CH          = $24
+BASL        = $28
+IOADR       = $C000
+KBDSTRB     = $C010
+COUT1       = $FDF0
 
             .if ORG > 0
 * =  ORG
             .fi
 
-NUM         = $FA             ; 4 bytes
-FLAG        = $E3             ; 1 byte
-SAVE        = $EB             ; 4 bytes
-PTR         = $EB             ; 2 bytes
-TEMP        = $D7             ; 1 byte
+            jmp INPUTNUM
+            jmp PRINTNUM
 
-CH          = $24
-BASL        = $28
-BUFF        = $BF00
-IOADR       = $C000
-KBDSTRB     = $C010
-COUT1       = $FDF0
+NUM         .fill 4
+FLAG        .fill 1
+SAVE        .fill 4
+TEMP        .fill 1
+
 
 INPUTNUM
             ldx #$0
@@ -52,7 +54,8 @@ EXIT        txa                 ; copy X to A to compute nb digits in Y
             sty NUM+1
             sty NUM+2
             sty NUM+3
-_L0         lda (PTR),y         ; get char (PTR is fixed)
+_L0         lda PTR,y         ; get char (PTR is fixed)
+PTR         = * - 2
             and #$0F            ; keep low nibble
             tax                 ; X = index loop
             clc
@@ -232,3 +235,6 @@ PRXDIGIT                            ; output digit in X
             rts                     ; Restore A and return
 
 NBLOOP      .byte 2,4,0,9
+
+            .align $100
+BUFF        .fill $100

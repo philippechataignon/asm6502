@@ -7,7 +7,7 @@
 
 ; token aaaabbbb
 ; aaaa = length of literals 0 = no literal, $f need more bytes
-; bbbb = match length 0 = 4 $f = 19 after offset
+; bbbb = match length 0 = 4 $f = 19 before offset
 
 .if DIRECT
 * = $300
@@ -16,7 +16,6 @@
 .include "macros.inc"
 
 ; -- entry
-
 unlz4
 ;literal length
                 jsr    get_byte         ; get token

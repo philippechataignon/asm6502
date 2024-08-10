@@ -2,15 +2,8 @@
 
 ; transfer 256 bytes pages over serial using xmodem protocol
 ; exemple : 1000-17FF
-; FA:10 18 B00G
+; B03:10 18 B00G
 
-; zero page variables
-blknum  = $06                ; block number
-errcnt  = $08                ; error counter 10 is the limit
-blksum  = $e3                ; chksum
-
-start   = $fa                ; data pointer (two byte variable)
-end     = $fb
 
 cout = $fded
 ;crout = $fd8e
@@ -27,9 +20,14 @@ NAK = $15                ; bad block acknowledged
 .include "macros.inc"
 
 .if DIRECT
-*       =  $B00
+*               =  $B00
+                jmp XModemSend
 .fi
 
+; parameters
+start           .fill 1                 ; data pointer (two byte variable)
+end             .fill 1
+; program
 XModemSend
                 jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
@@ -118,8 +116,14 @@ ssc             .binclude "ssc.s"
 
                 .enc "apple"
 .if DIRECT
-TitleMsg        .null "WAIT NAK\n"
+TitleMsg        .null "XMODEM SEND - WAITING NAK\n"
 StartMsg        .null "GET NAK\n"
 GoodMsg         .null "\nOK\n"
 ErrMsg          .null "\nERROR!\n"
 .fi
+
+; variables
+blknum  .fill 1              ; block number
+errcnt  .fill 1              ; error counter 10 is the limit
+blksum  .fill 1              ; chksum
+

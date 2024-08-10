@@ -1,11 +1,7 @@
 ; XMODEM Receiver for the 6502
 
-; zero page variables
-blknum  = $D6                   ; block number
-chksum  = $D7                   ; blksum
-
 ; buffer: $1000 -> max $95FF
-start   = $1000
+start = $10
 limit = $96                     ; don't write after $9600
 
 automod = $1234                 ; fake automodified address
@@ -46,10 +42,12 @@ XModemRecv      jsr ssc.init
                 jsr home
                 prt RecvMsg
 .fi
-                mov #start,ptr_mod     ; set ptr_mod to start
+                lda #start              ; set ptr to start
+                sta ptr+1
                 lda #1                  ; set block # to 1
                 sta blknum
                 lda #0                  ; init chksum
+                sta ptr
                 sta chksum
 -               lda #NAK                ; send NAK to start transfer
                 jsr ssc.putc
@@ -97,7 +95,7 @@ StartBlk        getc_nak                ; get byte and send nak if timeout
 +               ldy #0
 -               getc_nak
                 sta automod,y           ; good char, save it in the recv buffer
-ptr_mod = * - 2
+ptr         = * - 2
                 clc                     ; update chksum
                 adc chksum
                 sta chksum
@@ -108,12 +106,12 @@ ptr_mod = * - 2
                 bne SendNak             ; error, send NAK
                 ; block is well received, done
                 inc blknum              ; inc the block #
-                lda ptr_mod             ; ptr_modL $0 <-> $80
+                lda ptr                 ; ptrL $0 <-> $80
                 eor #$80
-                sta ptr_mod
+                sta ptr
                 bne +                   ; if $0, next page so
-                inc ptr_mod+1           ; increment ptr_modH
-                lda ptr_mod+1           ; test if ptr_mod = limit
+                inc ptr+1               ; increment ptrH
+                lda ptr+1               ; test if ptr = limit
                 cmp #limit
                 beq LimAbort            ; yes, abort
 .enc "apple"
@@ -129,6 +127,11 @@ ssc             .binclude "ssc.s"
 
 .if DIRECT
 GoodMsg         .null "\nOK\n"
-RecvMsg         .null "XMODEM256 RECV\n"
+RecvMsg         .null "XMODEM RECV\n"
 ErrorMsg        .null " ERROR CODE\n"
 .fi
+
+; variables
+blknum          .fill 1                 ; block number
+chksum          .fill 1                 ; blksum
+
