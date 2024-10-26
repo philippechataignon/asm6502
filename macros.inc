@@ -1,22 +1,22 @@
 ; prt string at \1, ended with null char
 ; A, Y modified
 prt         .macro
-_coutz      = $fdf6
+_cout      = $fded
             ldy #0
 -           lda \1,y
             beq +
-            jsr _coutz
+            jsr _cout
             iny
             bne -
 +
             .endm
 
 prc         .macro
-_coutz      = $fdf6
+_cout      = $fded
             ldy #0
 -           lda _str,y
             beq +
-            jsr _coutz
+            jsr _cout
             iny
             bne -
 _str        .null \1
@@ -24,10 +24,10 @@ _str        .null \1
             .endm
 
 prp         .macro
-_coutz      = $fdf6
+_cout      = $fded
             ldx _str
 -           lda _str,x
-            jsr _coutz
+            jsr _cout
             dex
             bne -
             beq +
