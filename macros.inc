@@ -31,7 +31,7 @@ _cout      = $fded
             dex
             bne -
             beq +
-_str        .ptext \1[::-1]
+_str        .ptext $8d,\1[::-1]
 +
             .endm
 

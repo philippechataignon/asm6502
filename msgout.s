@@ -1,21 +1,21 @@
 
 msgout
 _COUT = $FDED
-_TEMP = $CE                         ; temp LSB
             pla                     ; get calling addr in TEMP
-            sta _TEMP
+            sta _PTR
             pla
-            sta _TEMP+1
+            sta _PTR+1
             ldy #0                  ; always 0
--           inc _TEMP
+-           inc _PTR
             bne +
-            inc _TEMP+1
-+           lda (_TEMP),y
+            inc _PTR+1
++           lda $1234,y
+_PTR = * -2
             beq _exit
             jsr _COUT
             jmp -
-_exit       lda _TEMP+1              ; TEMP points on next instr
+_exit       lda _PTR+1              ; TEMP points on next instr
             pha
-            lda _TEMP
+            lda _PTR
             pha
             rts                     ; use TEMP as return addr
