@@ -1,28 +1,19 @@
-* = $803
-COUT = $FDED
-
-.include "macros.inc"
-.include "apple_enc.inc"
-.enc "apple"
-
-            jsr msgout              ; PC + 2 is pushed
-            .null "HELLO WORLD!\n"
-            jsr msgout
-            .null "HELLO WORLD!2\n"
-            rts
-
-msgout      pla                     ; get calling addr in PTR
-            sta PTR
+msgout
+_COUT       = $FDED
+            pla                     ; get calling addr in _PTR
+            sta _PTR
             pla
-            sta PTR+1
--           incr PTR
-            lda PTR
-PTR         = * - 2
-            beq _exit
-            jsr COUT
+            sta _PTR+1
+-           inc _PTR
+            bne +
++           inc _PTR+1
+            lda _PTR
+_PTR        = * - 2
+            beq +
+            jsr _COUT
             jmp -
-_exit       lda PTR+1               ; PTR point to next instr
++           lda _PTR+1              ; _PTR point to next instr
             pha
-            lda PTR
+            lda _PTR
             pha
-            rts                     ; use PTR as return addr
+            rts                     ; use _PTR as return addr

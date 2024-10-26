@@ -28,6 +28,7 @@ loadlz.hex: load8000.s unlz4.s
 unlz4_example.hex: unlz4.hex test.bin.lz4
 xmodem_recv.hex xmodem_send.hex: ssc.hex
 ssc_sendrec.hex: ssc.hex
+msg_test.hex: msgout.hex
 
 apple:
 	make -C $@

@@ -4,16 +4,15 @@ COUT = $FDED
 .include "macros.inc"
 .include "apple_enc.inc"
 .enc "apple"
-            .prc "HELLO WORLD!\n"
-            .prc "HELLO WORLD!2\n"
-            .prp "HELLO WORLD!\n"
-            .prp "HELLO WORLD!2\n"
-.enc "apple_inv"
-            .prc "HELLO WORLD!\n"
-            .prc "HELLO WORLD!2\n"
-            .prp "HELLO WORLD!\n"
-            .prp "HELLO WORLD!2\n"
-.enc "none"
-            .pra "HELLO WORLD!\n"
-            .pra "HELLO WORLD!2\n"
+            .prc "HELLO WORLD1!"
+            .prc "HELLO WORLD2!"
+            .prp "HELLO WORLD3!"
+            .prp "HELLO WORLD4!"
+
+            jsr m.msgout
+            .null "HELLO WORLD5!"
+            jsr m.msgout
+            .null "HELLO WORLD6!"
             rts
+
+m           .binclude "msgout.s"

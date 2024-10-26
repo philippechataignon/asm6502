@@ -23,31 +23,15 @@ _str        .null \1
 +
             .endm
 
-pra         .macro
-.edef "\n",$d
-_coutz      = $fdf6
-            ldy #0
--           lda _str,y
-            bmi +
-            ora #$80
-            jsr _coutz
-            iny
-            jmp -
-_str        .shift \1
-+           jsr _coutz
-            .endm
-
 prp         .macro
 _coutz      = $fdf6
             ldx _str
-            ldy #1
--           lda _str,y
+-           lda _str,x
             jsr _coutz
-            iny
             dex
             bne -
             beq +
-_str        .ptext \1
+_str        .ptext \1[::-1]
 +
             .endm
 
