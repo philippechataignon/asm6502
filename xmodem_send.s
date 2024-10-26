@@ -6,7 +6,7 @@
 
 
 cout = $fded
-;crout = $fd8e
+crout = $fd8e
 prbyte = $fdda
 
 ; XMODEM Control Character Constants
@@ -32,7 +32,7 @@ XModemSend
                 jsr ssc.init            ; init serial card 19200 8n1
                 jsr ssc.flush           ; flush ssc buffer
 .if DIRECT
-                prc "XMODEM SEND\n"
+                prp "XMODEM SEND"
 .fi
                 lda #0
                 sta blknum              ; set block counter to 0
@@ -47,7 +47,7 @@ XModemSend
 .fi
 +
 .if DIRECT
-                prc "SEND DATA\n"
+                prp "SEND DATA"
 .fi
                 ldy #0                  ; init y
                 sty ptr
@@ -95,7 +95,8 @@ EndLoop         lda blksum              ; end of loop1 (Y==$80) or loop2 (Y==$0)
 ExitSend        lda #EOT                ; send final EOT
                 jsr ssc.putc
 .if DIRECT
-                prc "\nTRANSFER OK\n"
+                jsr crout
+                prp "TRANSFER OK"
 .fi
                 rts
 
@@ -103,7 +104,8 @@ SetError        dec errcnt              ; decr error counter
                 bne StartBlk            ; if not null, resend block
 .if DIRECT
 Abort           jsr ssc.flush           ; yes, too many errors, flush buffer,
-Exit_Err        prc "\nERROR!\n"
+                jsr crout
+Exit_Err        prp "ERROR!"
 .fi
                 rts
 

@@ -11,18 +11,6 @@ _cout      = $fded
 +
             .endm
 
-prc         .macro
-_cout      = $fded
-            ldy #0
--           lda _str,y
-            beq +
-            jsr _cout
-            iny
-            bne -
-_str        .null \1
-+
-            .endm
-
 prp         .macro
 _cout      = $fded
             jmp +

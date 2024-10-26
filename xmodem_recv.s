@@ -37,7 +37,7 @@ getc_nak       .macro
 XModemRecv      jsr ssc.init
                 jsr ssc.flush
 .if DIRECT
-                prc "XMODEM RECV\n"
+                prp "XMODEM RECV"
 .fi
                 lda #start              ; set ptr to start
                 sta ptr+1
@@ -63,7 +63,8 @@ EndRecv         lda #ACK                ; last block, send ACK and exit.
                 jsr ssc.putc
                 jsr ssc.flush           ; get leftover characters, if any
 .if DIRECT
-                prc "\nTRANSFER OK\n"
+                jsr crout
+                prp "TRANSFER OK"
 .fi
                 rts
 
@@ -79,7 +80,7 @@ Abort
 .if DIRECT
                 jsr crout
                 jsr prbyte
-                prc " ERROR CODE\n"
+                prp " ERROR CODE"
 .fi
                 jmp ssc.flush
 
