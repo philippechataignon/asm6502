@@ -25,14 +25,13 @@ _str        .null \1
 
 prp         .macro
 _cout      = $fded
-            ldx _str
+            jmp +
+_str        .ptext $8d,\1[::-1]
++           ldx _str
 -           lda _str,x
             jsr _cout
             dex
             bne -
-            beq +
-_str        .ptext $8d,\1[::-1]
-+
             .endm
 
 ; move \1 to \2, # is OK and used for pointers
