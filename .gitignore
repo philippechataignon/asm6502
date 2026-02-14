@@ -10,3 +10,4 @@ add_test
 *.so
 .*.swp
 write_example
+archives/

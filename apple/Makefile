@@ -15,9 +15,11 @@ hex:	$(target_hex)
 
 apple2plus.rom: applesoft.bin mon2.bin
 	cat applesoft.bin mon2.bin > apple2plus.rom
+	objcopy --input-target=binary --output-target=ihex --change-addresses 53248 apple2plus.rom apple2plus.hex
 
 apple2.rom:	intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin
 	cat intbasic.bin floating.bin miniasm.bin floating2.bin miniasm_jmp.bin misc_f669.bin sweet16.bin mon.bin> apple2.rom
+	objcopy --input-target=binary --output-target=ihex --change-addresses 57344 apple2.rom apple2.hex
 
 clean:
 	-rm -f $(target_bin) $(target_hex) $(patsubst %.s,%.lst,$(wildcard *.s)) *.bin *.hex *.lst

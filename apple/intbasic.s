@@ -1636,7 +1636,7 @@ RETURN          ldy     #<ErrMsg09        ;"BAD RETURN"
                 sta     PR
                 lda     STK_30-1,y
                 sta     PR+1
-                ldx     @wSTK_00-1,y
+                ldx     @w STK_00-1,y
                 lda     STK_10-1,y
 LE8BE           tay
                 txa
